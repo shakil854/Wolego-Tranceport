@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Truck, Users, FileText, Menu, X, Phone, ShieldCheck } from "lucide-react";
+import { Truck, Users, FileText, Receipt, Menu, X, Phone, ShieldCheck } from "lucide-react";
 
 export default function Navbar() {
   const location = useLocation();
@@ -10,6 +10,7 @@ export default function Navbar() {
     { name: "L/R Entry", path: "/lr-entry", icon: Truck },
     { name: "Party Master", path: "/party-master", icon: Users },
     { name: "LR Records", path: "/lr-list", icon: FileText },
+    { name: "Freight Receipt", path: "/freight-receipt", icon: Receipt },
   ];
 
   const isActive = (path) => {
