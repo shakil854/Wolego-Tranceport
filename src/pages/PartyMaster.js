@@ -172,7 +172,6 @@ export default function PartyMaster() {
           {/* Title Header */}
           <div className="bg-sky-950 px-6 py-4 border-b-2 border-yellow-400 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-2">
             <div>
-              <div className="text-xs text-yellow-300 font-mono tracking-widest uppercase">PARRYSOFT - WANKANER</div>
               <h1 className="text-2xl md:text-3xl font-extrabold text-blue-100 tracking-wider uppercase font-sans drop-shadow-md">
                 PARTY MASTER UPDATION
               </h1>

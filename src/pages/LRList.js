@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { getLREntries, deleteLREntry } from "../utils/storage";
+import { useNavigate, Link } from "react-router-dom";
+import { getLREntries } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
-import { Search, Printer, Trash2, Plus, FileText } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Search, Eye, Printer, Download, Share2, Edit3, Plus, FileText } from "lucide-react";
 
 export default function LRList() {
+  const navigate = useNavigate();
   const [lrEntries, setLrEntries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLR, setSelectedLR] = useState(null);
+  const [activeAutoAction, setActiveAutoAction] = useState(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
 
   useEffect(() => {
@@ -19,16 +21,23 @@ export default function LRList() {
     setLrEntries(data);
   };
 
-  const handleDelete = (id, lrNo) => {
-    if (window.confirm(`Are you sure you want to delete LR #${lrNo}?`)) {
-      const updated = deleteLREntry(id);
-      setLrEntries(updated);
-    }
+  // Direct action handlers (Print, PDF, WhatsApp)
+  const handleDirectAction = (lr, actionType) => {
+    setSelectedLR(lr);
+    setActiveAutoAction(actionType);
+    setShowPrintModal(true);
   };
 
-  const handlePrint = (lr) => {
+  // Interactive View Handler - Opens full screen preview
+  const handleView = (lr) => {
     setSelectedLR(lr);
+    setActiveAutoAction(null);
     setShowPrintModal(true);
+  };
+
+  // Direct Edit handler - opens LREntryForm with state
+  const handleEditLR = (lr) => {
+    navigate("/lr-entry", { state: { editLR: lr } });
   };
 
   const filteredLRs = lrEntries.filter(
@@ -44,14 +53,18 @@ export default function LRList() {
     return (
       <LRPrintDocument
         lrData={selectedLR}
-        onClose={() => setShowPrintModal(false)}
+        autoAction={activeAutoAction}
+        onClose={() => {
+          setShowPrintModal(false);
+          setActiveAutoAction(null);
+        }}
       />
     );
   }
 
   return (
     <div className="min-h-screen bg-slate-900 py-6 px-3 sm:px-6 lg:px-8 text-slate-100">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header Bar */}
         <div className="bg-slate-800 rounded-xl p-5 border border-slate-700 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -60,7 +73,7 @@ export default function LRList() {
               <FileText className="w-7 h-7" /> Wolego Transport - Saved LR Records
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              View, Print A4, Export PDF or Share Lorry Receipts via WhatsApp
+              Direct Print, Export PDF, WhatsApp Share, View & Edit LR Records
             </p>
           </div>
 
@@ -90,7 +103,7 @@ export default function LRList() {
           </div>
         </div>
 
-        {/* Table of Records */}
+        {/* Table of Records with Direct Action Buttons */}
         <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-300">
@@ -117,41 +130,75 @@ export default function LRList() {
                       {lr.dateTime ? new Date(lr.dateTime).toLocaleDateString("en-IN") : "N/A"}
                     </td>
                     <td className="p-3 text-xs font-bold uppercase">
-                      {lr.fromPlace || "MORBI"} ➔ {lr.toPlace}
+                      {lr.fromPlace || "MORBI"} ➔ {lr.toPlace || "N/A"}
                     </td>
                     <td className="p-3 font-mono font-bold text-white uppercase">
-                      {lr.truckNo}
+                      {lr.truckNo || "N/A"}
                     </td>
-                    <td className="p-3 font-bold text-white text-xs max-w-[160px] truncate">
-                      {lr.consignorName}
+                    <td className="p-3 font-bold text-white text-xs max-w-[140px] truncate">
+                      {lr.consignorName || "-"}
                     </td>
-                    <td className="p-3 font-bold text-white text-xs max-w-[160px] truncate">
-                      {lr.consigneeName}
+                    <td className="p-3 font-bold text-white text-xs max-w-[140px] truncate">
+                      {lr.consigneeName || "-"}
                     </td>
                     <td className="p-3 text-right font-mono font-bold text-emerald-400 text-sm">
-                      ₹ {lr.netTotalAmount || lr.freightAmount}
+                      ₹ {lr.netTotalAmount || lr.freightAmount || 0}
                     </td>
                     <td className="p-3">
                       <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-sky-900 text-sky-200 border border-sky-600 uppercase">
                         {lr.gstPayableBy || "CONSIGNEE"}
                       </span>
                     </td>
+                    
+                    {/* Direct Action Buttons: View, Print, PDF Export, WhatsApp & Edit */}
                     <td className="p-3 text-center">
-                      <div className="flex items-center justify-center space-x-2">
+                      <div className="flex flex-wrap items-center justify-center gap-1.5">
+                        
+                        {/* View Button - Opens full screen preview */}
                         <button
-                          onClick={() => handlePrint(lr)}
-                          title="Print / View / Export PDF / WhatsApp"
-                          className="p-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded font-bold transition-colors"
+                          onClick={() => handleView(lr)}
+                          title="View Document Preview"
+                          className="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold text-xs rounded transition-all flex items-center gap-1 shadow border border-slate-600"
                         >
-                          <Printer size={16} />
+                          <Eye size={14} /> View
                         </button>
+
+                        {/* Direct Print Button */}
                         <button
-                          onClick={() => handleDelete(lr.id, lr.lrNumber)}
-                          title="Delete Record"
-                          className="p-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded font-bold transition-colors"
+                          onClick={() => handleDirectAction(lr, "print")}
+                          title="Direct Print A4"
+                          className="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded font-black text-xs transition-all flex items-center gap-1 shadow"
                         >
-                          <Trash2 size={16} />
+                          <Printer size={14} /> Print
                         </button>
+
+                        {/* Direct Export PDF Button */}
+                        <button
+                          onClick={() => handleDirectAction(lr, "pdf")}
+                          title="Direct Export PDF"
+                          className="px-2.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded transition-all flex items-center gap-1 shadow"
+                        >
+                          <Download size={14} /> PDF
+                        </button>
+
+                        {/* Direct WhatsApp Share Button */}
+                        <button
+                          onClick={() => handleDirectAction(lr, "whatsapp")}
+                          title="Direct WhatsApp PDF Share"
+                          className="px-2.5 py-1.5 bg-green-600 hover:bg-green-500 text-white font-black text-xs rounded transition-all flex items-center gap-1 shadow"
+                        >
+                          <Share2 size={14} /> WhatsApp
+                        </button>
+
+                        {/* Direct Edit Button */}
+                        <button
+                          onClick={() => handleEditLR(lr)}
+                          title="Edit LR Record"
+                          className="px-2.5 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded transition-all flex items-center gap-1 shadow"
+                        >
+                          <Edit3 size={14} /> Edit
+                        </button>
+
                       </div>
                     </td>
                   </tr>

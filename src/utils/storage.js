@@ -176,9 +176,15 @@ export const saveLREntry = (lrData) => {
   let updated;
   let savedRecord;
 
-  if (lrData.id) {
-    savedRecord = { ...lrData };
-    updated = lrs.map((item) => (item.id === lrData.id ? savedRecord : item));
+  // Check if LR already exists by ID OR by LR Number to prevent duplicate creation
+  const existingIdx = lrs.findIndex(
+    (item) => (lrData.id && item.id === lrData.id) || (lrData.lrNumber && item.lrNumber && item.lrNumber.toString().trim() === lrData.lrNumber.toString().trim())
+  );
+
+  if (existingIdx !== -1) {
+    savedRecord = { ...lrs[existingIdx], ...lrData };
+    updated = [...lrs];
+    updated[existingIdx] = savedRecord;
   } else {
     const newId = "LR-" + (lrData.lrNumber || Date.now().toString().slice(-4));
     savedRecord = { ...lrData, id: newId, createdAt: new Date().toISOString() };
