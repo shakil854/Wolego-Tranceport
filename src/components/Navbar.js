@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Truck, Users, FileText, Receipt, Menu, X, Phone, ShieldCheck } from "lucide-react";
+import logoImg from "../assets/logo.png";
 
 export default function Navbar() {
   const location = useLocation();
@@ -38,8 +39,8 @@ export default function Navbar() {
           
           {/* Logo / Brand */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="bg-amber-500 p-2 rounded-lg text-slate-950 font-black shadow-lg transform group-hover:scale-105 transition-transform flex items-center justify-center">
-              <Truck className="w-6 h-6 stroke-[2.5]" />
+            <div className="bg-white p-1 rounded-lg shadow-lg transform group-hover:scale-105 transition-transform flex items-center justify-center">
+              <img src={logoImg} alt="Wolego Transport Logo" className="h-10 w-auto object-contain" />
             </div>
             <div>
               <div className="font-extrabold text-xl tracking-wider text-amber-400 font-serif leading-none flex items-center gap-2">

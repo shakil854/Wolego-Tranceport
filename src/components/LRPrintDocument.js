@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { Printer, Download, Share2, ArrowLeft } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import logoImg from "../assets/logo.png";
 
 export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, autoAction }) {
   const printRef = useRef(null);
@@ -24,7 +25,17 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoAction]);
 
-  if (!lrData) return null;
+  const formatDateDisplay = (dateVal) => {
+    if (!dateVal) return new Date().toLocaleDateString("en-IN");
+    if (typeof dateVal === "string" && dateVal.includes("-")) {
+      const parts = dateVal.split("T")[0].split("-");
+      if (parts.length === 3) {
+        const [y, m, d] = parts;
+        return `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
+      }
+    }
+    return new Date(dateVal).toLocaleDateString("en-IN");
+  };
 
   // Direct Browser Print (Full A4 Page Portrait)
   const handlePrint = () => {
@@ -150,11 +161,11 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
       {/* Standard Printable Full A4 Page Document */}
       <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-0 print:shadow-none font-sans text-xs">
-        <div ref={printRef} className="border-2 border-slate-900 p-3 sm:p-4 bg-white text-slate-900 min-h-[275mm] flex flex-col justify-between print-document">
+        <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[275mm] flex flex-col justify-between print-document">
           
           <div className="flex-1 flex flex-col justify-between">
             {/* Header Bar */}
-            <div className="border-b-2 border-slate-900 pb-2">
+            <div className="border-b-2 border-slate-900 p-3 pb-2">
               
               {/* Copy Checkboxes Header */}
               <div className="flex flex-wrap justify-between items-center text-[10px] font-bold border-b border-slate-300 pb-1 mb-2">
@@ -177,11 +188,8 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
               {/* Company Banner & Logo */}
               <div className="grid grid-cols-12 gap-2 items-center my-1">
-                <div className="col-span-3 flex justify-start">
-                  <div className="border-2 border-green-700 text-green-700 px-3 py-1.5 text-center rounded font-black tracking-tight leading-none">
-                    <div className="text-3xl font-extrabold flex items-center justify-center">VV</div>
-                    <div className="text-[9px] uppercase tracking-widest mt-1">EVERYTHING IS FAST</div>
-                  </div>
+                <div className="col-span-3 flex justify-center items-center">
+                  <img src={logoImg} alt="Wolego Transport Logo" className="h-16 sm:h-20 w-auto object-contain max-w-full" />
                 </div>
 
                 <div className="col-span-9 text-left">
@@ -202,29 +210,30 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                 </div>
               </div>
 
-              {/* Title Strip */}
-              <div className="bg-slate-900 text-white font-extrabold text-center py-1 mt-2 tracking-wider text-xs uppercase flex justify-between px-3">
-                <span>AT OWNER'S RISK</span>
-                <span>GOODS CONSIGNMENT NOTE</span>
-                <span>SUBJECT TO WANKANER JURISDICTION</span>
-              </div>
+            </div>
+
+            {/* Title Strip */}
+            <div className="bg-slate-900 text-white font-extrabold text-center py-1 tracking-wider text-xs uppercase flex justify-between px-3 border-b-2 border-slate-900">
+              <span>AT OWNER'S RISK</span>
+              <span>GOODS CONSIGNMENT NOTE</span>
+              <span>SUBJECT TO WANKANER JURISDICTION</span>
             </div>
 
             {/* LR Header Grid (LR NO, DATE, FROM, TO) */}
             <div className="grid grid-cols-12 border-b-2 border-slate-900 font-bold text-[11px] divide-x-2 divide-slate-900">
-              <div className="col-span-3 p-1.5 bg-slate-100 flex items-center justify-between">
+              <div className="col-span-3 p-1.5 bg-slate-100 flex items-center gap-2">
                 <span>L.R. NO. :</span>
                 <span className="text-lg font-black text-rose-700 font-mono">{lrData.lrNumber}</span>
               </div>
-              <div className="col-span-3 p-1.5 flex items-center justify-between">
+              <div className="col-span-3 p-1.5 flex items-center gap-2">
                 <span>DATE :</span>
-                <span>{lrData.dateTime ? new Date(lrData.dateTime).toLocaleDateString("en-IN") : new Date().toLocaleDateString("en-IN")}</span>
+                <span>{formatDateDisplay(lrData.dateTime)}</span>
               </div>
-              <div className="col-span-3 p-1.5 flex items-center justify-between">
+              <div className="col-span-3 p-1.5 flex items-center gap-2">
                 <span>FROM :</span>
                 <span className="uppercase font-extrabold">{lrData.fromPlace || ""}</span>
               </div>
-              <div className="col-span-3 p-1.5 flex items-center justify-between">
+              <div className="col-span-3 p-1.5 flex items-center gap-2">
                 <span>TO :</span>
                 <span className="uppercase font-extrabold">{lrData.toPlace || ""}</span>
               </div>
@@ -332,44 +341,46 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
             {/* Bottom Grid: Charges, GST, Invoice, Insurance, Bank details - Stretched to bottom border */}
             <div className="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[480px]">
               
-              {/* Left Column (7 cols): Each item 1 line per item as requested */}
-              <div className="col-span-7 p-2 space-y-1 text-[10px] flex flex-col justify-between">
-                <div className="space-y-1">
-                  {/* 1. GST Payable By */}
-                  <div className="font-bold text-slate-900 border-b border-slate-300 pb-0.5">
-                    GST PAYABLE BY: <span className="bg-yellow-300 px-2 py-0.5 border border-slate-800 rounded font-black">{lrData.gstPayableBy || "CONSIGNEE"}</span>
-                  </div>
+              {/* Left Column (7 cols): Full-width rows stretching edge-to-edge to main grid lines */}
+              <div className="col-span-7 text-[10px] flex flex-col justify-between h-full">
+                {/* 1. GST Payable By */}
+                <div className="font-bold text-slate-900 border-b-2 border-slate-900 px-2 py-1.5">
+                  GST PAYABLE BY: <span className="bg-yellow-300 px-2 py-0.5 border border-slate-800 rounded font-black">{lrData.gstPayableBy || "CONSIGNEE"}</span>
+                </div>
 
-                  {/* 2. Invoice No */}
-                  <div className="font-bold border-b border-slate-300 pb-0.5">
-                    INVOICE NO. : <span className="font-mono text-xs">{lrData.billNumbers || ""}</span>
-                  </div>
+                {/* 2. Invoice No */}
+                <div className="font-bold border-b-2 border-slate-900 px-2 py-1.5">
+                  INVOICE NO. : <span className="font-mono text-xs">{lrData.billNumbers || ""}</span>
+                </div>
 
-                  {/* 3. Value Rs */}
-                  <div className="font-bold border-b border-slate-300 pb-0.5">
-                    VALUE RS. : <span className="font-mono text-xs">{lrData.invoiceValue || ""}</span>
-                  </div>
+                {/* 3. Value Rs */}
+                <div className="font-bold border-b-2 border-slate-900 px-2 py-1.5">
+                  VALUE RS. : <span className="font-mono text-xs">{lrData.invoiceValue || ""}</span>
+                </div>
 
-                  {/* 4. Consignor E-Way Bill */}
-                  <div className="font-mono text-[10px] border-b border-slate-300 pb-0.5">
-                    CONSIGNOR E-WAY BILL: <strong>{lrData.consignorEwayBill || ""}</strong>
-                  </div>
+                {/* 4. Consignor E-Way Bill */}
+                <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1.5">
+                  CONSIGNOR E-WAY BILL: <strong>{lrData.consignorEwayBill || ""}</strong>
+                </div>
 
-                  {/* 5. Consignee E-Way Bill */}
-                  <div className="font-mono text-[10px] border-b border-slate-300 pb-0.5">
-                    CONSIGNEE E-WAY BILL: <strong>{lrData.consigneeEwayBill || ""}</strong>
-                  </div>
+                {/* 5. Consignee E-Way Bill */}
+                <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1.5">
+                  CONSIGNEE E-WAY BILL: <strong>{lrData.consigneeEwayBill || ""}</strong>
+                </div>
 
-                  {/* 6. Remarks / Disclaimer */}
-                  <div className="font-extrabold uppercase text-red-700 bg-red-50 p-1 border border-red-200 text-[9.5px]">
+                {/* 6. Remarks / Disclaimer */}
+                <div className="px-2 py-1">
+                  <div className="font-extrabold uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
                     {lrData.remarks || "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA."}
                   </div>
+                </div>
 
-                  {/* 7. Insurance Declaration Box */}
-                  <div className="border border-slate-400 p-1.5 rounded text-[9px] bg-slate-50 space-y-0.5">
+                {/* 7. Insurance Declaration Box */}
+                <div className="px-2 py-1">
+                  <div className="border-2 border-slate-900 p-1.5 rounded text-[9px] bg-slate-50 space-y-0.5">
                     <div className="font-extrabold uppercase underline">INSURANCE :</div>
                     <div>THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
-                    <div className="grid grid-cols-3 gap-1 pt-0.5 border-t border-slate-300 font-mono">
+                    <div className="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-mono">
                       <span>COMPANY: ________</span>
                       <span>POLICY: ________</span>
                       <span>RISK: ________</span>
@@ -378,70 +389,69 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                 </div>
 
                 {/* 8. ICICI Bank Payment Details */}
-                <div className="border-2 border-blue-900 p-1.5 rounded bg-blue-50/50 text-[9.5px] mt-1">
-                  <div className="font-black text-blue-950 uppercase border-b border-blue-200 pb-0.5 mb-0.5">
-                    ICICI BANK LTD (RTGS / NEFT PAYMENT)
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 font-semibold">
-                    <div>NAME : <span className="font-bold">WOLEGO TRANSPORT</span></div>
-                    <div>ACCOUNT NO. : <span className="font-mono font-bold">118405500444</span></div>
-                    <div>IFSC CODE : <span className="font-mono font-bold">ICIC0001184</span></div>
-                    <div>BRANCH : <span className="font-bold">WANKANER</span></div>
+                <div className="p-2">
+                  <div className="border-2 border-blue-900 p-1.5 rounded bg-blue-50/50 text-[9.5px]">
+                    <div className="font-black text-blue-950 uppercase border-b border-blue-200 pb-0.5 mb-0.5">
+                      ICICI BANK LTD (RTGS / NEFT PAYMENT)
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 font-semibold">
+                      <div>NAME : <span className="font-bold">WOLEGO TRANSPORT</span></div>
+                      <div>ACCOUNT NO. : <span className="font-mono font-bold">118405500444</span></div>
+                      <div>IFSC CODE : <span className="font-mono font-bold">ICIC0001184</span></div>
+                      <div>BRANCH : <span className="font-bold">WANKANER</span></div>
+                    </div>
                   </div>
                 </div>
-
               </div>
 
               {/* Right Column (5 cols): Freight Breakdown, Net Total & Signatory */}
-              <div className="col-span-5 p-2 space-y-1 bg-slate-50 flex flex-col justify-between font-mono text-xs">
-                <div className="space-y-1.5">
-                  <div className="flex justify-between font-bold border-b border-slate-300 pb-1">
+              <div className="col-span-5 bg-slate-50 flex flex-col justify-between font-mono text-xs h-full">
+                <div className="space-y-0">
+                  <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2 py-1.5">
                     <span>FREIGHT</span>
                     <span>{lrData.freightAmount || 0}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-700">
+                  <div className="flex justify-between text-slate-700 px-2 py-1">
                     <span>Add : S-G.S.T. @ 2.5%</span>
                     <span>{lrData.sgstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-700">
+                  <div className="flex justify-between text-slate-700 px-2 py-1">
                     <span>Add : C-G.S.T. @ 2.5%</span>
                     <span>{lrData.cgstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-700">
+                  <div className="flex justify-between text-slate-700 px-2 py-1">
                     <span>Add : I-G.S.T. @ 5%</span>
                     <span>{lrData.igstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-bold border-t border-slate-300 pt-1">
+                  <div className="flex justify-between font-bold border-t-2 border-b-2 border-slate-900 px-2 py-1.5">
                     <span>TOTAL WITH GST</span>
                     <span>{lrData.totalWithGst || lrData.freightAmount}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-700">
+                  <div className="flex justify-between text-slate-700 px-2 py-1">
                     <span>Other Charges</span>
                     <span>{lrData.otherCharges || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-700 border-b border-slate-300 pb-1">
+                  <div className="flex justify-between text-slate-700 border-b-2 border-slate-900 px-2 py-1.5">
                     <span>Less : Advance Paid</span>
                     <span>{lrData.lessAdvancePaid || "0.00"}</span>
                   </div>
+
+                  <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2 py-1.5 text-slate-950">
+                    <span>NET TOTAL:</span>
+                    <span>₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
+                  </div>
                 </div>
 
-                <div className="space-y-3 mt-auto pt-2">
-                  <div className="bg-slate-900 text-white p-2 rounded flex justify-between items-center text-sm font-black">
-                    <span>NET TOTAL:</span>
-                    <span className="text-yellow-400 text-base">₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
-                  </div>
-
-                  {/* Signatory Block Inside Grid */}
-                  <div className="text-right space-y-3 font-sans pt-1">
-                    <div className="font-extrabold uppercase text-[11px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
-                    <div className="text-[9px] text-slate-600 uppercase tracking-wider font-bold">(AUTHORISED SIGNATORY)</div>
-                  </div>
+                {/* Signatory Block Inside Grid */}
+                <div className="text-right space-y-3 font-sans p-2 mt-auto">
+                  <div className="font-extrabold uppercase text-[11px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
+                  <div className="text-[9px] text-slate-600 uppercase tracking-wider font-bold">(AUTHORISED SIGNATORY)</div>
                 </div>
               </div>
 

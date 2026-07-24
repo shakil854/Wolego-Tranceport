@@ -18,6 +18,14 @@ export default function LREntryForm() {
   const [activeLR, setActiveLR] = useState(null);
   const [statusMsg, setStatusMsg] = useState("");
 
+  const getTodayDateStr = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const initialForm = {
     id: "",
     lrNumber: "",
@@ -26,7 +34,7 @@ export default function LREntryForm() {
     toPlace: "",
     deliveryAt: "DOOR",
     truckNo: "",
-    dateTime: new Date().toISOString().slice(0, 16),
+    dateTime: getTodayDateStr(),
 
     // Consignor
     consignorName: "",
@@ -286,7 +294,7 @@ export default function LREntryForm() {
 
   const handleReset = () => {
     const nextNo = getNextLRNumber();
-    setFormData({ ...initialForm, lrNumber: nextNo });
+    setFormData({ ...initialForm, lrNumber: nextNo, dateTime: getTodayDateStr() });
   };
 
   const flashMsg = (text) => {
@@ -377,7 +385,7 @@ export default function LREntryForm() {
           {/* Form Content */}
           <form onSubmit={handleSave} onKeyDown={handleKeyDown} className="p-4 sm:p-6 space-y-5">
 
-            {/* Top Row: LR Number, Copy Data, From, To, Delivery At, Truck No, Date */}
+            {/* Top Row: LR Number, Date, From, To, Delivery At, Truck No */}
             <div className="bg-sky-950/70 p-4 rounded-lg border border-sky-600/50 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 items-center">
 
               <div className="md:col-span-2">
@@ -390,6 +398,18 @@ export default function LREntryForm() {
                   onChange={(e) => setFormData({ ...formData, lrNumber: e.target.value })}
                   placeholder="LR NO."
                   className="w-full bg-white text-slate-900 font-mono font-black text-base px-3 py-1.5 border-2 border-amber-400 rounded focus:outline-none"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-xs font-bold text-yellow-300 uppercase block mb-1">
+                  DATE
+                </label>
+                <input
+                  type="date"
+                  value={formData.dateTime ? formData.dateTime.slice(0, 10) : getTodayDateStr()}
+                  onChange={(e) => setFormData({ ...formData, dateTime: e.target.value })}
+                  className="w-full bg-white text-slate-900 font-bold px-2 py-1.5 border border-sky-300 rounded uppercase text-sm"
                 />
               </div>
 
