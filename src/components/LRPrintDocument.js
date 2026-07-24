@@ -286,7 +286,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   <tr className="bg-slate-200 border-b-2 border-slate-900 font-extrabold uppercase text-center divide-x-2 divide-slate-900">
                     <th className="p-1.5 w-24">NO. OF ARTICLE</th>
                     <th className="p-1.5">DESCRIPTION OF GOODS</th>
-                    <th className="p-1.5 w-32">WEIGHT KGS</th>
+                    <th className="p-1.5 w-32">WEIGHT</th>
                     <th className="p-1.5 w-28">RATE</th>
                     <th className="p-1.5 w-36">FREIGHT ({lrData.toPayOrPaid || "TO-PAY"})</th>
                   </tr>

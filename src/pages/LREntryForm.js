@@ -24,7 +24,7 @@ export default function LREntryForm() {
     copyData: "N",
     fromPlace: "",
     toPlace: "",
-    deliveryAt: "",
+    deliveryAt: "DOOR",
     truckNo: "",
     dateTime: new Date().toISOString().slice(0, 16),
 
@@ -42,8 +42,8 @@ export default function LREntryForm() {
 
     // Goods particulars
     noOfArticles: "",
-    bundles: "",
-    descriptionOfGoods: "",
+    bundles: "BOX",
+    descriptionOfGoods: "CERAMIC TILES",
     weightKgs: "",
     ratePerTon: "",
     rateType: "P.M.T.",
@@ -72,7 +72,7 @@ export default function LREntryForm() {
     driverMobile: "",
     consignorEwayBill: "",
     consigneeEwayBill: "",
-    remarks: "",
+    remarks: "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE.",
     debitAmountTo: "CONSIGNEE",
   };
 
@@ -424,7 +424,7 @@ export default function LREntryForm() {
                   type="text"
                   value={formData.deliveryAt}
                   onChange={(e) => setFormData({ ...formData, deliveryAt: e.target.value.toUpperCase() })}
-                  placeholder="DELIVERY AT"
+                  placeholder="DOOR"
                   className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded uppercase"
                 />
               </div>
@@ -619,7 +619,7 @@ export default function LREntryForm() {
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs font-bold text-sky-200 uppercase">
                 <div className="sm:col-span-2">No. of Articles</div>
                 <div className="sm:col-span-4">Description of Goods</div>
-                <div className="sm:col-span-2">Weight in KGS</div>
+                <div className="sm:col-span-2">Weight</div>
                 <div className="sm:col-span-2">Rate Rs. Per Ton</div>
                 <div className="sm:col-span-2">To Pay / Paid</div>
               </div>
@@ -637,7 +637,7 @@ export default function LREntryForm() {
                     type="text"
                     value={formData.bundles}
                     onChange={(e) => setFormData({ ...formData, bundles: e.target.value.toUpperCase() })}
-                    placeholder="PKG/BOX"
+                    placeholder="BOX"
                     className="w-1/3 bg-white text-slate-900 font-bold px-1 py-1.5 border rounded text-xs text-center uppercase"
                   />
                 </div>
@@ -647,7 +647,7 @@ export default function LREntryForm() {
                     type="text"
                     value={formData.descriptionOfGoods}
                     onChange={(e) => setFormData({ ...formData, descriptionOfGoods: e.target.value.toUpperCase() })}
-                    placeholder="DESCRIPTION OF GOODS"
+                    placeholder="CERAMIC TILES"
                     className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border rounded text-sm uppercase"
                   />
                 </div>
@@ -657,7 +657,7 @@ export default function LREntryForm() {
                     type="text"
                     value={formData.weightKgs}
                     onChange={(e) => handleWeightRateChange("weightKgs", e.target.value)}
-                    placeholder="WEIGHT KGS"
+                    placeholder="WEIGHT"
                     className="w-full bg-white text-slate-900 font-mono font-bold px-3 py-1.5 border rounded text-sm"
                   />
                 </div>
@@ -796,6 +796,7 @@ export default function LREntryForm() {
                     type="text"
                     value={formData.remarks}
                     onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                    placeholder="WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE."
                     className="w-full bg-white text-slate-900 font-medium px-2 py-1 border rounded"
                   />
                 </div>
