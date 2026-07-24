@@ -134,11 +134,21 @@ export default function LREntryForm() {
     formData.lessAdvancePaid,
   ]);
 
+  const formatPartyAddress = (party) => {
+    if (!party) return "";
+    const addr1 = party.address1 ? party.address1.trim() : "";
+    const addr2 = party.address2 ? party.address2.trim() : "";
+    const addr3Parts = [party.address3, party.city, party.state].filter(Boolean);
+    const addr3 = addr3Parts.join(", ").trim();
+
+    return [addr1, addr2, addr3].filter(Boolean).join("\n");
+  };
+
   // Multi-Consignor selection & formatting handler
   const handleAddConsignor = (partyName) => {
     if (!partyName) return;
     const existing = parties.find((p) => p.partyName.trim().toUpperCase() === partyName.trim().toUpperCase());
-    const partyObj = existing || { partyName: partyName.toUpperCase(), address1: "", city: "", state: "", gstNo: "" };
+    const partyObj = existing || { partyName: partyName.toUpperCase(), address1: "", address2: "", address3: "", city: "", state: "", gstNo: "" };
 
     // Prevent duplicate addition of exact same party
     if (selectedConsignors.some((c) => c.partyName.trim().toUpperCase() === partyObj.partyName.trim().toUpperCase())) {
@@ -168,11 +178,9 @@ export default function LREntryForm() {
     }
 
     if (list.length === 1) {
-      // 1 Consignor: Standard 1 party details
+      // 1 Consignor: 4-line format (Name, Address 1, Address 2, Address 3)
       const c = list[0];
-      const fullAddr = [c.address1, c.address2, c.address3, c.city, c.state]
-        .filter(Boolean)
-        .join(", ");
+      const fullAddr = formatPartyAddress(c);
       setFormData((prev) => ({
         ...prev,
         consignorName: c.partyName,
@@ -224,13 +232,11 @@ export default function LREntryForm() {
     }
   };
 
-  // Consignee selection handler
+  // Consignee selection handler (4-line format: Name, Address 1, Address 2, Address 3)
   const handleSelectConsignee = (partyName) => {
     const party = parties.find((p) => p.partyName === partyName);
     if (party) {
-      const fullAddr = [party.address1, party.address2, party.address3, party.city, party.state]
-        .filter(Boolean)
-        .join(", ");
+      const fullAddr = formatPartyAddress(party);
       setFormData((prev) => ({
         ...prev,
         consigneeName: party.partyName,
@@ -580,7 +586,7 @@ export default function LREntryForm() {
 
                 {/* Address */}
                 <textarea
-                  rows="2"
+                  rows="3"
                   value={formData.consigneeAddress}
                   onChange={(e) => setFormData({ ...formData, consigneeAddress: e.target.value.toUpperCase() })}
                   placeholder="CONSIGNEE ADDRESS..."

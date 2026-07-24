@@ -269,7 +269,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   CONSIGNEE'S NAME & ADDRESS
                 </div>
                 <div className="font-bold text-sm text-slate-950 uppercase">{lrData.consigneeName}</div>
-                <div className="text-[10px] text-slate-700 leading-normal uppercase">
+                <div className="text-[10px] text-slate-700 leading-normal uppercase whitespace-pre-line">
                   {lrData.consigneeAddress}
                 </div>
                 <div className="font-mono font-bold text-[11px] pt-1 border-t border-slate-300 mt-1">
