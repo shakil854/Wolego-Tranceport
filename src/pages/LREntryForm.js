@@ -44,6 +44,9 @@ export default function LREntryForm() {
     noOfArticles: "",
     bundles: "BOX",
     descriptionOfGoods: "CERAMIC TILES",
+    noOfArticles2: "",
+    bundles2: "BUNDLE",
+    descriptionOfGoods2: "SANITARYWARE",
     weightKgs: "",
     ratePerTon: "",
     rateType: "P.M.T.",
@@ -681,6 +684,43 @@ export default function LREntryForm() {
                     <option value="TO-PAY">TO-PAY</option>
                     <option value="PAID">PAID</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Sanitaryware / 2nd Item Optional Input Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-2 border-t border-sky-700/60">
+                <div className="sm:col-span-2 flex gap-1">
+                  <input
+                    type="text"
+                    value={formData.noOfArticles2}
+                    onChange={(e) => setFormData({ ...formData, noOfArticles2: e.target.value })}
+                    placeholder="SAN. QTY"
+                    title="Sanitaryware Article Qty"
+                    className="w-2/3 bg-white text-slate-900 font-bold px-2 py-1.5 border border-sky-300 rounded text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={formData.bundles2}
+                    onChange={(e) => setFormData({ ...formData, bundles2: e.target.value.toUpperCase() })}
+                    placeholder="BUNDLE"
+                    title="Sanitaryware Unit"
+                    className="w-1/3 bg-white text-slate-900 font-bold px-1 py-1.5 border border-sky-300 rounded text-xs text-center uppercase"
+                  />
+                </div>
+
+                <div className="sm:col-span-4">
+                  <input
+                    type="text"
+                    value={formData.descriptionOfGoods2}
+                    onChange={(e) => setFormData({ ...formData, descriptionOfGoods2: e.target.value.toUpperCase() })}
+                    placeholder="SANITARYWARE"
+                    title="Sanitaryware Description"
+                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded text-sm uppercase"
+                  />
+                </div>
+
+                <div className="sm:col-span-6 flex items-center text-[11px] text-amber-300 font-bold italic px-2">
+                  (Optional: Add Sanitaryware details if shipped together)
                 </div>
               </div>
             </div>

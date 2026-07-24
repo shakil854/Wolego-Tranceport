@@ -1,4 +1,4 @@
-// MySQL API Database Persistence Engine for Wolego Transport
+// MySQL REST API Persistence Engine for Wolego Transport
 
 const API_BASE_URL = "http://localhost:8002/api";
 
@@ -15,7 +15,7 @@ export const fetchPartiesFromDB = async () => {
       return partiesCache;
     }
   } catch (err) {
-    console.warn("Backend MySQL API offline:", err.message);
+    console.error("Backend MySQL API Error (Parties):", err.message);
   }
   return partiesCache;
 };
@@ -30,12 +30,12 @@ export const fetchLREntriesFromDB = async () => {
       return lrCache;
     }
   } catch (err) {
-    console.warn("Backend MySQL API offline:", err.message);
+    console.error("Backend MySQL API Error (LR Entries):", err.message);
   }
   return lrCache;
 };
 
-// Synchronous getters (returns currently loaded cache)
+// Synchronous getters
 export const getParties = () => partiesCache;
 export const getLREntries = () => lrCache;
 
@@ -51,34 +51,35 @@ export const saveParty = async (partyData) => {
       return await fetchPartiesFromDB(); // Reload fresh list from MySQL
     }
   } catch (err) {
-    console.error("Save Party MySQL API error:", err);
-  }
-  
-  // Fallback cache update if API fails
-  if (partyData.id) {
-    partiesCache = partiesCache.map((p) => (p.id === partyData.id ? { ...p, ...partyData } : p));
-  } else {
-    const newId = "PARTY-" + Date.now().toString().slice(-4);
-    partiesCache = [{ ...partyData, id: newId }, ...partiesCache];
+    console.error("Save Party MySQL API Error:", err);
   }
   return partiesCache;
 };
 
-// Save or Update LR in MySQL Database API
+// Save or Update LR directly in MySQL Database API
 export const saveLREntry = async (lrData) => {
+  const dataToSave = { ...lrData };
+  if (!dataToSave.id) {
+    dataToSave.id = "LR-" + (dataToSave.lrNumber || Date.now().toString().slice(-4));
+  }
+
   try {
     const res = await fetch(`${API_BASE_URL}/lr-entries`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(lrData),
+      body: JSON.stringify(dataToSave),
     });
     if (res.ok) {
-      await fetchLREntriesFromDB(); // Reload fresh list from MySQL
+      const apiRes = await res.json();
+      await fetchLREntriesFromDB(); // Reload fresh list from MySQL DB
+      if (apiRes && apiRes.lr) {
+        return apiRes.lr;
+      }
     }
   } catch (err) {
-    console.error("Save LR MySQL API error:", err);
+    console.error("Save LR MySQL API Error:", err);
   }
-  return lrData;
+  return dataToSave;
 };
 
 // Delete Party from MySQL Database API
@@ -87,23 +88,23 @@ export const deleteParty = async (partyId) => {
     await fetch(`${API_BASE_URL}/parties/${partyId}`, { method: "DELETE" });
     return await fetchPartiesFromDB();
   } catch (err) {
-    partiesCache = partiesCache.filter((p) => p.id !== partyId);
+    console.error("Delete Party MySQL API Error:", err);
   }
   return partiesCache;
 };
 
-// Delete LR from MySQL Database API
+// Delete LR directly from MySQL Database API
 export const deleteLREntry = async (id) => {
   try {
     await fetch(`${API_BASE_URL}/lr-entries/${id}`, { method: "DELETE" });
     return await fetchLREntriesFromDB();
   } catch (err) {
-    lrCache = lrCache.filter((item) => item.id !== id);
+    console.error("Delete LR MySQL API Error:", err);
   }
   return lrCache;
 };
 
-// Get Next LR Number
+// Get Next LR Number from MySQL DB Cache
 export const getNextLRNumber = () => {
   const lrs = lrCache;
   if (!lrs || lrs.length === 0) return "1001";
