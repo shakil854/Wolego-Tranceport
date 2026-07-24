@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { getLREntries } from "../utils/storage";
+import { fetchLREntriesFromDB } from "../utils/storage";
 import { Receipt, Printer, Download, Search, CheckCircle2, DollarSign } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -20,8 +20,11 @@ export default function FreightReceipt() {
   const printRef = useRef(null);
 
   useEffect(() => {
-    const data = getLREntries();
-    setLrEntries(data || []);
+    const loadLRs = async () => {
+      const data = await fetchLREntriesFromDB();
+      setLrEntries(data || []);
+    };
+    loadLRs();
   }, []);
 
   // Handler when selecting an LR or typing LR number

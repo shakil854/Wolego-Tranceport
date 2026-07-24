@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { getLREntries } from "../utils/storage";
+import { fetchLREntriesFromDB } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
 import { Search, Eye, Printer, Download, Share2, Edit3, Plus, FileText } from "lucide-react";
 
@@ -16,9 +16,9 @@ export default function LRList() {
     loadLREntries();
   }, []);
 
-  const loadLREntries = () => {
-    const data = getLREntries();
-    setLrEntries(data);
+  const loadLREntries = async () => {
+    const data = await fetchLREntriesFromDB();
+    setLrEntries(data || []);
   };
 
   // Direct action handlers (Print, PDF, WhatsApp)

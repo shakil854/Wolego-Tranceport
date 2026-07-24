@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getParties, saveParty } from "../utils/storage";
+import { fetchPartiesFromDB, saveParty } from "../utils/storage";
 import { Search, Plus, Edit, Save, Building2, Eye, X, CheckCircle2 } from "lucide-react";
 
 export default function PartyMaster() {
@@ -35,8 +35,8 @@ export default function PartyMaster() {
     loadParties();
   }, []);
 
-  const loadParties = () => {
-    const data = getParties();
+  const loadParties = async () => {
+    const data = await fetchPartiesFromDB();
     setParties(data || []);
   };
 
@@ -90,16 +90,16 @@ export default function PartyMaster() {
   };
 
   // Submit Handler: Add New Party (Left Side Form)
-  const handleSaveNewParty = (e) => {
+  const handleSaveNewParty = async (e) => {
     if (e) e.preventDefault();
     if (!addFormData.partyName.trim()) {
       alert("Party Name is required!");
       return;
     }
-    const updated = saveParty(addFormData);
-    setParties(updated);
+    const updated = await saveParty(addFormData);
+    setParties(updated || []);
     setAddFormData(initialBlankForm); // Reset form to fresh clean state
-    showStatus(`New party "${addFormData.partyName}" added successfully!`);
+    showStatus(`New party "${addFormData.partyName}" added successfully to Database!`);
   };
 
   // Open Edit Modal
@@ -109,16 +109,16 @@ export default function PartyMaster() {
   };
 
   // Submit Handler: Update Party (Inside Edit Modal)
-  const handleUpdateParty = (e) => {
+  const handleUpdateParty = async (e) => {
     if (e) e.preventDefault();
     if (!editFormData.partyName.trim()) {
       alert("Party Name is required!");
       return;
     }
-    const updated = saveParty(editFormData);
-    setParties(updated);
+    const updated = await saveParty(editFormData);
+    setParties(updated || []);
     setEditPartyModal(null);
-    showStatus(`Party "${editFormData.partyName}" updated successfully!`);
+    showStatus(`Party "${editFormData.partyName}" updated successfully in Database!`);
   };
 
   const showStatus = (msg) => {

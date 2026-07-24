@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { getParties, saveLREntry, getNextLRNumber } from "../utils/storage";
+import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, getNextLRNumber } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
 import SearchablePartySelect from "../components/SearchablePartySelect";
 import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2 } from "lucide-react";
@@ -79,15 +79,19 @@ export default function LREntryForm() {
   const [formData, setFormData] = useState(initialForm);
 
   useEffect(() => {
-    const loadedParties = getParties();
-    setParties(loadedParties);
-    if (location.state && location.state.editLR) {
-      setFormData(location.state.editLR);
-      flashMsg(`Editing LR #${location.state.editLR.lrNumber}`);
-    } else {
-      const nextNo = getNextLRNumber();
-      setFormData((prev) => ({ ...prev, lrNumber: nextNo }));
-    }
+    const loadInitData = async () => {
+      const loadedParties = await fetchPartiesFromDB();
+      await fetchLREntriesFromDB();
+      setParties(loadedParties || []);
+      if (location.state && location.state.editLR) {
+        setFormData(location.state.editLR);
+        flashMsg(`Editing LR #${location.state.editLR.lrNumber}`);
+      } else {
+        const nextNo = getNextLRNumber();
+        setFormData((prev) => ({ ...prev, lrNumber: nextNo }));
+      }
+    };
+    loadInitData();
   }, [location.state]);
 
   // Auto calculate freight when Weight & Rate are entered
@@ -254,17 +258,17 @@ export default function LREntryForm() {
   };
 
   // Save Record handler (Locks ID so multiple clicks only update single record)
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     if (e) e.preventDefault();
-    const saved = saveLREntry(formData);
+    const saved = await saveLREntry(formData);
     setFormData(saved); // Lock form to this saved record
     setActiveLR(saved);
     setShowSuccessModal(true); // Open success popup!
     return saved;
   };
 
-  const handleSaveAndPrint = (e) => {
-    const saved = handleSave(e);
+  const handleSaveAndPrint = async (e) => {
+    const saved = await handleSave(e);
     if (saved) {
       setActiveAutoAction("print");
       setShowPrintModal(true);
