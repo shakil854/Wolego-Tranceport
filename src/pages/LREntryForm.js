@@ -354,42 +354,83 @@ export default function LREntryForm() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 py-6 px-3 sm:px-6 lg:px-8 text-slate-100">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="h-[calc(100vh-68px)] overflow-hidden bg-slate-900 p-1.5 text-slate-100 flex flex-col">
+      <div className="max-w-[1440px] w-full mx-auto flex-1 flex flex-col min-h-0">
 
-        {/* Main Classic Software Card Frame (Styled like Photo 2) */}
-        <div className="bg-sky-900/90 border-4 border-sky-400 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm">
+        {/* Main Classic Software Card Frame */}
+        <div className="bg-sky-900/90 border-2 border-sky-400 rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm flex-1 flex flex-col min-h-0">
 
-          {/* Header Bar */}
-          <div className="bg-sky-950 px-6 py-3 border-b-2 border-sky-400 flex flex-col sm:flex-row justify-between items-center text-center sm:text-left gap-2">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-wide uppercase font-sans">
+          {/* Header Bar with Action Buttons Inline */}
+          <div className="bg-sky-950 px-3 py-1 border-b border-sky-400 flex justify-between items-center shrink-0">
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm sm:text-base font-black text-white tracking-wide uppercase font-sans">
                 L/R ENTRY - ADD / EDIT / CHANGE
               </h1>
+              {statusMsg && (
+                <span className="bg-emerald-500 text-slate-950 px-2 py-0.5 text-xs font-bold rounded animate-pulse">
+                  {statusMsg}
+                </span>
+              )}
             </div>
-            <button
-              onClick={handleReset}
-              className="px-3 py-1.5 bg-yellow-400 text-slate-950 font-extrabold rounded text-xs uppercase shadow hover:bg-yellow-300 transition-colors flex items-center gap-1"
-            >
-              <Plus size={14} /> New Entry
-            </button>
+
+            {/* Quick Action Buttons in Top Header */}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => handleSave()}
+                className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1 transition-all"
+              >
+                <Save size={13} /> Save LR
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveAndPrint}
+                className="px-3 py-1 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1 transition-all"
+              >
+                <Printer size={13} /> Save & Print
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const saved = handleSave();
+                  if (saved) setShowPrintModal(true);
+                }}
+                className="px-2.5 py-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1"
+              >
+                <Download size={13} /> PDF
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const saved = handleSave();
+                  if (saved) setShowPrintModal(true);
+                }}
+                className="px-2.5 py-1 bg-green-600 hover:bg-green-500 text-white font-black rounded text-xs uppercase shadow flex items-center gap-1"
+              >
+                <Share2 size={13} /> WhatsApp
+              </button>
+
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded text-xs uppercase transition-colors flex items-center gap-1"
+              >
+                <RotateCcw size={13} /> Reset
+              </button>
+            </div>
           </div>
 
-          {/* Flash Alert */}
-          {statusMsg && (
-            <div className="bg-emerald-500 text-slate-950 px-4 py-2 text-sm font-bold text-center animate-pulse">
-              {statusMsg}
-            </div>
-          )}
+          {/* Form Content (Fits 100% Viewport Height) */}
+          <form onSubmit={handleSave} onKeyDown={handleKeyDown} className="p-2 space-y-1.5 flex-1 flex flex-col justify-between overflow-hidden">
 
-          {/* Form Content */}
-          <form onSubmit={handleSave} onKeyDown={handleKeyDown} className="p-4 sm:p-6 space-y-5">
+            {/* Row 1: LR Number, Date, From, To, Delivery At, Truck No */}
+            <div className="bg-sky-950/80 p-1.5 rounded border border-sky-600/60 grid grid-cols-12 gap-1.5 items-center shrink-0">
 
-            {/* Top Row: LR Number, Date, From, To, Delivery At, Truck No */}
-            <div className="bg-sky-950/70 p-4 rounded-lg border border-sky-600/50 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 items-center">
-
-              <div className="md:col-span-2">
-                <label className="text-xs font-bold text-yellow-300 uppercase block mb-1">
+              <div className="col-span-2">
+                <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
                   L/R NUMBER
                 </label>
                 <input
@@ -397,50 +438,50 @@ export default function LREntryForm() {
                   value={formData.lrNumber}
                   onChange={(e) => setFormData({ ...formData, lrNumber: e.target.value })}
                   placeholder="LR NO."
-                  className="w-full bg-white text-slate-900 font-mono font-black text-base px-3 py-1.5 border-2 border-amber-400 rounded focus:outline-none"
+                  className="w-full bg-white text-slate-900 font-mono font-black text-xs px-2 py-0.5 border-2 border-amber-400 rounded focus:outline-none"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="text-xs font-bold text-yellow-300 uppercase block mb-1">
+              <div className="col-span-2">
+                <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
                   DATE
                 </label>
                 <input
                   type="date"
                   value={formData.dateTime ? formData.dateTime.slice(0, 10) : getTodayDateStr()}
                   onChange={(e) => setFormData({ ...formData, dateTime: e.target.value })}
-                  className="w-full bg-white text-slate-900 font-bold px-2 py-1.5 border border-sky-300 rounded uppercase text-sm"
+                  className="w-full bg-white text-slate-900 font-bold px-1 py-0.5 border border-sky-300 rounded uppercase text-xs"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="text-xs font-bold text-yellow-300 uppercase block mb-1">
-                  FROM ...
+              <div className="col-span-2">
+                <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
+                  FROM PLACE
                 </label>
                 <input
                   type="text"
                   value={formData.fromPlace}
                   onChange={(e) => setFormData({ ...formData, fromPlace: e.target.value.toUpperCase() })}
-                  placeholder="FROM PLACE"
-                  className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded uppercase"
+                  placeholder="FROM"
+                  className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded uppercase text-xs"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="text-xs font-bold text-yellow-300 uppercase block mb-1">
-                  TO PLACE...
+              <div className="col-span-2">
+                <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
+                  TO PLACE
                 </label>
                 <input
                   type="text"
                   value={formData.toPlace}
                   onChange={(e) => setFormData({ ...formData, toPlace: e.target.value.toUpperCase() })}
-                  placeholder="TO PLACE"
-                  className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded uppercase"
+                  placeholder="TO"
+                  className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded uppercase text-xs"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="text-xs font-bold text-yellow-300 uppercase block mb-1">
+              <div className="col-span-2">
+                <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
                   DELIVERY AT
                 </label>
                 <input
@@ -448,12 +489,12 @@ export default function LREntryForm() {
                   value={formData.deliveryAt}
                   onChange={(e) => setFormData({ ...formData, deliveryAt: e.target.value.toUpperCase() })}
                   placeholder="DOOR"
-                  className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded uppercase"
+                  className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded uppercase text-xs"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="text-xs font-bold text-yellow-300 uppercase block mb-1">
+              <div className="col-span-2">
+                <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
                   TRUCK NO.
                 </label>
                 <input
@@ -461,27 +502,27 @@ export default function LREntryForm() {
                   value={formData.truckNo}
                   onChange={(e) => setFormData({ ...formData, truckNo: e.target.value.toUpperCase() })}
                   placeholder="TRUCK NO."
-                  className="w-full bg-white text-slate-900 font-mono font-black px-3 py-1.5 border-2 border-sky-400 rounded uppercase"
+                  className="w-full bg-white text-slate-900 font-mono font-black px-1.5 py-0.5 border-2 border-sky-400 rounded uppercase text-xs"
                 />
               </div>
 
             </div>
 
-            {/* Consignor & Consignee Columns (Matching Photo 2 Box Layout) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Row 2: Consignor & Consignee Columns */}
+            <div className="grid grid-cols-2 gap-1.5 shrink-0">
 
               {/* CONSIGNOR BOX */}
-              <div className="bg-sky-950/80 p-4 rounded-lg border-2 border-sky-500 space-y-3">
-                <div className="flex justify-between items-center border-b border-sky-700 pb-1">
-                  <h3 className="text-sm font-extrabold text-yellow-300 uppercase tracking-wider">
+              <div className="bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1">
+                <div className="flex justify-between items-center border-b border-sky-700 pb-0.5">
+                  <h3 className="text-[11px] font-extrabold text-yellow-300 uppercase tracking-wider">
                     CONSIGNOR (माल भेजने वाला)
                   </h3>
-                  <div className="text-xs flex items-center gap-1 text-sky-200">
-                    <span>Save in Master?</span>
+                  <div className="text-[10px] flex items-center gap-1 text-sky-200">
+                    <span>Save Master?</span>
                     <select
                       value={formData.saveConsignorInMaster}
                       onChange={(e) => setFormData({ ...formData, saveConsignorInMaster: e.target.value })}
-                      className="bg-yellow-400 text-slate-950 font-bold px-1 rounded text-xs"
+                      className="bg-yellow-400 text-slate-950 font-bold px-1 rounded text-[10px]"
                     >
                       <option value="N">N</option>
                       <option value="Y">Y</option>
@@ -491,41 +532,34 @@ export default function LREntryForm() {
 
                 {/* Selected Consignors Badges / Chips */}
                 {selectedConsignors.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 p-2 bg-sky-900/60 rounded border border-sky-600">
-                    <div className="flex justify-between items-center w-full">
-                      <span className="text-[11px] font-extrabold text-yellow-300 uppercase">
-                        Selected Consignors ({selectedConsignors.length}):
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => applyConsignorsFormatting([])}
-                        className="text-[10px] text-red-300 hover:text-red-100 font-bold underline"
-                      >
-                        Clear All
-                      </button>
-                    </div>
+                  <div className="flex flex-wrap gap-1 p-0.5 bg-sky-900/60 rounded border border-sky-600">
                     {selectedConsignors.map((c, idx) => (
-                      <span key={idx} className="inline-flex items-center gap-1 bg-amber-400 text-slate-950 px-2 py-0.5 rounded text-xs font-black shadow">
+                      <span key={idx} className="inline-flex items-center gap-0.5 bg-amber-400 text-slate-950 px-1 py-0.2 rounded text-[10px] font-black">
                         ({idx + 1}) {c.partyName}
                         <button
                           type="button"
                           onClick={() => handleRemoveConsignor(idx)}
-                          className="hover:text-red-700 ml-1 font-extrabold text-xs"
-                          title="Remove Consignor"
+                          className="hover:text-red-700 ml-1 font-extrabold"
                         >
                           ✕
                         </button>
                       </span>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => applyConsignorsFormatting([])}
+                      className="text-[9px] text-red-300 font-bold underline ml-auto"
+                    >
+                      Clear
+                    </button>
                   </div>
                 )}
 
-                {/* Searchable Combobox Select & Search Button for Consignor */}
                 <SearchablePartySelect
                   parties={consignorsList}
                   value=""
                   onSelectParty={(name) => handleAddConsignor(name)}
-                  placeholder={selectedConsignors.length > 0 ? "+ Add Another Consignor Party..." : "-- Search or Select Consignor Party --"}
+                  placeholder={selectedConsignors.length > 0 ? "+ Add Consignor..." : "-- Select Consignor Party --"}
                   partyType="Consignor"
                   onSearchButtonClick={() => {
                     setPartySearchQuery("");
@@ -533,51 +567,44 @@ export default function LREntryForm() {
                   }}
                 />
 
-                {/* Custom/Selected Consignor Name (Textarea for multi-line support) */}
-                <textarea
-                  rows={selectedConsignors.length > 2 ? Math.min(selectedConsignors.length, 5) : selectedConsignors.length === 2 ? 4 : 2}
+                <input
+                  type="text"
                   value={formData.consignorName}
                   onChange={(e) => setFormData({ ...formData, consignorName: e.target.value.toUpperCase() })}
                   placeholder="CONSIGNOR NAME"
-                  className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded text-xs uppercase font-mono"
+                  className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase font-mono"
                 />
 
-                {/* Address */}
-                <textarea
-                  rows={selectedConsignors.length === 2 ? 3 : 2}
-                  value={formData.consignorAddress}
-                  onChange={(e) => setFormData({ ...formData, consignorAddress: e.target.value.toUpperCase() })}
-                  placeholder="CONSIGNOR ADDRESS..."
-                  className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 border border-sky-300 rounded text-xs uppercase font-mono"
-                />
-
-                {/* GST Tin No. */}
-                <div className="flex items-center gap-2">
-                  <label className="text-xs font-bold text-yellow-300 uppercase whitespace-nowrap">
-                    GST Tin No.:
-                  </label>
+                <div className="grid grid-cols-12 gap-1 items-center">
+                  <input
+                    type="text"
+                    value={formData.consignorAddress}
+                    onChange={(e) => setFormData({ ...formData, consignorAddress: e.target.value.toUpperCase() })}
+                    placeholder="ADDRESS"
+                    className="col-span-7 bg-white text-slate-900 font-medium px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase font-mono"
+                  />
                   <input
                     type="text"
                     value={formData.consignorGst}
                     onChange={(e) => setFormData({ ...formData, consignorGst: e.target.value.toUpperCase() })}
-                    placeholder="24ACCFB3501E1Z8"
-                    className="w-full bg-white text-slate-900 font-mono font-bold px-3 py-1 border border-sky-300 rounded text-xs uppercase"
+                    placeholder="GSTIN NO."
+                    className="col-span-5 bg-white text-slate-900 font-mono font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase"
                   />
                 </div>
               </div>
 
               {/* CONSIGNEE BOX */}
-              <div className="bg-sky-950/80 p-4 rounded-lg border-2 border-sky-500 space-y-3">
-                <div className="flex justify-between items-center border-b border-sky-700 pb-1">
-                  <h3 className="text-sm font-extrabold text-yellow-300 uppercase tracking-wider">
+              <div className="bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1">
+                <div className="flex justify-between items-center border-b border-sky-700 pb-0.5">
+                  <h3 className="text-[11px] font-extrabold text-yellow-300 uppercase tracking-wider">
                     CONSIGNEE (माल प्राप्तकर्ता)
                   </h3>
-                  <div className="text-xs flex items-center gap-1 text-sky-200">
-                    <span>Save in Master?</span>
+                  <div className="text-[10px] flex items-center gap-1 text-sky-200">
+                    <span>Save Master?</span>
                     <select
                       value={formData.saveConsigneeInMaster}
                       onChange={(e) => setFormData({ ...formData, saveConsigneeInMaster: e.target.value })}
-                      className="bg-yellow-400 text-slate-950 font-bold px-1 rounded text-xs"
+                      className="bg-yellow-400 text-slate-950 font-bold px-1 rounded text-[10px]"
                     >
                       <option value="N">N</option>
                       <option value="Y">Y</option>
@@ -585,12 +612,11 @@ export default function LREntryForm() {
                   </div>
                 </div>
 
-                {/* Searchable Combobox Select & Search Button for Consignee */}
                 <SearchablePartySelect
                   parties={consigneesList}
                   value={formData.consigneeName}
                   onSelectParty={(name) => handleSelectConsignee(name)}
-                  placeholder="-- Search or Select Consignee Party --"
+                  placeholder="-- Select Consignee Party --"
                   partyType="Consignee"
                   onSearchButtonClick={() => {
                     setPartySearchQuery("");
@@ -598,108 +624,97 @@ export default function LREntryForm() {
                   }}
                 />
 
-                {/* Custom/Selected Consignee Name */}
                 <input
                   type="text"
                   value={formData.consigneeName}
                   onChange={(e) => setFormData({ ...formData, consigneeName: e.target.value.toUpperCase() })}
                   placeholder="CONSIGNEE NAME"
-                  className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded text-sm uppercase"
+                  className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase"
                 />
 
-                {/* Address */}
-                <textarea
-                  rows="3"
-                  value={formData.consigneeAddress}
-                  onChange={(e) => setFormData({ ...formData, consigneeAddress: e.target.value.toUpperCase() })}
-                  placeholder="CONSIGNEE ADDRESS..."
-                  className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 border border-sky-300 rounded text-xs uppercase"
-                />
-
-                {/* GST Tin No. */}
-                <div className="flex items-center gap-2">
-                  <label className="text-xs font-bold text-yellow-300 uppercase whitespace-nowrap">
-                    GST Tin No.:
-                  </label>
+                <div className="grid grid-cols-12 gap-1 items-center">
+                  <input
+                    type="text"
+                    value={formData.consigneeAddress}
+                    onChange={(e) => setFormData({ ...formData, consigneeAddress: e.target.value.toUpperCase() })}
+                    placeholder="ADDRESS"
+                    className="col-span-7 bg-white text-slate-900 font-medium px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase"
+                  />
                   <input
                     type="text"
                     value={formData.consigneeGst}
                     onChange={(e) => setFormData({ ...formData, consigneeGst: e.target.value.toUpperCase() })}
                     placeholder="GSTIN NO."
-                    className="w-full bg-white text-slate-900 font-mono font-bold px-3 py-1 border border-sky-300 rounded text-xs uppercase"
+                    className="col-span-5 bg-white text-slate-900 font-mono font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase"
                   />
                 </div>
               </div>
 
             </div>
 
-            {/* Particulars Table (Matching Photo 2 Goods Section) */}
-            <div className="bg-sky-950/90 p-4 rounded-lg border-2 border-sky-500 space-y-2 overflow-x-auto">
-              <h3 className="text-xs font-bold text-yellow-300 uppercase tracking-wider">
-                GOODS DETAILS & FREIGHT
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs font-bold text-sky-200 uppercase">
-                <div className="sm:col-span-2">No. of Articles</div>
-                <div className="sm:col-span-4">Description of Goods</div>
-                <div className="sm:col-span-2">Weight</div>
-                <div className="sm:col-span-2">Rate Rs. Per Ton</div>
-                <div className="sm:col-span-2">To Pay / Paid</div>
+            {/* Row 3: Goods Section */}
+            <div className="bg-sky-950/90 p-2 rounded border border-sky-500 space-y-1 shrink-0">
+              <div className="grid grid-cols-12 gap-1.5 text-[10px] font-bold text-sky-200 uppercase px-0.5">
+                <div className="col-span-2">No. of Articles</div>
+                <div className="col-span-4">Description of Goods</div>
+                <div className="col-span-2">Weight</div>
+                <div className="col-span-2">Rate Rs. Per Ton</div>
+                <div className="col-span-2">To Pay / Paid</div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
-                <div className="sm:col-span-2 flex gap-1">
+              <div className="grid grid-cols-12 gap-1.5">
+                <div className="col-span-2 flex gap-1">
                   <input
                     type="text"
                     value={formData.noOfArticles}
                     onChange={(e) => setFormData({ ...formData, noOfArticles: e.target.value })}
-                    placeholder="QTY/NO."
-                    className="w-2/3 bg-white text-slate-900 font-bold px-2 py-1.5 border rounded text-sm"
+                    placeholder="QTY"
+                    className="w-2/3 bg-white text-slate-900 font-bold px-1 py-0.5 border rounded text-xs"
                   />
                   <input
                     type="text"
                     value={formData.bundles}
                     onChange={(e) => setFormData({ ...formData, bundles: e.target.value.toUpperCase() })}
                     placeholder="BOX"
-                    className="w-1/3 bg-white text-slate-900 font-bold px-1 py-1.5 border rounded text-xs text-center uppercase"
+                    className="w-1/3 bg-white text-slate-900 font-bold px-0.5 py-0.5 border rounded text-[10px] text-center uppercase"
                   />
                 </div>
 
-                <div className="sm:col-span-4">
+                <div className="col-span-4">
                   <input
                     type="text"
                     value={formData.descriptionOfGoods}
                     onChange={(e) => setFormData({ ...formData, descriptionOfGoods: e.target.value.toUpperCase() })}
                     placeholder="CERAMIC TILES"
-                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border rounded text-sm uppercase"
+                    className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border rounded text-xs uppercase"
                   />
                 </div>
 
-                <div className="sm:col-span-2">
+                <div className="col-span-2">
                   <input
                     type="text"
                     value={formData.weightKgs}
                     onChange={(e) => handleWeightRateChange("weightKgs", e.target.value)}
                     placeholder="WEIGHT"
-                    className="w-full bg-white text-slate-900 font-mono font-bold px-3 py-1.5 border rounded text-sm"
+                    className="w-full bg-white text-slate-900 font-mono font-bold px-1.5 py-0.5 border rounded text-xs"
                   />
                 </div>
 
-                <div className="sm:col-span-2">
+                <div className="col-span-2">
                   <input
                     type="text"
                     value={formData.ratePerTon}
                     onChange={(e) => handleWeightRateChange("ratePerTon", e.target.value)}
                     placeholder="RATE"
-                    className="w-full bg-white text-slate-900 font-mono font-bold px-3 py-1.5 border rounded text-sm"
+                    className="w-full bg-white text-slate-900 font-mono font-bold px-1.5 py-0.5 border rounded text-xs"
                   />
                 </div>
 
-                <div className="sm:col-span-2">
+                <div className="col-span-2">
                   <select
                     value={formData.toPayOrPaid}
                     onChange={(e) => setFormData({ ...formData, toPayOrPaid: e.target.value })}
-                    className="w-full bg-yellow-400 text-slate-950 font-black px-2 py-1.5 border rounded text-sm uppercase cursor-pointer"
+                    className="w-full bg-yellow-400 text-slate-950 font-black px-1 py-0.5 border rounded text-xs uppercase cursor-pointer"
                   >
                     <option value="TO-PAY">TO-PAY</option>
                     <option value="PAID">PAID</option>
@@ -707,303 +722,214 @@ export default function LREntryForm() {
                 </div>
               </div>
 
-              {/* Sanitaryware / 2nd Item Optional Input Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-2 border-t border-sky-700/60">
-                <div className="sm:col-span-2 flex gap-1">
+              {/* Sanitaryware Optional Row */}
+              <div className="grid grid-cols-12 gap-1.5 pt-0.5 border-t border-sky-800 items-center">
+                <div className="col-span-2 flex gap-1">
                   <input
                     type="text"
                     value={formData.noOfArticles2}
                     onChange={(e) => setFormData({ ...formData, noOfArticles2: e.target.value })}
-                    placeholder="SAN. QTY"
-                    title="Sanitaryware Article Qty"
-                    className="w-2/3 bg-white text-slate-900 font-bold px-2 py-1.5 border border-sky-300 rounded text-sm"
+                    placeholder="SAN QTY"
+                    className="w-2/3 bg-white text-slate-900 font-bold px-1 py-0.5 border border-sky-300 rounded text-xs"
                   />
                   <input
                     type="text"
                     value={formData.bundles2}
                     onChange={(e) => setFormData({ ...formData, bundles2: e.target.value.toUpperCase() })}
                     placeholder="BUNDLE"
-                    title="Sanitaryware Unit"
-                    className="w-1/3 bg-white text-slate-900 font-bold px-1 py-1.5 border border-sky-300 rounded text-xs text-center uppercase"
+                    className="w-1/3 bg-white text-slate-900 font-bold px-0.5 py-0.5 border border-sky-300 rounded text-[9px] text-center uppercase"
                   />
                 </div>
 
-                <div className="sm:col-span-4">
+                <div className="col-span-4">
                   <input
                     type="text"
                     value={formData.descriptionOfGoods2}
                     onChange={(e) => setFormData({ ...formData, descriptionOfGoods2: e.target.value.toUpperCase() })}
                     placeholder="SANITARYWARE"
-                    title="Sanitaryware Description"
-                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded text-sm uppercase"
+                    className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase"
                   />
                 </div>
 
-                <div className="sm:col-span-6 flex items-center text-[11px] text-amber-300 font-bold italic px-2">
-                  (Optional: Add Sanitaryware details if shipped together)
+                <div className="col-span-6 text-[10px] text-amber-300 font-medium italic px-1">
+                  (Optional 2nd Item: Sanitaryware)
                 </div>
               </div>
             </div>
 
-            {/* Bottom Grid: Left Metadata & Right Calculations */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+            {/* Row 4: 3-Column Bottom Grid */}
+            <div className="grid grid-cols-12 gap-1.5 shrink-0">
 
-              {/* Left Column (7 cols): GST Payable By (3 Options), Bills, Driver, E-Way Bill */}
-              <div className="md:col-span-7 bg-sky-950/80 p-4 rounded-lg border-2 border-sky-500 space-y-3 text-xs">
-
-                {/* User Requested: GST PAYABLE BY 3 OPTIONS (CONSIGNEE / CONSIGNOR / TRANSPORTER) */}
-                <div className="bg-sky-900 p-2.5 rounded border border-yellow-400 flex items-center justify-between gap-2">
-                  <label className="font-extrabold text-yellow-300 uppercase text-xs">
-                    GST PAYABLE BY:
-                  </label>
+              {/* Col A (4 cols): GST Payable By, Bills, Invoice Value */}
+              <div className="col-span-4 bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1 text-xs">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="font-extrabold text-yellow-300 text-[10px]">GST PAYABLE:</span>
                   <select
                     value={formData.gstPayableBy}
                     onChange={(e) => setFormData({ ...formData, gstPayableBy: e.target.value })}
-                    className="bg-yellow-400 text-slate-950 font-black text-sm px-3 py-1 rounded border-2 border-amber-500 focus:outline-none cursor-pointer uppercase"
+                    className="bg-yellow-400 text-slate-950 font-black text-[10px] px-1 py-0.5 rounded border border-amber-500 uppercase cursor-pointer"
                   >
-                    <option value="CONSIGNEE">CONSIGNEE (प्राप्तकर्ता)</option>
-                    <option value="CONSIGNOR">CONSIGNOR (भेजने वाला)</option>
-                    <option value="TRANSPORTER">TRANSPORTER (ट्रांसपोर्टर)</option>
+                    <option value="CONSIGNEE">CONSIGNEE</option>
+                    <option value="CONSIGNOR">CONSIGNOR</option>
+                    <option value="TRANSPORTER">TRANSPORTER</option>
                   </select>
                 </div>
 
-                {/* Bill Numbers & Invoice Amount */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="font-bold text-sky-200 block mb-1">Bill Numbers:</label>
-                    <input
-                      type="text"
-                      value={formData.billNumbers}
-                      onChange={(e) => setFormData({ ...formData, billNumbers: e.target.value })}
-                      placeholder="BILL NO."
-                      className="w-full bg-white text-slate-900 font-bold px-2 py-1 border rounded"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-sky-200 block mb-1">Invoice Value Rs.:</label>
-                    <input
-                      type="text"
-                      value={formData.invoiceValue}
-                      onChange={(e) => setFormData({ ...formData, invoiceValue: e.target.value })}
-                      placeholder="INVOICE VALUE"
-                      className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-1 border rounded"
-                    />
-                  </div>
-                </div>
-
-                {/* Driver Details */}
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="font-bold text-sky-200 block mb-1">Driver Name:</label>
-                    <input
-                      type="text"
-                      value={formData.driverName}
-                      onChange={(e) => setFormData({ ...formData, driverName: e.target.value })}
-                      placeholder="DRIVER NAME"
-                      className="w-full bg-white text-slate-900 font-medium px-2 py-1 border rounded"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-sky-200 block mb-1">License No.:</label>
-                    <input
-                      type="text"
-                      value={formData.licenseNumber}
-                      onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
-                      placeholder="LICENSE NO."
-                      className="w-full bg-white text-slate-900 font-medium px-2 py-1 border rounded"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-sky-200 block mb-1">Driver Mobile:</label>
-                    <input
-                      type="text"
-                      value={formData.driverMobile}
-                      onChange={(e) => setFormData({ ...formData, driverMobile: e.target.value })}
-                      placeholder="MOBILE NO."
-                      className="w-full bg-white text-slate-900 font-bold px-2 py-1 border rounded"
-                    />
-                  </div>
-                </div>
-
-                {/* E-Way Bill Numbers */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="font-bold text-sky-200 block mb-1">Consignor E-Way Bill:</label>
-                    <input
-                      type="text"
-                      value={formData.consignorEwayBill}
-                      onChange={(e) => setFormData({ ...formData, consignorEwayBill: e.target.value })}
-                      placeholder="E-WAY BILL NO."
-                      className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-1 border rounded"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-sky-200 block mb-1">Consignee E-Way Bill:</label>
-                    <input
-                      type="text"
-                      value={formData.consigneeEwayBill}
-                      onChange={(e) => setFormData({ ...formData, consigneeEwayBill: e.target.value })}
-                      placeholder="E-WAY BILL NO."
-                      className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-1 border rounded"
-                    />
-                  </div>
-                </div>
-
-                {/* Remarks */}
-                <div>
-                  <label className="font-bold text-sky-200 block mb-1">Remarks if Any...</label>
+                <div className="grid grid-cols-2 gap-1">
                   <input
                     type="text"
-                    value={formData.remarks}
-                    onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                    placeholder="WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE."
-                    className="w-full bg-white text-slate-900 font-medium px-2 py-1 border rounded"
+                    value={formData.billNumbers}
+                    onChange={(e) => setFormData({ ...formData, billNumbers: e.target.value })}
+                    placeholder="BILL NO."
+                    className="bg-white text-slate-900 font-bold px-1.5 py-0.5 border rounded text-xs"
+                  />
+                  <input
+                    type="text"
+                    value={formData.invoiceValue}
+                    onChange={(e) => setFormData({ ...formData, invoiceValue: e.target.value })}
+                    placeholder="INV VALUE RS"
+                    className="bg-white text-slate-900 font-mono font-bold px-1.5 py-0.5 border rounded text-xs"
                   />
                 </div>
 
+                <input
+                  type="text"
+                  value={formData.remarks}
+                  onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                  placeholder="REMARKS IF ANY..."
+                  className="w-full bg-white text-slate-900 font-medium px-1.5 py-0.5 border rounded text-xs"
+                />
               </div>
 
-              {/* Right Column (5 cols): Freight Calculations & Totals (Matching Photo 2 Right Side) */}
-              <div className="md:col-span-5 bg-sky-950/90 p-4 rounded-lg border-2 border-yellow-400 space-y-2 text-xs font-bold">
-                <h3 className="text-yellow-300 border-b border-sky-700 pb-1 uppercase tracking-wider">
-                  FREIGHT & GST CALCULATIONS
-                </h3>
+              {/* Col B (4 cols): Driver & E-Way Bills */}
+              <div className="col-span-4 bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1 text-xs">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="font-extrabold text-yellow-300 text-[10px]">E-WAY BILL & DRIVER DETAILS:</span>
+                </div>
 
-                <div className="flex justify-between items-center py-1">
-                  <span className="text-sky-200">Freight Total:</span>
+                <div className="grid grid-cols-2 gap-1">
+                  <input
+                    type="text"
+                    value={formData.consignorEwayBill}
+                    onChange={(e) => setFormData({ ...formData, consignorEwayBill: e.target.value })}
+                    placeholder="CONSIGNOR EWAY"
+                    className="bg-white text-slate-900 font-mono font-bold px-1.5 py-0.5 border rounded text-[11px]"
+                  />
+                  <input
+                    type="text"
+                    value={formData.consigneeEwayBill}
+                    onChange={(e) => setFormData({ ...formData, consigneeEwayBill: e.target.value })}
+                    placeholder="CONSIGNEE EWAY"
+                    className="bg-white text-slate-900 font-mono font-bold px-1.5 py-0.5 border rounded text-[11px]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-1">
+                  <input
+                    type="text"
+                    value={formData.driverName}
+                    onChange={(e) => setFormData({ ...formData, driverName: e.target.value })}
+                    placeholder="DRIVER"
+                    className="bg-white text-slate-900 font-medium px-1 py-0.5 border rounded text-xs"
+                  />
+                  <input
+                    type="text"
+                    value={formData.licenseNumber}
+                    onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+                    placeholder="LICENSE"
+                    className="bg-white text-slate-900 font-medium px-1 py-0.5 border rounded text-xs"
+                  />
+                  <input
+                    type="text"
+                    value={formData.driverMobile}
+                    onChange={(e) => setFormData({ ...formData, driverMobile: e.target.value })}
+                    placeholder="MOBILE"
+                    className="bg-white text-slate-900 font-bold px-1 py-0.5 border rounded text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Col C (4 cols): Calculations */}
+              <div className="col-span-4 bg-sky-950/90 p-2 rounded border-2 border-yellow-400 space-y-1 text-xs font-bold">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="font-extrabold text-yellow-300 text-[10px]">FREIGHT & CALCULATIONS:</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-sky-200 text-[10px]">Freight Rate:</span>
                   <input
                     type="number"
                     value={formData.freightAmount}
                     onChange={(e) => setFormData({ ...formData, freightAmount: parseFloat(e.target.value) || 0 })}
-                    className="w-32 bg-white text-slate-900 text-right font-mono font-black px-2 py-1 border rounded text-sm"
+                    className="w-24 bg-white text-slate-900 text-right font-mono font-black px-1.5 py-0.5 border rounded text-xs"
                   />
                 </div>
 
-                <div className="flex justify-between items-center py-0.5">
-                  <span className="text-sky-200">Add: S-G.S.T. %:</span>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="%"
-                      value={formData.sgstPercent}
-                      onChange={(e) => setFormData({ ...formData, sgstPercent: parseFloat(e.target.value) || 0 })}
-                      className="w-14 bg-white text-slate-900 text-center font-bold px-1 py-0.5 border rounded"
-                    />
-                    <span className="w-20 font-mono text-right py-0.5">{formData.sgstAmount}</span>
+                <div className="flex justify-between items-center gap-1">
+                  <span className="text-sky-200 text-[10px]">GST %:</span>
+                  <div className="flex gap-1 items-center">
+                    <div className="flex items-center gap-0.5 bg-slate-900 px-1 py-0.5 rounded border border-slate-700">
+                      <span className="text-[9px] text-amber-300 font-black">S:</span>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={formData.sgstPercent}
+                        onChange={(e) => setFormData({ ...formData, sgstPercent: parseFloat(e.target.value) || 0 })}
+                        className="w-7 bg-white text-slate-900 text-center font-bold px-0.5 py-0.5 border rounded text-[10px]"
+                      />
+                    </div>
+                    <div className="flex items-center gap-0.5 bg-slate-900 px-1 py-0.5 rounded border border-slate-700">
+                      <span className="text-[9px] text-amber-300 font-black">C:</span>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={formData.cgstPercent}
+                        onChange={(e) => setFormData({ ...formData, cgstPercent: parseFloat(e.target.value) || 0 })}
+                        className="w-7 bg-white text-slate-900 text-center font-bold px-0.5 py-0.5 border rounded text-[10px]"
+                      />
+                    </div>
+                    <div className="flex items-center gap-0.5 bg-slate-900 px-1 py-0.5 rounded border border-slate-700">
+                      <span className="text-[9px] text-amber-300 font-black">I:</span>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={formData.igstPercent}
+                        onChange={(e) => setFormData({ ...formData, igstPercent: parseFloat(e.target.value) || 0 })}
+                        className="w-7 bg-white text-slate-900 text-center font-bold px-0.5 py-0.5 border rounded text-[10px]"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center py-0.5">
-                  <span className="text-sky-200">Add: C-G.S.T. %:</span>
-                  <div className="flex gap-2">
+                <div className="flex justify-between items-center gap-1 border-t border-sky-800 pt-1">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-amber-300 font-bold">Advance:</span>
                     <input
                       type="number"
-                      placeholder="%"
-                      value={formData.cgstPercent}
-                      onChange={(e) => setFormData({ ...formData, cgstPercent: parseFloat(e.target.value) || 0 })}
-                      className="w-14 bg-white text-slate-900 text-center font-bold px-1 py-0.5 border rounded"
+                      placeholder="0"
+                      value={formData.lessAdvancePaid}
+                      onChange={(e) => setFormData({ ...formData, lessAdvancePaid: parseFloat(e.target.value) || 0 })}
+                      className="w-14 bg-white text-slate-900 text-right font-mono font-bold px-1 py-0.5 border rounded text-[10px]"
                     />
-                    <span className="w-20 font-mono text-right py-0.5">{formData.cgstAmount}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-amber-300 font-bold">Other:</span>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={formData.otherCharges}
+                      onChange={(e) => setFormData({ ...formData, otherCharges: parseFloat(e.target.value) || 0 })}
+                      className="w-14 bg-white text-slate-900 text-right font-mono font-bold px-1 py-0.5 border rounded text-[10px]"
+                    />
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center py-0.5 border-b border-sky-700 pb-1">
-                  <span className="text-sky-200">Add: I-G.S.T. %:</span>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="%"
-                      value={formData.igstPercent}
-                      onChange={(e) => setFormData({ ...formData, igstPercent: parseFloat(e.target.value) || 0 })}
-                      className="w-14 bg-white text-slate-900 text-center font-bold px-1 py-0.5 border rounded"
-                    />
-                    <span className="w-20 font-mono text-right py-0.5">{formData.igstAmount}</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center py-1 font-extrabold text-white text-sm">
-                  <span>Total With GST:</span>
-                  <span className="font-mono text-yellow-300">₹ {formData.totalWithGst}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-1">
-                  <span className="text-sky-200">Other Charges:</span>
-                  <input
-                    type="number"
-                    value={formData.otherCharges}
-                    onChange={(e) => setFormData({ ...formData, otherCharges: parseFloat(e.target.value) || 0 })}
-                    className="w-28 bg-white text-slate-900 text-right font-mono font-bold px-2 py-1 border rounded"
-                  />
-                </div>
-
-                <div className="flex justify-between items-center py-1 border-b border-sky-700 pb-1">
-                  <span className="text-sky-200">Less: Advance Paid:</span>
-                  <input
-                    type="number"
-                    value={formData.lessAdvancePaid}
-                    onChange={(e) => setFormData({ ...formData, lessAdvancePaid: parseFloat(e.target.value) || 0 })}
-                    className="w-28 bg-white text-slate-900 text-right font-mono font-bold px-2 py-1 border rounded"
-                  />
-                </div>
-
-                <div className="bg-yellow-400 text-slate-950 p-2.5 rounded-lg flex justify-between items-center shadow-lg mt-2">
-                  <span className="font-black text-sm uppercase">Net Total Amount:</span>
-                  <span className="font-mono font-black text-xl">₹ {formData.netTotalAmount}</span>
+                <div className="bg-yellow-400 text-slate-950 px-2 py-0.5 rounded flex justify-between items-center shadow mt-1">
+                  <span className="font-black text-[11px] uppercase">NET TOTAL:</span>
+                  <span className="font-mono font-black text-sm">₹ {formData.netTotalAmount}</span>
                 </div>
               </div>
 
-            </div>
-
-            {/* Bottom Actions Toolbar */}
-            <div className="pt-4 border-t-2 border-sky-700 flex flex-wrap justify-center sm:justify-end gap-3">
-              <button
-                type="submit"
-                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow-lg flex items-center gap-1.5 transition-all transform hover:scale-105"
-              >
-                <Save size={16} /> OK / Save LR
-              </button>
-
-              <button
-                type="button"
-                onClick={handleSaveAndPrint}
-                className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded-lg text-xs uppercase shadow-lg flex items-center gap-1.5 transition-all transform hover:scale-105"
-              >
-                <Printer size={16} /> Save & Print A4
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const saved = handleSave();
-                  if (saved) {
-                    setShowPrintModal(true);
-                  }
-                }}
-                className="px-4 py-2.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold rounded-lg text-xs uppercase shadow flex items-center gap-1.5 transition-colors"
-              >
-                <Download size={16} /> Export PDF
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const saved = handleSave();
-                  if (saved) {
-                    setShowPrintModal(true);
-                  }
-                }}
-                className="px-4 py-2.5 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-lg text-xs uppercase shadow flex items-center gap-1.5 transition-colors"
-              >
-                <Share2 size={16} /> WhatsApp Share
-              </button>
-
-              <button
-                type="button"
-                onClick={handleReset}
-                className="px-4 py-2.5 bg-slate-600 hover:bg-slate-500 text-white font-bold rounded-lg text-xs uppercase shadow transition-colors flex items-center gap-1"
-              >
-                <RotateCcw size={14} /> Reset / Exit
-              </button>
             </div>
 
           </form>

@@ -106,247 +106,186 @@ export default function FreightReceipt() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 py-6 px-3 sm:px-6 lg:px-8 text-slate-100">
-      {/* Screen Controls & Form Container (Hidden during window.print()) */}
-      <div className="max-w-6xl mx-auto space-y-6 print:hidden">
+    <div className="h-[calc(100vh-68px)] overflow-hidden bg-slate-900 p-4 text-slate-100 flex flex-col">
+      
+      {/* Top Header Bar */}
+      <div className="max-w-4xl w-full mx-auto bg-slate-800 px-4 py-2.5 rounded-xl border border-slate-700 shadow-lg flex justify-between items-center shrink-0 print:hidden mb-4">
+        <div>
+          <h1 className="text-base sm:text-lg font-black text-amber-400 flex items-center gap-2">
+            <Receipt className="w-6 h-6" /> Freight Receipt Generator
+          </h1>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handlePrint}
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow flex items-center gap-2 transition-all transform hover:scale-105"
+          >
+            <Printer size={16} /> Print Receipt
+          </button>
+          <button
+            onClick={handleExportPDF}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow flex items-center gap-2 transition-all transform hover:scale-105"
+          >
+            <Download size={16} /> Export PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Main Full-Width Form Card (Clean 1-Screen View) */}
+      <div className="max-w-4xl w-full mx-auto bg-slate-800/90 rounded-xl p-5 border-2 border-slate-700 shadow-2xl space-y-4 print:hidden">
         
-        {/* Header */}
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-black text-amber-400 flex items-center gap-2">
-              <Receipt className="w-7 h-7" /> Freight Receipt Generator
-            </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Select LR to auto-fill Truck No & Weight, enter Rate per M.T. and calculate Freight Receipt.
-              <span className="text-amber-300 font-bold ml-1">(Print only - Not saved to database)</span>
-            </p>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 self-end sm:self-auto">
+        {/* Step 1: Mode Selector */}
+        <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-700 space-y-2">
+          <label className="text-xs font-extrabold text-amber-400 uppercase tracking-wider block">
+            1. Select Receipt Type
+          </label>
+          <div className="grid grid-cols-2 gap-3 max-w-md">
             <button
-              onClick={handlePrint}
-              className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-sm uppercase shadow-md flex items-center gap-2 transition-all transform hover:scale-105"
+              type="button"
+              onClick={() => setReceiptType("CHEQUE")}
+              className={`py-2 px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all ${
+                receiptType === "CHEQUE"
+                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
+                  : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+              }`}
             >
-              <Printer size={18} /> Print Receipt
+              <CheckCircle2 size={15} /> Cheque + Cash
             </button>
+
             <button
-              onClick={handleExportPDF}
-              className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-sm uppercase shadow-md flex items-center gap-2 transition-all transform hover:scale-105"
+              type="button"
+              onClick={() => setReceiptType("CASH")}
+              className={`py-2 px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all ${
+                receiptType === "CASH"
+                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
+                  : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+              }`}
             >
-              <Download size={18} /> Export PDF
+              <DollarSign size={15} /> Cash Only
             </button>
           </div>
         </div>
 
-        {/* Mode Selector & Quick LR Selector */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Receipt Type Toggle */}
-          <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg space-y-3">
-            <label className="text-sm font-bold text-amber-400 uppercase tracking-wider block">
-              1. Select Receipt Type
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setReceiptType("CHEQUE")}
-                className={`py-3 px-4 rounded-lg font-black text-sm flex items-center justify-center gap-2 border transition-all ${
-                  receiptType === "CHEQUE"
-                    ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
-                    : "bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-700"
-                }`}
-              >
-                <CheckCircle2 size={18} /> Paid by Cheque + Cash
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setReceiptType("CASH")}
-                className={`py-3 px-4 rounded-lg font-black text-sm flex items-center justify-center gap-2 border transition-all ${
-                  receiptType === "CASH"
-                    ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
-                    : "bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-700"
-                }`}
-              >
-                <DollarSign size={18} /> Cash Paid Only
-              </button>
-            </div>
-          </div>
-
-          {/* LR Search / Select */}
-          <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg space-y-3">
-            <label className="text-sm font-bold text-amber-400 uppercase tracking-wider block">
-              2. Load LR Data (Optional)
-            </label>
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-3.5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search saved LR No or Truck..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-amber-400"
-              />
-            </div>
-            {searchQuery && (
-              <div className="max-h-36 overflow-y-auto bg-slate-950 border border-slate-700 rounded-lg divide-y divide-slate-800">
-                {filteredLRs.map((lr) => (
-                  <button
-                    key={lr.id}
-                    onClick={() => {
-                      handleSelectLR(lr);
-                      setSearchQuery("");
-                    }}
-                    className="w-full text-left px-3 py-2 text-xs hover:bg-amber-500/20 flex justify-between items-center text-slate-200"
-                  >
-                    <span className="font-bold text-amber-400">LR #{lr.lrNumber}</span>
-                    <span>{lr.truckNo || "No Truck"}</span>
-                    <span>{lr.weightKgs ? `${lr.weightKgs} KGs` : "-"}</span>
-                  </button>
-                ))}
-                {filteredLRs.length === 0 && (
-                  <div className="p-3 text-xs text-slate-500 text-center">No matching LRs found</div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Input Form Fields */}
-        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl space-y-4">
-          <h2 className="text-sm font-bold text-amber-400 uppercase tracking-wider border-b border-slate-700 pb-2">
-            3. Freight Receipt Details
+        {/* Step 2: Freight Receipt Form Inputs */}
+        <div className="space-y-3 bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+          <h2 className="text-xs font-extrabold text-amber-400 uppercase tracking-wider border-b border-slate-700 pb-1.5">
+            2. Freight Receipt Form Details
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            
-            {/* LR Number Box */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+              <label className="block text-[10px] font-bold text-slate-300 uppercase mb-0.5">
                 LR Number
               </label>
               <input
                 type="text"
                 value={selectedLrNo}
                 onChange={(e) => handleLrNumberChange(e.target.value)}
-                placeholder="Enter LR No."
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 rounded-lg font-mono font-bold text-amber-400 text-base focus:outline-none focus:border-amber-400"
+                placeholder="ENTER LR NO."
+                className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-amber-400 text-xs focus:outline-none focus:border-amber-400"
               />
             </div>
 
-            {/* Truck No */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+              <label className="block text-[10px] font-bold text-slate-300 uppercase mb-0.5">
                 Truck No.
               </label>
               <input
                 type="text"
                 value={truckNo}
                 onChange={(e) => setTruckNo(e.target.value.toUpperCase())}
-                placeholder="e.g. GJ-36-V-8929"
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 rounded-lg font-mono font-bold text-white uppercase text-base focus:outline-none focus:border-amber-400"
+                placeholder="ENTER TRUCK NO."
+                className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-white uppercase text-xs focus:outline-none focus:border-amber-400"
               />
             </div>
+          </div>
 
-            {/* Total Weight in KGs */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
-                Total Weight in KGs
+              <label className="block text-[10px] font-bold text-slate-300 uppercase mb-0.5">
+                Total Weight (KGs)
               </label>
               <input
                 type="number"
                 value={weightKgs}
                 onChange={(e) => setWeightKgs(e.target.value)}
-                placeholder="e.g. 35370"
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 rounded-lg font-mono font-bold text-white text-base focus:outline-none focus:border-amber-400"
+                placeholder="WEIGHT IN KGS"
+                className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-white text-xs focus:outline-none focus:border-amber-400"
               />
             </div>
 
-            {/* Rate Per M.T. */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+              <label className="block text-[10px] font-bold text-slate-300 uppercase mb-0.5">
                 Rate Per M.T.
               </label>
               <input
                 type="number"
                 value={ratePerMt}
                 onChange={(e) => setRatePerMt(e.target.value)}
-                placeholder="e.g. 3200"
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 rounded-lg font-mono font-bold text-emerald-400 text-base focus:outline-none focus:border-amber-400"
+                placeholder="RATE RS."
+                className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-emerald-400 text-xs focus:outline-none focus:border-amber-400"
               />
             </div>
 
-            {/* Total Freight (Calculated) */}
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
-                Total Freight (Calculated)
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">
+                Total Freight (₹)
               </label>
-              <div className="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-lg font-mono font-black text-emerald-400 text-base">
+              <div className="w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded font-mono font-black text-emerald-400 text-xs">
                 ₹ {calculatedTotalFreight.toLocaleString("en-IN")}
               </div>
             </div>
+          </div>
 
-            {/* Paid By Cheque (Only for CHEQUE type) */}
-            {receiptType === "CHEQUE" && (
+          {receiptType === "CHEQUE" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                <label className="block text-[10px] font-bold text-slate-300 uppercase mb-0.5">
                   Paid By Cheque
                 </label>
                 <input
                   type="number"
                   value={paidByCheque}
                   onChange={(e) => setPaidByCheque(e.target.value)}
-                  placeholder="e.g. 53055"
-                  className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 rounded-lg font-mono font-bold text-sky-400 text-base focus:outline-none focus:border-amber-400"
+                  placeholder="CHEQUE AMOUNT"
+                  className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-sky-400 text-xs focus:outline-none focus:border-amber-400"
                 />
               </div>
-            )}
 
-            {/* Cash Paid (Only for CHEQUE type) */}
-            {receiptType === "CHEQUE" && (
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">
                   Cash Paid (Calculated)
                 </label>
-                <div className="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-lg font-mono font-black text-amber-400 text-base">
+                <div className="w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded font-mono font-black text-amber-400 text-xs">
                   ₹ {calculatedCashPaid.toLocaleString("en-IN")}
                 </div>
               </div>
-            )}
-
-            {/* Remarks */}
-            <div className={receiptType === "CHEQUE" ? "sm:col-span-2 md:col-span-2" : "sm:col-span-2"}>
-              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
-                Remarks
-              </label>
-              <input
-                type="text"
-                value={remarks}
-                onChange={(e) => setRemarks(e.target.value)}
-                placeholder="Enter remarks (if any)"
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-amber-400"
-              />
             </div>
+          )}
 
+          <div>
+            <label className="block text-[10px] font-bold text-slate-300 uppercase mb-0.5">
+              Remarks
+            </label>
+            <input
+              type="text"
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              placeholder="ENTER REMARKS (IF ANY)"
+              className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded text-white text-xs focus:outline-none focus:border-amber-400"
+            />
           </div>
         </div>
 
       </div>
 
-      {/* Printable Receipt Preview & Document Section */}
-      <div className="max-w-3xl mx-auto mt-8">
-        <div className="text-center mb-3 print:hidden">
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-400 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
-            Live Printable Receipt Preview
-          </span>
-        </div>
-
-        {/* Printable Card Area matching Screenshot Style */}
+      {/* Offscreen / Hidden Print Document (Capturable by PDF/Print without displaying on screen) */}
+      <div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none print:static print:opacity-100 print:pointer-events-auto">
         <div
           ref={printRef}
           className="print-container bg-white text-black p-6 sm:p-10 rounded-xl shadow-2xl border-2 border-slate-300 max-w-2xl mx-auto font-sans"
-          style={{ minHeight: "380px" }}
         >
           {/* Main Form Table Matching Screenshots */}
           <table className="w-full border-collapse border-2 border-black text-sm">
@@ -427,7 +366,6 @@ export default function FreightReceipt() {
               </tr>
             </tbody>
           </table>
-
         </div>
       </div>
     </div>

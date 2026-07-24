@@ -63,51 +63,50 @@ export default function LRList() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 py-6 px-3 sm:px-6 lg:px-8 text-slate-100">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="h-[calc(100vh-68px)] overflow-hidden bg-slate-900 p-1.5 text-slate-100 flex flex-col font-sans">
+      <div className="max-w-[1440px] w-full mx-auto flex-1 flex flex-col space-y-1.5 min-h-0">
         
-        {/* Header Bar */}
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-black text-amber-400 flex items-center gap-2">
-              <FileText className="w-7 h-7" /> Wolego Transport - Saved LR Records
+        {/* Sleek Combined Top Header & Control Bar */}
+        <div className="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 shadow flex flex-wrap items-center justify-between gap-2 shrink-0">
+          
+          {/* Title */}
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm sm:text-base font-black text-amber-400 flex items-center gap-1.5">
+              <FileText className="w-5 h-5" /> Saved LR Records
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Direct Print, Export PDF, WhatsApp Share, View & Edit LR Records
-            </p>
+            <span className="text-xs font-bold text-slate-400 hidden sm:inline">
+              (Total LRs: <span className="text-amber-400 font-mono text-sm">{filteredLRs.length}</span>)
+            </span>
           </div>
 
-          <Link
-            to="/lr-entry"
-            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-sm uppercase shadow-md flex items-center gap-2 transition-all transform hover:scale-105"
-          >
-            <Plus size={18} /> Create New LR
-          </Link>
-        </div>
-
-        {/* Search & Filter Bar */}
-        <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <div className="relative w-full sm:w-96">
-            <Search className="w-4 h-4 absolute left-3 top-3.5 text-slate-400" />
+          {/* Search Input */}
+          <div className="relative w-64 sm:w-80">
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search LR No, Consignor, Consignee, Truck..."
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-amber-400"
+              className="w-full pl-8 pr-2.5 py-1 bg-slate-900 border border-slate-600 rounded text-xs text-white focus:outline-none focus:border-amber-400"
             />
           </div>
 
-          <div className="text-xs font-bold text-slate-300">
-            Total LRs: <span className="text-amber-400 text-sm font-mono">{filteredLRs.length}</span>
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Link
+              to="/lr-entry"
+              className="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1 transition-all"
+            >
+              <Plus size={14} /> Create New LR
+            </Link>
           </div>
         </div>
 
         {/* Table of Records with Direct Action Buttons */}
-        <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-2xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-950 text-xs uppercase text-amber-400 font-extrabold border-b border-slate-700">
+        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-950 text-amber-400 font-extrabold uppercase sticky top-0 z-10 border-b border-slate-700">
                 <tr>
                   <th className="p-3">LR No.</th>
                   <th className="p-3">Date</th>

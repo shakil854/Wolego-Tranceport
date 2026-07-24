@@ -134,53 +134,38 @@ export default function PartyMaster() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-900 py-6 px-3 sm:px-6 lg:px-8 text-slate-100 font-sans">
-      <div className="max-w-7xl mx-auto space-y-4">
-        
-        {/* Top Header Bar */}
-        <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg flex justify-between items-center">
-          <div>
-            <h1 className="text-xl md:text-2xl font-black text-amber-400 flex items-center gap-2">
-              <Building2 className="w-6 h-6" /> Party Master Directory & Management
-            </h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Left: Add New Party (Always Fresh Form) | Right: Directory with View, Edit Modal & Delete Actions
-            </p>
-          </div>
-          <div className="text-xs text-slate-400 font-bold hidden sm:block">
-            Total Parties: <span className="text-amber-400 font-mono text-sm">{parties.length}</span>
-          </div>
-        </div>
+    <div className="h-[calc(100vh-68px)] overflow-hidden bg-slate-900 p-2 text-slate-100 font-sans flex flex-col">
+      <div className="max-w-[1440px] w-full mx-auto flex-1 flex flex-col min-h-0 space-y-2">
 
         {/* Status Notification Alert */}
         {statusMessage && (
-          <div className="bg-emerald-500 text-slate-950 px-4 py-2.5 rounded-lg text-sm font-bold text-center flex items-center justify-center gap-2 shadow-lg animate-pulse">
-            <CheckCircle2 size={18} /> {statusMessage}
+          <div className="bg-emerald-500 text-slate-950 px-3 py-1 rounded text-xs font-bold text-center flex items-center justify-center gap-2 shadow animate-pulse shrink-0">
+            <CheckCircle2 size={15} /> {statusMessage}
           </div>
         )}
 
-        {/* 50-50 Split Layout: Left Always Clean Add Form | Right List */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* 50-50 Split Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 flex-1 min-h-0">
           
-          {/* LEFT COLUMN (50% Width): Always Fresh Add New Party Form */}
-          <div className="bg-sky-900/90 border-4 border-yellow-400 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm">
+          {/* LEFT COLUMN: Clean Add New Party Form */}
+          <div className="bg-sky-900/90 border-2 border-yellow-400 rounded-lg shadow-xl overflow-hidden backdrop-blur-sm flex flex-col justify-between">
             
             {/* Form Title Header */}
-            <div className="bg-sky-950 px-5 py-3 border-b-2 border-yellow-400 flex justify-between items-center">
-              <h2 className="text-base md:text-lg font-black text-blue-100 uppercase tracking-wider flex items-center gap-2">
-                <Plus className="w-5 h-5 text-yellow-400" /> Add New Party
+            <div className="bg-sky-950 px-3 py-1 border-b border-yellow-400 flex justify-between items-center shrink-0">
+              <h2 className="text-xs sm:text-sm font-black text-blue-100 uppercase tracking-wider flex items-center gap-1.5">
+                <Plus className="w-4 h-4 text-yellow-400" /> Add New Party
               </h2>
-              <span className="px-2.5 py-0.5 bg-yellow-400 text-slate-950 font-black rounded text-[11px] uppercase">
-                Clean Entry Form
+              <span className="px-2 py-0.5 bg-yellow-400 text-slate-950 font-black rounded text-[10px] uppercase">
+                New Entry
               </span>
             </div>
 
             {/* Form Inputs */}
-            <form onSubmit={handleSaveNewParty} className="p-4 sm:p-5 space-y-3">
+            <form onSubmit={handleSaveNewParty} className="p-2 space-y-1 flex-1 flex flex-col justify-between overflow-hidden">
               
               {/* Party Name */}
               <div>
-                <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                   Party Name *
                 </label>
                 <input
@@ -188,97 +173,74 @@ export default function PartyMaster() {
                   required
                   value={addFormData.partyName}
                   onChange={(e) => setAddFormData({ ...addFormData, partyName: e.target.value.toUpperCase() })}
-                  placeholder="ENTER PARTY NAME (E.G. ALIEN PORCELANO LLP)"
-                  className="w-full bg-white text-slate-900 font-bold px-3 py-2 text-sm border-2 border-sky-400 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  placeholder="ENTER PARTY NAME"
+                  className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-400 rounded focus:outline-none"
                 />
               </div>
 
               {/* Address Line 1 */}
               <div>
-                <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
-                  Address 1
+                <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                  Address Line 1 & Line 2
                 </label>
-                <input
-                  type="text"
-                  value={addFormData.address1}
-                  onChange={(e) => setAddFormData({ ...addFormData, address1: e.target.value.toUpperCase() })}
-                  placeholder="H.NO. / STREET ADDRESS"
-                  className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                />
-              </div>
-
-              {/* Address Line 2 & Line 3 */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
-                    Address 2
-                  </label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <input
+                    type="text"
+                    value={addFormData.address1}
+                    onChange={(e) => setAddFormData({ ...addFormData, address1: e.target.value.toUpperCase() })}
+                    placeholder="ADDRESS LINE 1"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                  />
                   <input
                     type="text"
                     value={addFormData.address2}
                     onChange={(e) => setAddFormData({ ...addFormData, address2: e.target.value.toUpperCase() })}
                     placeholder="AREA / LANDMARK"
-                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
-                    Address 3
-                  </label>
-                  <input
-                    type="text"
-                    value={addFormData.address3}
-                    onChange={(e) => setAddFormData({ ...addFormData, address3: e.target.value.toUpperCase() })}
-                    placeholder="CITY - PINCODE (STATE)"
-                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
               </div>
 
-              {/* City & District */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+              {/* City, District, State & Code */}
+              <div className="grid grid-cols-12 gap-1.5">
+                <div className="col-span-3">
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     City
                   </label>
                   <input
                     type="text"
                     value={addFormData.city}
                     onChange={(e) => setAddFormData({ ...addFormData, city: e.target.value.toUpperCase() })}
-                    placeholder="City (e.g. MORBI)"
-                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    placeholder="CITY"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                <div className="col-span-3">
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     District
                   </label>
                   <input
                     type="text"
                     value={addFormData.district}
                     onChange={(e) => setAddFormData({ ...addFormData, district: e.target.value.toUpperCase() })}
-                    placeholder="District (e.g. MORBI)"
-                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    placeholder="DISTRICT"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
-              </div>
-
-              {/* State & State Code */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className="col-span-2">
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                <div className="col-span-4">
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     State
                   </label>
                   <input
                     type="text"
                     value={addFormData.state}
                     onChange={(e) => handleAddStateChange(e.target.value.toUpperCase())}
-                    placeholder="State (e.g. GUJARAT)"
-                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    placeholder="STATE"
+                    className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     Code
                   </label>
                   <input
@@ -286,15 +248,15 @@ export default function PartyMaster() {
                     value={addFormData.stateCode}
                     onChange={(e) => setAddFormData({ ...addFormData, stateCode: e.target.value })}
                     placeholder="24"
-                    className="w-full bg-white text-slate-900 font-bold text-center px-2 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="w-full bg-white text-slate-900 font-bold text-center px-1 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* GST No. & PAN No. */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     GST No.
                   </label>
                   <input
@@ -302,11 +264,11 @@ export default function PartyMaster() {
                     value={addFormData.gstNo}
                     onChange={(e) => handleAddGstChange(e.target.value)}
                     placeholder="24ACCFB3501E1Z8"
-                    className="w-full bg-white text-slate-900 font-mono font-bold px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 uppercase"
+                    className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     PAN No.
                   </label>
                   <input
@@ -314,48 +276,48 @@ export default function PartyMaster() {
                     value={addFormData.panNo}
                     onChange={(e) => setAddFormData({ ...addFormData, panNo: e.target.value.toUpperCase() })}
                     placeholder="ACCFB3501E"
-                    className="w-full bg-white text-slate-900 font-mono font-bold px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 uppercase"
+                    className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                   />
                 </div>
               </div>
 
               {/* Contact Name & Mobile Nos */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     Contact Person
                   </label>
                   <input
                     type="text"
                     value={addFormData.contactName}
                     onChange={(e) => setAddFormData({ ...addFormData, contactName: e.target.value })}
-                    placeholder="Contact Person Name"
-                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    placeholder="NAME"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     Mobile Numbers
                   </label>
                   <input
                     type="text"
                     value={addFormData.mobileNos}
                     onChange={(e) => setAddFormData({ ...addFormData, mobileNos: e.target.value })}
-                    placeholder="09979111555"
-                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    placeholder="MOBILE NO."
+                    className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Select Type (CONSIGNEE / CONSIGNOR / BOTH) */}
               <div>
-                <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                   Party Category
                 </label>
                 <select
                   value={addFormData.selectType}
                   onChange={(e) => setAddFormData({ ...addFormData, selectType: e.target.value })}
-                  className="w-full bg-yellow-300 text-slate-950 font-extrabold px-3 py-2 text-xs border-2 border-yellow-500 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 uppercase cursor-pointer"
+                  className="w-full bg-yellow-300 text-slate-950 font-extrabold px-2 py-1 text-xs border-2 border-yellow-500 rounded focus:outline-none uppercase cursor-pointer"
                 >
                   <option value="CONSIGNEE">CONSIGNEE (माल प्राप्तकर्ता)</option>
                   <option value="CONSIGNOR">CONSIGNOR (माल भेजने वाला)</option>
@@ -364,48 +326,48 @@ export default function PartyMaster() {
               </div>
 
               {/* Save Button */}
-              <div className="pt-4 border-t border-sky-700 flex justify-end gap-2">
+              <div className="pt-1.5 border-t border-sky-700 flex justify-end gap-1.5 shrink-0">
                 <button
                   type="button"
                   onClick={() => setAddFormData(initialBlankForm)}
-                  className="px-4 py-2 bg-slate-700 text-slate-300 font-bold rounded hover:bg-slate-600 text-xs uppercase transition-colors"
+                  className="px-3 py-1 bg-slate-700 text-slate-300 font-bold rounded hover:bg-slate-600 text-xs uppercase transition-colors"
                 >
                   Clear Form
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-yellow-400 text-slate-950 font-black rounded hover:bg-yellow-300 text-xs uppercase shadow-lg flex items-center gap-1.5 transition-all transform hover:scale-105"
+                  className="px-4 py-1 bg-yellow-400 text-slate-950 font-black rounded hover:bg-yellow-300 text-xs uppercase shadow flex items-center gap-1 transition-all"
                 >
-                  <Save size={16} /> Save New Party
+                  <Save size={14} /> Save New Party
                 </button>
               </div>
 
             </form>
           </div>
 
-          {/* RIGHT COLUMN (50% Width): Party Master List Table */}
-          <div className="bg-slate-800 rounded-xl p-4 sm:p-5 border border-slate-700 shadow-xl space-y-3">
+          {/* RIGHT COLUMN: Directory List */}
+          <div className="bg-slate-800 rounded-lg p-2 border border-slate-700 shadow-xl flex flex-col min-h-0 overflow-hidden">
             
             {/* Header & Search Bar */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700 pb-3">
-              <h2 className="text-base font-bold text-amber-400 flex items-center gap-2">
-                <Building2 className="w-5 h-5" /> Saved Parties Directory ({filteredParties.length})
+            <div className="flex justify-between items-center gap-2 border-b border-slate-700 pb-1.5 shrink-0">
+              <h2 className="text-xs sm:text-sm font-bold text-amber-400 flex items-center gap-1.5">
+                <Building2 className="w-4 h-4" /> Saved Parties Directory ({filteredParties.length})
               </h2>
               
-              <div className="relative w-full sm:w-60">
-                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <div className="relative w-48 sm:w-56">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-slate-400" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search Party / GST / Mobile..."
-                  className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400"
+                  placeholder="Search Party / GST..."
+                  className="w-full pl-8 pr-2 py-1 bg-slate-900 border border-slate-600 rounded text-xs text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>
 
             {/* Scrollable Table Container */}
-            <div className="overflow-x-auto max-h-[580px] overflow-y-auto rounded-lg border border-slate-700">
+            <div className="flex-1 min-h-0 overflow-y-auto rounded border border-slate-700 mt-1.5">
               <table className="w-full text-left text-xs text-slate-300">
                 <thead className="bg-slate-950 uppercase text-amber-400 font-extrabold sticky top-0 z-10">
                   <tr>
