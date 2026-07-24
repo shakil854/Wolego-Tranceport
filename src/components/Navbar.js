@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Truck, Users, FileText, Receipt, Menu, X, Phone, ShieldCheck } from "lucide-react";
+import { Truck, Users, FileText, Receipt, Menu, X, Phone, ShieldCheck, FileSpreadsheet } from "lucide-react";
 import logoImg from "../assets/logo.png";
 
 export default function Navbar() {
@@ -11,6 +11,7 @@ export default function Navbar() {
     { name: "L/R Entry", path: "/lr-entry", icon: Truck },
     { name: "LR Records", path: "/lr-list", icon: FileText },
     { name: "Freight Receipt", path: "/freight-receipt", icon: Receipt },
+    { name: "Party Statement", path: "/party-statement", icon: FileSpreadsheet },
     { name: "Party Master", path: "/party-master", icon: Users },
   ];
 

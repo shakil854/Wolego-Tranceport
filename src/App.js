@@ -5,6 +5,7 @@ import LREntryForm from "./pages/LREntryForm";
 import PartyMaster from "./pages/PartyMaster";
 import LRList from "./pages/LRList";
 import FreightReceipt from "./pages/FreightReceipt";
+import PartyStatement from "./pages/PartyStatement";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="/party-master" element={<PartyMaster />} />
             <Route path="/lr-list" element={<LRList />} />
             <Route path="/freight-receipt" element={<FreightReceipt />} />
+            <Route path="/party-statement" element={<PartyStatement />} />
             <Route path="*" element={<Navigate to="/lr-entry" replace />} />
           </Routes>
         </main>

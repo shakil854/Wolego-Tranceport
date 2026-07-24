@@ -15,15 +15,17 @@
     margin: 0;
   }
 
-  html, body, #root {
+  html, body, #root, #root *, div, main {
     background-color: #ffffff !important;
+    background: #ffffff !important;
     color: #000000 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-height: 100vh !important;
-    overflow: hidden !important;
+    box-shadow: none !important;
+  }
+
+  /* Keep custom table footer background for total row */
+  tfoot tr, tfoot td {
+    background-color: #cbd5e1 !important;
+    background: #cbd5e1 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
