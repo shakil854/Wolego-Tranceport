@@ -152,7 +152,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-0 print:shadow-none font-sans text-xs">
         <div ref={printRef} className="border-2 border-slate-900 p-3 sm:p-4 bg-white text-slate-900 min-h-[275mm] flex flex-col justify-between print-document">
           
-          <div>
+          <div className="flex-1 flex flex-col justify-between">
             {/* Header Bar */}
             <div className="border-b-2 border-slate-900 pb-2">
               
@@ -329,35 +329,47 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
               </table>
             </div>
 
-            {/* Bottom Grid: Charges, GST, Invoice, Insurance, Bank details */}
-            <div className="grid grid-cols-12 divide-x-2 divide-slate-900 border-b-2 border-slate-900 min-h-[220px]">
+            {/* Bottom Grid: Charges, GST, Invoice, Insurance, Bank details - Stretched to bottom border */}
+            <div className="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[480px]">
               
-              {/* Left Column (7 cols): Invoice, E-Way Bill, Disclaimer, Bank details */}
-              <div className="col-span-7 p-2 space-y-2 text-[10px] flex flex-col justify-between">
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-2 border-b border-slate-300 pb-1 font-bold">
-                    <div>INVOICE NO. : <span className="font-mono text-sm">{lrData.billNumbers || ""}</span></div>
-                    <div>VALUE RS. : <span className="font-mono text-sm">{lrData.invoiceValue || ""}</span></div>
-                  </div>
-
-                  <div className="font-bold text-slate-900">
+              {/* Left Column (7 cols): Each item 1 line per item as requested */}
+              <div className="col-span-7 p-2 space-y-1 text-[10px] flex flex-col justify-between">
+                <div className="space-y-1">
+                  {/* 1. GST Payable By */}
+                  <div className="font-bold text-slate-900 border-b border-slate-300 pb-0.5">
                     GST PAYABLE BY: <span className="bg-yellow-300 px-2 py-0.5 border border-slate-800 rounded font-black">{lrData.gstPayableBy || "CONSIGNEE"}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-1 font-mono text-[10px]">
-                    <div>CONSIGNOR E-WAY BILL: <strong>{lrData.consignorEwayBill || ""}</strong></div>
-                    <div>CONSIGNEE E-WAY BILL: <strong>{lrData.consigneeEwayBill || ""}</strong></div>
+                  {/* 2. Invoice No */}
+                  <div className="font-bold border-b border-slate-300 pb-0.5">
+                    INVOICE NO. : <span className="font-mono text-xs">{lrData.billNumbers || ""}</span>
                   </div>
 
-                  <div className="font-extrabold uppercase text-red-700 bg-red-50 p-1.5 border border-red-200 text-[9.5px]">
-                    WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA.
+                  {/* 3. Value Rs */}
+                  <div className="font-bold border-b border-slate-300 pb-0.5">
+                    VALUE RS. : <span className="font-mono text-xs">{lrData.invoiceValue || ""}</span>
                   </div>
 
-                  {/* Insurance Declaration Box */}
-                  <div className="border border-slate-400 p-1.5 rounded text-[9px] bg-slate-50 space-y-1">
+                  {/* 4. Consignor E-Way Bill */}
+                  <div className="font-mono text-[10px] border-b border-slate-300 pb-0.5">
+                    CONSIGNOR E-WAY BILL: <strong>{lrData.consignorEwayBill || ""}</strong>
+                  </div>
+
+                  {/* 5. Consignee E-Way Bill */}
+                  <div className="font-mono text-[10px] border-b border-slate-300 pb-0.5">
+                    CONSIGNEE E-WAY BILL: <strong>{lrData.consigneeEwayBill || ""}</strong>
+                  </div>
+
+                  {/* 6. Remarks / Disclaimer */}
+                  <div className="font-extrabold uppercase text-red-700 bg-red-50 p-1 border border-red-200 text-[9.5px]">
+                    {lrData.remarks || "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA."}
+                  </div>
+
+                  {/* 7. Insurance Declaration Box */}
+                  <div className="border border-slate-400 p-1.5 rounded text-[9px] bg-slate-50 space-y-0.5">
                     <div className="font-extrabold uppercase underline">INSURANCE :</div>
                     <div>THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
-                    <div className="grid grid-cols-3 gap-1 pt-1 border-t border-slate-300 font-mono">
+                    <div className="grid grid-cols-3 gap-1 pt-0.5 border-t border-slate-300 font-mono">
                       <span>COMPANY: ________</span>
                       <span>POLICY: ________</span>
                       <span>RISK: ________</span>
@@ -365,9 +377,9 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   </div>
                 </div>
 
-                {/* ICICI Bank Payment Details */}
-                <div className="border-2 border-blue-900 p-2 rounded bg-blue-50/50 text-[9.5px] mt-1">
-                  <div className="font-black text-blue-950 uppercase border-b border-blue-200 pb-0.5 mb-1">
+                {/* 8. ICICI Bank Payment Details */}
+                <div className="border-2 border-blue-900 p-1.5 rounded bg-blue-50/50 text-[9.5px] mt-1">
+                  <div className="font-black text-blue-950 uppercase border-b border-blue-200 pb-0.5 mb-0.5">
                     ICICI BANK LTD (RTGS / NEFT PAYMENT)
                   </div>
                   <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 font-semibold">
@@ -380,7 +392,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
               </div>
 
-              {/* Right Column (5 cols): Freight Breakdown & Net Total */}
+              {/* Right Column (5 cols): Freight Breakdown, Net Total & Signatory */}
               <div className="col-span-5 p-2 space-y-1 bg-slate-50 flex flex-col justify-between font-mono text-xs">
                 <div className="space-y-1.5">
                   <div className="flex justify-between font-bold border-b border-slate-300 pb-1">
@@ -419,25 +431,20 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   </div>
                 </div>
 
-                <div className="border-t-2 border-slate-900 pt-2 mt-auto">
+                <div className="space-y-3 mt-auto pt-2">
                   <div className="bg-slate-900 text-white p-2 rounded flex justify-between items-center text-sm font-black">
                     <span>NET TOTAL:</span>
                     <span className="text-yellow-400 text-base">₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
                   </div>
+
+                  {/* Signatory Block Inside Grid */}
+                  <div className="text-right space-y-3 font-sans pt-1">
+                    <div className="font-extrabold uppercase text-[11px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
+                    <div className="text-[9px] text-slate-600 uppercase tracking-wider font-bold">(AUTHORISED SIGNATORY)</div>
+                  </div>
                 </div>
               </div>
 
-            </div>
-          </div>
-
-          {/* Footer Signature */}
-          <div className="pt-6 pb-2 flex justify-between items-end px-4 text-slate-950 font-bold">
-            <div className="text-[10px] italic text-slate-600">
-              Driver Sig: __________________
-            </div>
-            <div className="text-right space-y-6">
-              <div className="font-extrabold uppercase text-xs">FOR, WOLEGO TRANSPORT</div>
-              <div className="text-[10px] text-slate-500 uppercase tracking-widest">(AUTHORISED SIGNATORY)</div>
             </div>
           </div>
 
