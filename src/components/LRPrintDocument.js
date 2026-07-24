@@ -294,20 +294,24 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                 <tbody className="divide-y border-b-2 border-slate-900 font-semibold">
                   <tr className="divide-x-2 divide-slate-900 text-center min-h-[80px]">
                     <td className="p-2 font-bold align-top">
-                      <div>{lrData.noOfArticles}</div>
-                      <span className="text-[10px] font-normal">{lrData.bundles || ""}</span>
+                      <div className="min-h-[34px] flex flex-col justify-start">
+                        <div>{lrData.noOfArticles}</div>
+                        <span className="text-[10px] font-normal">{lrData.bundles || ""}</span>
+                      </div>
                       {lrData.noOfArticles2 && (
-                        <div className="mt-1 pt-1 border-t border-slate-900">
+                        <div className="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
                           <div>{lrData.noOfArticles2}</div>
                           <span className="text-[10px] font-normal">{lrData.bundles2 || "BUNDLE"}</span>
                         </div>
                       )}
                     </td>
                     <td className="p-2 align-top text-left">
-                      <div className="font-bold uppercase text-sm">{lrData.descriptionOfGoods}</div>
+                      <div className="min-h-[34px] flex flex-col justify-start">
+                        <div className="font-bold uppercase text-sm">{lrData.descriptionOfGoods}</div>
+                      </div>
                       {lrData.noOfArticles2 && (
-                        <div className="font-bold uppercase text-sm mt-1 pt-1 border-t border-slate-900">
-                          {lrData.descriptionOfGoods2 || "SANITARYWARE"}
+                        <div className="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
+                          <div className="font-bold uppercase text-sm">{lrData.descriptionOfGoods2 || "SANITARYWARE"}</div>
                         </div>
                       )}
                     </td>
