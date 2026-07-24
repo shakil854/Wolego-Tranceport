@@ -12,6 +12,7 @@ export default function Navbar() {
     { name: "LR Records", path: "/lr-list", icon: FileText },
     { name: "Freight Receipt", path: "/freight-receipt", icon: Receipt },
     { name: "Party Statement", path: "/party-statement", icon: FileSpreadsheet },
+    { name: "CA Excel", path: "/ca-excel", icon: FileSpreadsheet },
     { name: "Party Master", path: "/party-master", icon: Users },
   ];
 
