@@ -8,7 +8,7 @@ const LREntry = sequelize.define("LREntry", {
   },
   lrNumber: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   copyData: DataTypes.STRING,
   fromPlace: DataTypes.STRING,

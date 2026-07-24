@@ -222,11 +222,11 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
               </div>
               <div className="col-span-3 p-1.5 flex items-center justify-between">
                 <span>FROM :</span>
-                <span className="uppercase font-extrabold">{lrData.fromPlace || "MORBI"}</span>
+                <span className="uppercase font-extrabold">{lrData.fromPlace || ""}</span>
               </div>
               <div className="col-span-3 p-1.5 flex items-center justify-between">
                 <span>TO :</span>
-                <span className="uppercase font-extrabold">{lrData.toPlace}</span>
+                <span className="uppercase font-extrabold">{lrData.toPlace || ""}</span>
               </div>
             </div>
 
@@ -235,7 +235,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
               <div className="col-span-6 p-1.5 flex items-center gap-2">
                 <span>DELIVERY AT :</span>
                 <span className="font-extrabold uppercase bg-yellow-200 px-2 py-0.5 border border-slate-400">
-                  {lrData.deliveryAt || "DOOR"}
+                  {lrData.deliveryAt || ""}
                 </span>
               </div>
               <div className="col-span-6 p-1.5 flex items-center gap-2">
@@ -259,7 +259,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   {lrData.consignorAddress}
                 </div>
                 <div className="font-mono font-bold text-[11px] pt-1 border-t border-slate-300 mt-1">
-                  CONSIGNOR GSTIN NO. : <span className="text-blue-900">{lrData.consignorGst || "N/A"}</span>
+                  CONSIGNOR GSTIN NO. : <span className="text-blue-900">{lrData.consignorGst || ""}</span>
                 </div>
               </div>
 
@@ -273,7 +273,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   {lrData.consigneeAddress}
                 </div>
                 <div className="font-mono font-bold text-[11px] pt-1 border-t border-slate-300 mt-1">
-                  CONSIGNEE GSTIN NO. : <span className="text-blue-900">{lrData.consigneeGst || "N/A"}</span>
+                  CONSIGNEE GSTIN NO. : <span className="text-blue-900">{lrData.consigneeGst || ""}</span>
                 </div>
               </div>
 
@@ -295,7 +295,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   <tr className="divide-x-2 divide-slate-900 text-center min-h-[80px]">
                     <td className="p-2 font-bold align-top">
                       {lrData.noOfArticles} <br />
-                      <span className="text-[10px] font-normal">{lrData.bundles || "BOX"}</span>
+                      <span className="text-[10px] font-normal">{lrData.bundles || ""}</span>
                     </td>
                     <td className="p-2 align-top text-left">
                       <div className="font-bold uppercase text-sm">{lrData.descriptionOfGoods}</div>
@@ -304,13 +304,13 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                       </div>
                     </td>
                     <td className="p-2 font-mono font-bold align-top">
-                      {lrData.weightKgs} =K.G.
+                      {lrData.weightKgs ? `${lrData.weightKgs} K.G.` : ""}
                     </td>
                     <td className="p-2 font-mono font-bold align-top">
-                      {lrData.ratePerTon} {lrData.rateType || "P.M.T."}
+                      {lrData.ratePerTon ? `${lrData.ratePerTon} ${lrData.rateType || ""}` : ""}
                     </td>
                     <td className="p-2 font-mono font-bold text-right align-top text-sm">
-                      {lrData.freightAmount}
+                      {lrData.freightAmount || ""}
                     </td>
                   </tr>
                 </tbody>
@@ -324,8 +324,8 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
               <div className="col-span-7 p-2 space-y-2 text-[10px] flex flex-col justify-between">
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2 border-b border-slate-300 pb-1 font-bold">
-                    <div>INVOICE NO. : <span className="font-mono text-sm">{lrData.billNumbers || "N/A"}</span></div>
-                    <div>VALUE RS. : <span className="font-mono text-sm">{lrData.invoiceValue || "N/A"}</span></div>
+                    <div>INVOICE NO. : <span className="font-mono text-sm">{lrData.billNumbers || ""}</span></div>
+                    <div>VALUE RS. : <span className="font-mono text-sm">{lrData.invoiceValue || ""}</span></div>
                   </div>
 
                   <div className="font-bold text-slate-900">
@@ -333,8 +333,8 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   </div>
 
                   <div className="grid grid-cols-2 gap-1 font-mono text-[10px]">
-                    <div>CONSIGNOR E-WAY BILL: <strong>{lrData.consignorEwayBill || "N/A"}</strong></div>
-                    <div>CONSIGNEE E-WAY BILL: <strong>{lrData.consigneeEwayBill || "N/A"}</strong></div>
+                    <div>CONSIGNOR E-WAY BILL: <strong>{lrData.consignorEwayBill || ""}</strong></div>
+                    <div>CONSIGNEE E-WAY BILL: <strong>{lrData.consigneeEwayBill || ""}</strong></div>
                   </div>
 
                   <div className="font-extrabold uppercase text-red-700 bg-red-50 p-1.5 border border-red-200 text-[9.5px]">

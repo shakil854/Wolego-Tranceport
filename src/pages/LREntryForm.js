@@ -22,9 +22,9 @@ export default function LREntryForm() {
     id: "",
     lrNumber: "",
     copyData: "N",
-    fromPlace: "MORBI",
+    fromPlace: "",
     toPlace: "",
-    deliveryAt: "DOOR",
+    deliveryAt: "",
     truckNo: "",
     dateTime: new Date().toISOString().slice(0, 16),
 
@@ -42,8 +42,8 @@ export default function LREntryForm() {
 
     // Goods particulars
     noOfArticles: "",
-    bundles: "BOX",
-    descriptionOfGoods: "CERAMIC TILES+",
+    bundles: "",
+    descriptionOfGoods: "",
     weightKgs: "",
     ratePerTon: "",
     rateType: "P.M.T.",
@@ -72,7 +72,7 @@ export default function LREntryForm() {
     driverMobile: "",
     consignorEwayBill: "",
     consigneeEwayBill: "",
-    remarks: "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE.",
+    remarks: "",
     debitAmountTo: "CONSIGNEE",
   };
 
@@ -195,13 +195,13 @@ export default function LREntryForm() {
       const pName2 = c2.partyName.length > 40 ? c2.partyName.slice(0, 37) + "..." : c2.partyName;
 
       const line1 = `(1) ${pName1}`;
-      const line2 = `    ${addr1 || "MORBI"}`;
+      const line2 = `    ${addr1 || ""}`;
       const line3 = `(2) ${pName2}`;
-      const line4 = `    ${addr2 || "MORBI"}`;
+      const line4 = `    ${addr2 || ""}`;
 
       const nameVal = `${line1}\n${line2}\n${line3}\n${line4}`;
       const addrVal = "";
-      const gstVal = `(1) ${c1.gstNo || "N/A"}   (2) ${c2.gstNo || "N/A"}`;
+      const gstVal = `(1) ${c1.gstNo || ""}   (2) ${c2.gstNo || ""}`;
 
       setFormData((prev) => ({
         ...prev,
@@ -213,7 +213,7 @@ export default function LREntryForm() {
       // >2 Consignors (3 or more): ONLY Names line-by-line formatted as (1), (2), (3)!
       const nameVal = list.map((c, idx) => `(${idx + 1}) ${c.partyName}`).join("\n");
       const addrVal = "";
-      const gstVal = list.map((c, idx) => `(${idx + 1}) ${c.gstNo || "N/A"}`).join("  ");
+      const gstVal = list.map((c, idx) => `(${idx + 1}) ${c.gstNo || ""}`).join("  ");
 
       setFormData((prev) => ({
         ...prev,
@@ -377,9 +377,9 @@ export default function LREntryForm() {
                 </label>
                 <input
                   type="text"
-                  required
                   value={formData.lrNumber}
                   onChange={(e) => setFormData({ ...formData, lrNumber: e.target.value })}
+                  placeholder="LR NO."
                   className="w-full bg-white text-slate-900 font-mono font-black text-base px-3 py-1.5 border-2 border-amber-400 rounded focus:outline-none"
                 />
               </div>
@@ -392,7 +392,7 @@ export default function LREntryForm() {
                   type="text"
                   value={formData.fromPlace}
                   onChange={(e) => setFormData({ ...formData, fromPlace: e.target.value.toUpperCase() })}
-                  placeholder="MORBI"
+                  placeholder="FROM PLACE"
                   className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded uppercase"
                 />
               </div>
@@ -403,10 +403,9 @@ export default function LREntryForm() {
                 </label>
                 <input
                   type="text"
-                  required
                   value={formData.toPlace}
                   onChange={(e) => setFormData({ ...formData, toPlace: e.target.value.toUpperCase() })}
-                  placeholder="HYDERABAD"
+                  placeholder="TO PLACE"
                   className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded uppercase"
                 />
               </div>
@@ -419,7 +418,7 @@ export default function LREntryForm() {
                   type="text"
                   value={formData.deliveryAt}
                   onChange={(e) => setFormData({ ...formData, deliveryAt: e.target.value.toUpperCase() })}
-                  placeholder="DOOR"
+                  placeholder="DELIVERY AT"
                   className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border border-sky-300 rounded uppercase"
                 />
               </div>
@@ -430,10 +429,9 @@ export default function LREntryForm() {
                 </label>
                 <input
                   type="text"
-                  required
                   value={formData.truckNo}
                   onChange={(e) => setFormData({ ...formData, truckNo: e.target.value.toUpperCase() })}
-                  placeholder="GJ-36-V-8975"
+                  placeholder="TRUCK NO."
                   className="w-full bg-white text-slate-900 font-mono font-black px-3 py-1.5 border-2 border-sky-400 rounded uppercase"
                 />
               </div>
@@ -574,7 +572,6 @@ export default function LREntryForm() {
                 {/* Custom/Selected Consignee Name */}
                 <input
                   type="text"
-                  required
                   value={formData.consigneeName}
                   onChange={(e) => setFormData({ ...formData, consigneeName: e.target.value.toUpperCase() })}
                   placeholder="CONSIGNEE NAME"
@@ -599,7 +596,7 @@ export default function LREntryForm() {
                     type="text"
                     value={formData.consigneeGst}
                     onChange={(e) => setFormData({ ...formData, consigneeGst: e.target.value.toUpperCase() })}
-                    placeholder="36ACUFS3612G1ZV"
+                    placeholder="GSTIN NO."
                     className="w-full bg-white text-slate-900 font-mono font-bold px-3 py-1 border border-sky-300 rounded text-xs uppercase"
                   />
                 </div>
@@ -627,14 +624,14 @@ export default function LREntryForm() {
                     type="text"
                     value={formData.noOfArticles}
                     onChange={(e) => setFormData({ ...formData, noOfArticles: e.target.value })}
-                    placeholder="1267"
+                    placeholder="QTY/NO."
                     className="w-2/3 bg-white text-slate-900 font-bold px-2 py-1.5 border rounded text-sm"
                   />
                   <input
                     type="text"
                     value={formData.bundles}
                     onChange={(e) => setFormData({ ...formData, bundles: e.target.value.toUpperCase() })}
-                    placeholder="BOX"
+                    placeholder="PKG/BOX"
                     className="w-1/3 bg-white text-slate-900 font-bold px-1 py-1.5 border rounded text-xs text-center uppercase"
                   />
                 </div>
@@ -644,7 +641,7 @@ export default function LREntryForm() {
                     type="text"
                     value={formData.descriptionOfGoods}
                     onChange={(e) => setFormData({ ...formData, descriptionOfGoods: e.target.value.toUpperCase() })}
-                    placeholder="CERAMIC TILES+"
+                    placeholder="DESCRIPTION OF GOODS"
                     className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 border rounded text-sm uppercase"
                   />
                 </div>
@@ -654,7 +651,7 @@ export default function LREntryForm() {
                     type="text"
                     value={formData.weightKgs}
                     onChange={(e) => handleWeightRateChange("weightKgs", e.target.value)}
-                    placeholder="35530"
+                    placeholder="WEIGHT KGS"
                     className="w-full bg-white text-slate-900 font-mono font-bold px-3 py-1.5 border rounded text-sm"
                   />
                 </div>
@@ -664,7 +661,7 @@ export default function LREntryForm() {
                     type="text"
                     value={formData.ratePerTon}
                     onChange={(e) => handleWeightRateChange("ratePerTon", e.target.value)}
-                    placeholder="1250"
+                    placeholder="RATE"
                     className="w-full bg-white text-slate-900 font-mono font-bold px-3 py-1.5 border rounded text-sm"
                   />
                 </div>
@@ -712,7 +709,7 @@ export default function LREntryForm() {
                       type="text"
                       value={formData.billNumbers}
                       onChange={(e) => setFormData({ ...formData, billNumbers: e.target.value })}
-                      placeholder="5521"
+                      placeholder="BILL NO."
                       className="w-full bg-white text-slate-900 font-bold px-2 py-1 border rounded"
                     />
                   </div>
@@ -722,7 +719,7 @@ export default function LREntryForm() {
                       type="text"
                       value={formData.invoiceValue}
                       onChange={(e) => setFormData({ ...formData, invoiceValue: e.target.value })}
-                      placeholder="325239"
+                      placeholder="INVOICE VALUE"
                       className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-1 border rounded"
                     />
                   </div>
@@ -736,7 +733,7 @@ export default function LREntryForm() {
                       type="text"
                       value={formData.driverName}
                       onChange={(e) => setFormData({ ...formData, driverName: e.target.value })}
-                      placeholder="Ramesh"
+                      placeholder="DRIVER NAME"
                       className="w-full bg-white text-slate-900 font-medium px-2 py-1 border rounded"
                     />
                   </div>
@@ -746,7 +743,7 @@ export default function LREntryForm() {
                       type="text"
                       value={formData.licenseNumber}
                       onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
-                      placeholder="GJ362021004"
+                      placeholder="LICENSE NO."
                       className="w-full bg-white text-slate-900 font-medium px-2 py-1 border rounded"
                     />
                   </div>
@@ -756,7 +753,7 @@ export default function LREntryForm() {
                       type="text"
                       value={formData.driverMobile}
                       onChange={(e) => setFormData({ ...formData, driverMobile: e.target.value })}
-                      placeholder="9879512345"
+                      placeholder="MOBILE NO."
                       className="w-full bg-white text-slate-900 font-bold px-2 py-1 border rounded"
                     />
                   </div>
@@ -770,7 +767,7 @@ export default function LREntryForm() {
                       type="text"
                       value={formData.consignorEwayBill}
                       onChange={(e) => setFormData({ ...formData, consignorEwayBill: e.target.value })}
-                      placeholder="682018313118"
+                      placeholder="E-WAY BILL NO."
                       className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-1 border rounded"
                     />
                   </div>
@@ -780,7 +777,7 @@ export default function LREntryForm() {
                       type="text"
                       value={formData.consigneeEwayBill}
                       onChange={(e) => setFormData({ ...formData, consigneeEwayBill: e.target.value })}
-                      placeholder="Optional"
+                      placeholder="E-WAY BILL NO."
                       className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-1 border rounded"
                     />
                   </div>

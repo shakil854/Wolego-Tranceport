@@ -130,7 +130,7 @@ export default function LRList() {
                       {lr.dateTime ? new Date(lr.dateTime).toLocaleDateString("en-IN") : "N/A"}
                     </td>
                     <td className="p-3 text-xs font-bold uppercase">
-                      {lr.fromPlace || "MORBI"} ➔ {lr.toPlace || "N/A"}
+                      {lr.fromPlace || "-"} ➔ {lr.toPlace || "-"}
                     </td>
                     <td className="p-3 font-mono font-bold text-white uppercase">
                       {lr.truckNo || "N/A"}
