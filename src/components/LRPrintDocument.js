@@ -1,11 +1,33 @@
-import React, { useRef, useEffect } from "react";
-import { Printer, Download, Share2, ArrowLeft } from "lucide-react";
+import React, { useRef, useEffect, useState } from "react";
+import { Printer, Download, Share2, ArrowLeft, FileSignature, X } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import logoImg from "../assets/logo.png";
 
 export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, autoAction }) {
   const printRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const [signatureImg, setSignatureImg] = useState(() => {
+    return localStorage.getItem("wolego_digital_signature") || null;
+  });
+
+  const handleSignatureUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result;
+      setSignatureImg(base64);
+      localStorage.setItem("wolego_digital_signature", base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveSignature = () => {
+    setSignatureImg(null);
+    localStorage.removeItem("wolego_digital_signature");
+  };
 
   useEffect(() => {
     if (!autoAction) return;
@@ -136,6 +158,35 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         </button>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* Digital Signature File Input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleSignatureUpload}
+            accept="image/*"
+            className="hidden"
+          />
+
+          {signatureImg ? (
+            <button
+              type="button"
+              onClick={handleRemoveSignature}
+              className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow transition-all"
+              title="Remove Saved Digital Signature"
+            >
+              <X size={14} /> Remove Sign
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current && fileInputRef.current.click()}
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow transition-all"
+              title="Upload Signature Image from Pendrive or Computer"
+            >
+              <FileSignature size={14} /> Upload Digital Sign
+            </button>
+          )}
+
           <button
             onClick={handlePrint}
             className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-1.5 rounded-lg text-sm shadow-md transition-all transform hover:scale-105"
@@ -449,8 +500,17 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                 </div>
 
                 {/* Signatory Block Inside Grid */}
-                <div className="text-right space-y-3 font-sans p-2 mt-auto">
+                <div className="text-right font-sans p-2 mt-auto flex flex-col items-end justify-end min-h-[60px]">
                   <div className="font-extrabold uppercase text-[11px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
+                  {signatureImg ? (
+                    <img
+                      src={signatureImg}
+                      alt="Authorised Digital Signature"
+                      className="h-10 w-auto max-w-[150px] object-contain my-1 mix-blend-multiply"
+                    />
+                  ) : (
+                    <div className="h-6"></div>
+                  )}
                   <div className="text-[9px] text-slate-600 uppercase tracking-wider font-bold">(AUTHORISED SIGNATORY)</div>
                 </div>
               </div>
