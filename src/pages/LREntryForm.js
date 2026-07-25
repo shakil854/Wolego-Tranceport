@@ -92,15 +92,26 @@ export default function LREntryForm() {
   useEffect(() => {
     const loadInitData = async () => {
       const loadedParties = await fetchPartiesFromDB();
-      await fetchLREntriesFromDB();
+      const loadedLRs = await fetchLREntriesFromDB();
       setParties(loadedParties || []);
+
       if (location.state && location.state.editLR) {
         setFormData(location.state.editLR);
         flashMsg(`Editing LR #${location.state.editLR.lrNumber}`);
       } else {
-        const today = getTodayDateStr();
-        const nextNo = getNextLRNumber(today);
-        setFormData((prev) => ({ ...prev, dateTime: today, lrNumber: nextNo }));
+        let defaultDate = getTodayDateStr();
+        if (loadedLRs && loadedLRs.length > 0) {
+          const sortedDates = loadedLRs
+            .map((l) => (l.dateTime ? l.dateTime.split("T")[0] : null))
+            .filter(Boolean)
+            .sort()
+            .reverse();
+          if (sortedDates.length > 0 && sortedDates[0] > defaultDate) {
+            defaultDate = sortedDates[0];
+          }
+        }
+        const nextNo = getNextLRNumber(defaultDate);
+        setFormData((prev) => ({ ...prev, dateTime: defaultDate, lrNumber: nextNo }));
       }
     };
     loadInitData();

@@ -104,10 +104,43 @@ export const deleteLREntry = async (id) => {
   return lrCache;
 };
 
+// Safe Local Date Parser (Prevents UTC timezone rollback e.g. 2027-04-01 turning into 2027-03-31)
+export const parseLocalDate = (dateInput) => {
+  if (!dateInput) return new Date();
+  if (dateInput instanceof Date) return dateInput;
+
+  if (typeof dateInput === "string") {
+    const cleanStr = dateInput.split("T")[0];
+    const match = cleanStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const [, y, m, d] = match;
+      return new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+    }
+  }
+  const d = new Date(dateInput);
+  return isNaN(d.getTime()) ? new Date() : d;
+};
+
+// Robust Date Formatter (DD/MM/YYYY)
+export const formatDateDisplay = (dateVal) => {
+  if (!dateVal) return "-";
+  if (typeof dateVal === "string") {
+    const cleanStr = dateVal.split("T")[0];
+    if (cleanStr.includes("-")) {
+      const parts = cleanStr.split("-");
+      if (parts.length === 3) {
+        const [y, m, d] = parts;
+        return `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
+      }
+    }
+  }
+  const d = parseLocalDate(dateVal);
+  return isNaN(d.getTime()) ? "-" : `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+};
+
 // Financial Year Helper (1 April to 31 March)
 export const getFinancialYear = (dateInput) => {
-  const d = dateInput ? new Date(dateInput) : new Date();
-  if (isNaN(d.getTime())) return getFinancialYear(new Date());
+  const d = parseLocalDate(dateInput);
 
   const year = d.getFullYear();
   const month = d.getMonth(); // 0-indexed: Jan=0, Feb=1, Mar=2, Apr=3...

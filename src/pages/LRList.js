@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { fetchLREntriesFromDB, getFinancialYear } from "../utils/storage";
+import { fetchLREntriesFromDB, getFinancialYear, formatDateDisplay } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
 import { Search, Eye, Printer, Download, Share2, Edit3, Plus, FileText, Calendar } from "lucide-react";
 
@@ -21,7 +21,18 @@ export default function LRList() {
 
   const loadLREntries = async () => {
     const data = await fetchLREntriesFromDB();
-    setLrEntries(data || []);
+    const lrs = data || [];
+    setLrEntries(lrs);
+
+    // Auto-select the latest financial year in database if newer
+    if (lrs.length > 0) {
+      const years = Array.from(
+        new Set(lrs.map((lr) => (lr.dateTime ? getFinancialYear(lr.dateTime).label : null)).filter(Boolean))
+      ).sort((a, b) => b.localeCompare(a));
+      if (years.length > 0) {
+        setSelectedYear(years[0]);
+      }
+    }
   };
 
   // Direct action handlers (Print, PDF, WhatsApp)
@@ -168,8 +179,8 @@ export default function LRList() {
                     <td className="p-3 font-mono font-black text-amber-400 text-base">
                       #{lr.lrNumber}
                     </td>
-                    <td className="p-3 text-xs whitespace-nowrap">
-                      {lr.dateTime ? new Date(lr.dateTime).toLocaleDateString("en-IN") : "N/A"}
+                    <td className="p-3 text-xs whitespace-nowrap font-bold text-slate-200">
+                      {formatDateDisplay(lr.dateTime)}
                     </td>
                     <td className="p-3 text-xs font-bold uppercase">
                       {lr.fromPlace || "-"} ➔ {lr.toPlace || "-"}
