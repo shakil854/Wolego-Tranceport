@@ -4,49 +4,20 @@ import Party from "../models/Party.js";
 
 const router = express.Router();
 
-// Helper to seed owner user if missing
-const ensureOwnerUser = async () => {
-  try {
-    const ownerExists = await User.findOne({ where: { role: "OWNER" } });
-    if (!ownerExists) {
-      await User.create({
-        id: "USER-OWNER-1",
-        username: "owner",
-        password: "12345",
-        role: "OWNER",
-        partyName: "Wolego Transport Owner",
-      });
-      // Also add fallback phone number for owner login
-      await User.create({
-        id: "USER-OWNER-2",
-        username: "9979111555",
-        password: "12345",
-        role: "OWNER",
-        partyName: "Wolego Transport Owner",
-      });
-      console.log("Default Owner user seeded successfully.");
-    }
-  } catch (err) {
-    console.error("Error seeding owner user:", err.message);
-  }
-};
-
-ensureOwnerUser();
-
 // Login endpoint
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
-      return res.status(400).json({ error: "Username and Password are required." });
+      return res.status(400).json({ error: "Mobile Number / Username and Password are required." });
     }
 
     const cleanUsername = String(username).trim();
 
-    // Check user table first
+    // Check user table in database
     let user = await User.findOne({ where: { username: cleanUsername } });
 
-    // Fallback: If user is not found, check Party table by mobileNos
+    // Fallback: If user is not found in User table, check if it matches a Party's mobileNos
     if (!user) {
       const parties = await Party.findAll();
       const matchedParty = parties.find((p) => {
@@ -56,7 +27,7 @@ router.post("/login", async (req, res) => {
       });
 
       if (matchedParty) {
-        // Auto-create user for this party
+        // Create user record for this party
         user = await User.create({
           id: "USER-PARTY-" + matchedParty.id,
           username: cleanUsername,
@@ -74,7 +45,7 @@ router.post("/login", async (req, res) => {
     }
 
     if (user.password !== password) {
-      return res.status(401).json({ error: "Incorrect Password. Default password is 12345." });
+      return res.status(401).json({ error: "Incorrect Password." });
     }
 
     // Success response
@@ -93,39 +64,6 @@ router.post("/login", async (req, res) => {
     });
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Sync existing parties into user accounts
-router.post("/sync-parties", async (req, res) => {
-  try {
-    const parties = await Party.findAll();
-    let createdCount = 0;
-
-    for (const party of parties) {
-      if (party.mobileNos) {
-        const nums = party.mobileNos.split(/[,/ ]+/).map((n) => n.trim()).filter(Boolean);
-        for (const num of nums) {
-          const existing = await User.findOne({ where: { username: num } });
-          if (!existing) {
-            await User.create({
-              id: "USER-PARTY-" + party.id + "-" + num.slice(-4),
-              username: num,
-              password: "12345",
-              role: "PARTY",
-              partyId: party.id,
-              partyName: party.partyName,
-              mobileNo: num,
-            });
-            createdCount++;
-          }
-        }
-      }
-    }
-
-    res.json({ success: true, message: `Synced ${createdCount} party accounts.` });
-  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

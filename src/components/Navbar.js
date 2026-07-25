@@ -35,20 +35,18 @@ export default function Navbar() {
     { name: "L/R Entry", path: "/lr-entry", icon: Truck },
     { name: "LR Records", path: "/lr-list", icon: FileText },
     { name: "Freight Receipt", path: "/freight-receipt", icon: Receipt },
-    { name: "Accounting", path: "/accounting", icon: Calculator },
   ];
 
   // Primary Navigation Items for Party
   const partyPrimaryItems = [
     { name: "My Accounting", path: "/accounting", icon: Calculator },
-    { name: "LR Records", path: "/lr-list", icon: FileText },
-    { name: "Party Statement", path: "/party-statement", icon: FileSpreadsheet },
   ];
 
   const primaryItems = isParty ? partyPrimaryItems : ownerPrimaryItems;
 
   // Dropdown Items (Owner only)
   const dropdownItems = [
+    { name: "Accounting", path: "/accounting", icon: Calculator },
     { name: "Range LR Print", path: "/range-lr-print", icon: Printer },
     { name: "Party Statement", path: "/party-statement", icon: FileSpreadsheet },
     { name: "CA Excel", path: "/ca-excel", icon: FileSpreadsheet },

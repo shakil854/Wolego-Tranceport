@@ -94,11 +94,11 @@ function AppRoutes() {
         }
       />
 
-      {/* Shared Records & Statement */}
+      {/* Owner Only Records & Statements */}
       <Route
         path="/lr-list"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["OWNER"]}>
             <LRList />
           </ProtectedRoute>
         }
@@ -106,7 +106,7 @@ function AppRoutes() {
       <Route
         path="/party-statement"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["OWNER"]}>
             <PartyStatement />
           </ProtectedRoute>
         }
