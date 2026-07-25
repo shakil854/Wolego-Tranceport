@@ -58,4 +58,24 @@
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
+
+  .range-print-sheet {
+    padding: 4mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .range-print-sheet:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
 }

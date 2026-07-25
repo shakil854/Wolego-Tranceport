@@ -125,7 +125,7 @@ export default function BulkLRPrintPage() {
   };
 
   const renderLRDocument = (lrData) => (
-    <div className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] flex flex-col justify-between print-document font-sans text-xs">
+    <div className="border-2 border-slate-900 bg-white text-slate-900 h-full flex flex-col justify-between print-document font-sans text-xs box-border overflow-hidden">
       <div className="flex-1 flex flex-col justify-between">
         
         {/* Header Bar */}
@@ -423,7 +423,7 @@ export default function BulkLRPrintPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-2 sm:p-4 font-sans">
+    <div className="min-h-screen bg-slate-900 text-slate-100 p-2 sm:p-4 font-sans print:bg-white print:p-0 print:m-0">
       
       {/* On-Screen Controls (Hidden during Browser Print) */}
       <div className="max-w-7xl mx-auto space-y-4 print:hidden">
@@ -701,7 +701,7 @@ export default function BulkLRPrintPage() {
       {/* PRINTABLE CONTAINER (Rendered only when browser print triggers) */}
       <div className="hidden print:block bg-white text-black font-sans m-0 p-0">
         {filteredLRs.map((lr, idx) => (
-          <div key={lr.id || idx} className="print-container print:p-0 print:m-0 print:shadow-none font-sans text-xs">
+          <div key={lr.id || idx} className="range-print-sheet">
             {renderLRDocument(lr)}
           </div>
         ))}
