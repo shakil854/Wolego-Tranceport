@@ -146,7 +146,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
   const isAuto = Boolean(autoAction);
 
   return (
-    <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "min-h-screen bg-slate-900 py-4 px-2 sm:px-4 text-slate-900"}>
+    <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "min-h-screen bg-slate-900 py-4 px-2 sm:px-4 text-slate-900 print:p-0 print:m-0 print:bg-white"}>
       
       {/* Top Action Toolbar (Hidden during Print) */}
       <div className="max-w-4xl mx-auto mb-4 bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 flex flex-wrap justify-between items-center gap-2 print:hidden">
@@ -212,7 +212,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
       {/* Standard Printable Full A4 Page Document */}
       <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-0 print:shadow-none font-sans text-xs">
-        <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[275mm] flex flex-col justify-between print-document">
+        <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document">
           
           <div className="flex-1 flex flex-col justify-between">
             {/* Header Bar */}
@@ -390,7 +390,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
             </div>
 
             {/* Bottom Grid: Charges, GST, Invoice, Insurance, Bank details - Stretched to bottom border */}
-            <div className="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[480px]">
+            <div className="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[400px]">
               
               {/* Left Column (7 cols): Full-width rows stretching edge-to-edge to main grid lines */}
               <div className="col-span-7 text-[10px] flex flex-col justify-between h-full">

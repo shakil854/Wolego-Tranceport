@@ -15,19 +15,15 @@
     margin: 0;
   }
 
-  html, body, #root, #root *, div, main {
-    background-color: #ffffff !important;
-    background: #ffffff !important;
-    color: #000000 !important;
-    box-shadow: none !important;
-  }
-
-  /* Keep custom table footer background for total row */
-  tfoot tr, tfoot td {
-    background-color: #cbd5e1 !important;
-    background: #cbd5e1 !important;
+  * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html, body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
   }
 
   header, nav, .print\:hidden {
