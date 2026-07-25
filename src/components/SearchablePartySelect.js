@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, ChevronDown, Check } from "lucide-react";
+import { Search, ChevronDown, Check, X } from "lucide-react";
 
 export default function SearchablePartySelect({
   parties = [],
@@ -65,11 +65,23 @@ export default function SearchablePartySelect({
               placeholder={placeholder}
               className="w-full bg-white text-slate-900 font-bold pl-3 pr-8 py-2 border-2 border-sky-400 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm uppercase placeholder:normal-case placeholder:font-normal"
             />
-            <ChevronDown
-              size={18}
-              onClick={() => setIsOpen(!isOpen)}
-              className="absolute right-2.5 top-2.5 text-slate-500 cursor-pointer hover:text-slate-900"
-            />
+            {filterQuery ? (
+              <X
+                size={16}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFilterQuery("");
+                  if (onSelectParty) onSelectParty("");
+                }}
+                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-rose-600 cursor-pointer"
+              />
+            ) : (
+              <ChevronDown
+                size={18}
+                onClick={() => setIsOpen(!isOpen)}
+                className="absolute right-2.5 top-2.5 text-slate-500 cursor-pointer hover:text-slate-900"
+              />
+            )}
           </div>
 
           {/* Live Search Dropdown Popup List */}

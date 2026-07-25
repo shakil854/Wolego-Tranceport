@@ -5,6 +5,8 @@ import html2canvas from "html2canvas";
 
 export default function PartyStatementDocument({
   partyName = "",
+  consignorName = "",
+  consigneeName = "",
   fromDate = "",
   toDate = "",
   records = [],
@@ -249,8 +251,14 @@ export default function PartyStatementDocument({
 
         {/* Title Bar */}
         <div className="my-2">
-          <h2 className="text-sm font-bold text-black">
-            Consignee L/R Register of M/s.{partyName || ""}
+          <h2 className="text-sm font-bold text-black uppercase">
+            {consigneeName && !consignorName
+              ? `Consignee L/R Register of M/s. ${consigneeName}`
+              : consignorName && !consigneeName
+              ? `Consignor L/R Register of M/s. ${consignorName}`
+              : consignorName && consigneeName
+              ? `L/R Register of Consignor: ${consignorName} | Consignee: ${consigneeName}`
+              : `Party L/R Register of M/s. ${partyName || ""}`}
           </h2>
           <div className="flex justify-between items-center text-[11px] font-bold text-black mt-1">
             <span>
@@ -278,7 +286,8 @@ export default function PartyStatementDocument({
             {records.map((r, index) => {
               const amtWTax = calculateRowFreight(r);
               const totalAmt = parseFloat(r.netTotalAmount) || parseFloat(r.totalWithGst) || amtWTax;
-              const consignorName = r.consignorName || "-";
+              const consignorStr = r.consignorName || "-";
+              const consigneeStr = r.consigneeName || "-";
 
               const materialDesc = r.descriptionOfGoods
                 ? `${r.toPlace || ""} - ${r.descriptionOfGoods}`
@@ -298,13 +307,13 @@ export default function PartyStatementDocument({
                     <td className="border-x border-black p-1 text-right font-bold">{formatTotalAmountDetail(totalAmt)}</td>
                   </tr>
 
-                  {/* Sub-row for Consignor detail */}
+                  {/* Sub-row for Consignor & Consignee detail */}
                   <tr className="border-b border-black text-black font-bold">
                     <td className="border-x border-black p-1"></td>
                     <td className="border-x border-black p-1"></td>
                     <td className="border-x border-black p-1"></td>
                     <td colSpan="5" className="border-r border-black p-1 pl-4 uppercase">
-                      Consignor :{consignorName}
+                      Consignor: {consignorStr} &nbsp;|&nbsp; Consignee: {consigneeStr}
                     </td>
                   </tr>
                 </React.Fragment>

@@ -20,8 +20,10 @@ export default function PartyStatement() {
   const [lrEntries, setLrEntries] = useState([]);
   const [parties, setParties] = useState([]);
 
-  // Form Filter States
-  const [selectedParty, setSelectedParty] = useState("");
+  // Form Filter States - Consignor & Consignee Selection
+  const [selectedConsignor, setSelectedConsignor] = useState("");
+  const [selectedConsignee, setSelectedConsignee] = useState("");
+  const [matchEither, setMatchEither] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,11 +47,6 @@ export default function PartyStatement() {
     const pts = await fetchPartiesFromDB();
     setLrEntries(lrs || []);
     setParties(pts || []);
-
-    // Auto-select first party if available and not selected
-    if (pts && pts.length > 0 && !selectedParty) {
-      setSelectedParty(pts[0].partyName || "");
-    }
   };
 
   const formatDateDisplay = (dateVal) => {
@@ -96,12 +93,35 @@ export default function PartyStatement() {
 
   // Filter logic
   const filteredLRs = lrEntries.filter((lr) => {
-    // 1. Party Filter (Check consignee or consignor)
-    if (selectedParty && selectedParty.trim() !== "") {
-      const targetParty = selectedParty.trim().toLowerCase();
-      const consigneeMatch = lr.consigneeName && lr.consigneeName.toLowerCase().includes(targetParty);
-      const consignorMatch = lr.consignorName && lr.consignorName.toLowerCase().includes(targetParty);
-      if (!consigneeMatch && !consignorMatch) return false;
+    // 1. Party Filter (Consignor / Consignee)
+    if (matchEither) {
+      // Either mode: match selectedConsignor or selectedConsignee as EITHER consignor OR consignee
+      const targetConsignor = selectedConsignor.trim().toLowerCase();
+      const targetConsignee = selectedConsignee.trim().toLowerCase();
+
+      if (targetConsignor) {
+        const matchC1 = (lr.consignorName && lr.consignorName.toLowerCase().includes(targetConsignor)) ||
+                        (lr.consigneeName && lr.consigneeName.toLowerCase().includes(targetConsignor));
+        if (!matchC1) return false;
+      }
+      if (targetConsignee) {
+        const matchC2 = (lr.consigneeName && lr.consigneeName.toLowerCase().includes(targetConsignee)) ||
+                        (lr.consignorName && lr.consignorName.toLowerCase().includes(targetConsignee));
+        if (!matchC2) return false;
+      }
+    } else {
+      // Specific mode (Default): Match Consignor and Consignee specifically
+      if (selectedConsignor && selectedConsignor.trim() !== "") {
+        const targetConsignor = selectedConsignor.trim().toLowerCase();
+        const consignorMatch = lr.consignorName && lr.consignorName.toLowerCase().includes(targetConsignor);
+        if (!consignorMatch) return false;
+      }
+
+      if (selectedConsignee && selectedConsignee.trim() !== "") {
+        const targetConsignee = selectedConsignee.trim().toLowerCase();
+        const consigneeMatch = lr.consigneeName && lr.consigneeName.toLowerCase().includes(targetConsignee);
+        if (!consigneeMatch) return false;
+      }
     }
 
     // 2. Date Filter
@@ -118,7 +138,9 @@ export default function PartyStatement() {
       const truckMatch = lr.truckNo && lr.truckNo.toLowerCase().includes(q);
       const destMatch = lr.toPlace && lr.toPlace.toLowerCase().includes(q);
       const goodsMatch = lr.descriptionOfGoods && lr.descriptionOfGoods.toLowerCase().includes(q);
-      if (!numMatch && !truckMatch && !destMatch && !goodsMatch) return false;
+      const c1Match = lr.consignorName && lr.consignorName.toLowerCase().includes(q);
+      const c2Match = lr.consigneeName && lr.consigneeName.toLowerCase().includes(q);
+      if (!numMatch && !truckMatch && !destMatch && !goodsMatch && !c1Match && !c2Match) return false;
     }
 
     return true;
@@ -148,11 +170,23 @@ export default function PartyStatement() {
     setShowPrintModal(true);
   };
 
+  // Determine display party title for statement document header
+  const getDisplayPartyTitle = () => {
+    if (selectedConsignor && selectedConsignee) {
+      return `Consignor: ${selectedConsignor} | Consignee: ${selectedConsignee}`;
+    }
+    if (selectedConsignor) return selectedConsignor;
+    if (selectedConsignee) return selectedConsignee;
+    return "All Parties";
+  };
+
   // Dedicated Print View Modal (Only white statement document rendered during print)
   if (showPrintModal) {
     return (
       <PartyStatementDocument
-        partyName={selectedParty}
+        partyName={getDisplayPartyTitle()}
+        consignorName={selectedConsignor}
+        consigneeName={selectedConsignee}
         fromDate={fromDate}
         toDate={toDate}
         records={filteredLRs}
@@ -216,19 +250,35 @@ export default function PartyStatement() {
 
         {/* Filter Selection Panel */}
         <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 shadow-md grid grid-cols-1 md:grid-cols-12 gap-2.5 items-end shrink-0">
-          <div className="md:col-span-6 space-y-1">
+          
+          {/* Select Consignor (Sender) */}
+          <div className="md:col-span-4 space-y-1">
             <label className="text-[11px] font-bold text-amber-400 flex items-center gap-1 uppercase">
-              <User size={13} /> Select Party Name
+              <User size={13} /> Select Consignor (Shipper)
             </label>
             <SearchablePartySelect
               parties={parties}
-              value={selectedParty}
-              onSelectParty={(pName) => setSelectedParty(pName)}
-              placeholder="-- Select Party --"
+              value={selectedConsignor}
+              onSelectParty={(pName) => setSelectedConsignor(pName)}
+              placeholder="-- All / Select Consignor --"
             />
           </div>
 
-          <div className="md:col-span-6 grid grid-cols-2 gap-2">
+          {/* Select Consignee (Receiver) */}
+          <div className="md:col-span-4 space-y-1">
+            <label className="text-[11px] font-bold text-emerald-400 flex items-center gap-1 uppercase">
+              <User size={13} /> Select Consignee (Receiver)
+            </label>
+            <SearchablePartySelect
+              parties={parties}
+              value={selectedConsignee}
+              onSelectParty={(pName) => setSelectedConsignee(pName)}
+              placeholder="-- All / Select Consignee --"
+            />
+          </div>
+
+          {/* Date Range Selection */}
+          <div className="md:col-span-4 grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1 uppercase">
                 <Calendar size={13} /> From Date
@@ -256,26 +306,39 @@ export default function PartyStatement() {
 
           {/* Quick Date Presets & Search Bar */}
           <div className="md:col-span-12 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-700/60">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Quick Period:</span>
-              <button
-                onClick={() => handlePresetDate("THIS_MONTH")}
-                className="px-2 py-0.5 bg-slate-700 hover:bg-slate-600 text-[11px] font-semibold rounded text-amber-300 transition-colors"
-              >
-                This Month
-              </button>
-              <button
-                onClick={() => handlePresetDate("LAST_MONTH")}
-                className="px-2 py-0.5 bg-slate-700 hover:bg-slate-600 text-[11px] font-semibold rounded text-slate-300 transition-colors"
-              >
-                Last Month
-              </button>
-              <button
-                onClick={() => handlePresetDate("ALL_TIME")}
-                className="px-2 py-0.5 bg-slate-700 hover:bg-slate-600 text-[11px] font-semibold rounded text-slate-300 transition-colors"
-              >
-                All Time
-              </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Quick Period:</span>
+                <button
+                  onClick={() => handlePresetDate("THIS_MONTH")}
+                  className="px-2 py-0.5 bg-slate-700 hover:bg-slate-600 text-[11px] font-semibold rounded text-amber-300 transition-colors"
+                >
+                  This Month
+                </button>
+                <button
+                  onClick={() => handlePresetDate("LAST_MONTH")}
+                  className="px-2 py-0.5 bg-slate-700 hover:bg-slate-600 text-[11px] font-semibold rounded text-slate-300 transition-colors"
+                >
+                  Last Month
+                </button>
+                <button
+                  onClick={() => handlePresetDate("ALL_TIME")}
+                  className="px-2 py-0.5 bg-slate-700 hover:bg-slate-600 text-[11px] font-semibold rounded text-slate-300 transition-colors"
+                >
+                  All Time
+                </button>
+              </div>
+
+              {/* Option to match either role */}
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-300 cursor-pointer select-none bg-slate-900/60 px-2 py-1 rounded border border-slate-700 hover:border-slate-600">
+                <input
+                  type="checkbox"
+                  checked={matchEither}
+                  onChange={(e) => setMatchEither(e.target.checked)}
+                  className="w-3.5 h-3.5 text-amber-500 rounded border-slate-600 bg-slate-900 focus:ring-amber-400 cursor-pointer"
+                />
+                <span className="text-[11px] text-amber-300">Match Party as Either Consignor or Consignee</span>
+              </label>
             </div>
 
             <div className="relative w-full sm:w-64">
@@ -329,10 +392,13 @@ export default function PartyStatement() {
             <div className="p-2 bg-purple-500/20 text-purple-400 rounded-md border border-purple-500/30">
               <User size={18} />
             </div>
-            <div className="overflow-hidden">
-              <div className="text-[10px] text-slate-400 font-medium uppercase">Selected Party</div>
-              <div className="text-xs font-black text-purple-300 uppercase truncate">
-                {selectedParty || "All Parties"}
+            <div className="overflow-hidden min-w-0">
+              <div className="text-[10px] text-slate-400 font-medium uppercase">Selected Parties</div>
+              <div className="text-[11px] font-extrabold text-amber-300 truncate" title={selectedConsignor || "All Consignors"}>
+                CR: {selectedConsignor || "All"}
+              </div>
+              <div className="text-[11px] font-extrabold text-emerald-300 truncate" title={selectedConsignee || "All Consignees"}>
+                CE: {selectedConsignee || "All"}
               </div>
             </div>
           </div>
@@ -349,6 +415,7 @@ export default function PartyStatement() {
                   <th className="p-2.5">Destination & Material</th>
                   <th className="p-2.5">Truck No</th>
                   <th className="p-2.5">Consignor</th>
+                  <th className="p-2.5">Consignee</th>
                   <th className="p-2.5 text-right">Weight (MT)</th>
                   <th className="p-2.5 text-right">Rate/Ton</th>
                   <th className="p-2.5 text-right">Freight Amount</th>
@@ -375,8 +442,11 @@ export default function PartyStatement() {
                       <td className="p-2.5 font-mono font-bold text-white uppercase whitespace-nowrap">
                         {r.truckNo || "-"}
                       </td>
-                      <td className="p-2.5 uppercase font-semibold text-slate-300 truncate max-w-[180px]">
+                      <td className="p-2.5 uppercase font-semibold text-slate-300 truncate max-w-[140px]" title={r.consignorName}>
                         {r.consignorName || "-"}
+                      </td>
+                      <td className="p-2.5 uppercase font-semibold text-emerald-300/90 truncate max-w-[140px]" title={r.consigneeName}>
+                        {r.consigneeName || "-"}
                       </td>
                       <td className="p-2.5 text-right font-mono font-bold text-white">
                         {(parseFloat(r.weightKgs || 0) / 1000).toFixed(3)} MT
@@ -393,7 +463,7 @@ export default function PartyStatement() {
 
                 {filteredLRs.length === 0 && (
                   <tr>
-                    <td colSpan="8" className="text-center py-10 text-slate-500 font-bold italic">
+                    <td colSpan="9" className="text-center py-10 text-slate-500 font-bold italic">
                       No lorry receipts found for selected party and date range.
                     </td>
                   </tr>
@@ -403,7 +473,7 @@ export default function PartyStatement() {
               {filteredLRs.length > 0 && (
                 <tfoot className="bg-slate-950 font-black text-amber-400 border-t-2 border-slate-700 sticky bottom-0 z-10">
                   <tr>
-                    <td colSpan="5" className="p-2.5 text-right uppercase tracking-widest text-xs">
+                    <td colSpan="6" className="p-2.5 text-right uppercase tracking-widest text-xs">
                       TOTAL ({filteredLRs.length} Trucks)
                     </td>
                     <td className="p-2.5 text-right font-mono text-xs font-black text-emerald-400">
