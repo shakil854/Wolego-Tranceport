@@ -98,8 +98,9 @@ export default function LREntryForm() {
         setFormData(location.state.editLR);
         flashMsg(`Editing LR #${location.state.editLR.lrNumber}`);
       } else {
-        const nextNo = getNextLRNumber();
-        setFormData((prev) => ({ ...prev, lrNumber: nextNo }));
+        const today = getTodayDateStr();
+        const nextNo = getNextLRNumber(today);
+        setFormData((prev) => ({ ...prev, dateTime: today, lrNumber: nextNo }));
       }
     };
     loadInitData();
@@ -292,8 +293,9 @@ export default function LREntryForm() {
   };
 
   const handleReset = () => {
-    const nextNo = getNextLRNumber();
-    setFormData({ ...initialForm, lrNumber: nextNo, dateTime: getTodayDateStr() });
+    const today = getTodayDateStr();
+    const nextNo = getNextLRNumber(today);
+    setFormData({ ...initialForm, lrNumber: nextNo, dateTime: today });
   };
 
   const flashMsg = (text) => {
@@ -448,7 +450,16 @@ export default function LREntryForm() {
                 <input
                   type="date"
                   value={formData.dateTime ? formData.dateTime.slice(0, 10) : getTodayDateStr()}
-                  onChange={(e) => setFormData({ ...formData, dateTime: e.target.value })}
+                  onChange={(e) => {
+                    const newDate = e.target.value;
+                    const isEdit = location.state && location.state.editLR;
+                    if (!isEdit) {
+                      const nextNo = getNextLRNumber(newDate);
+                      setFormData((prev) => ({ ...prev, dateTime: newDate, lrNumber: nextNo }));
+                    } else {
+                      setFormData((prev) => ({ ...prev, dateTime: newDate }));
+                    }
+                  }}
                   className="w-full bg-white text-slate-900 font-bold px-1 py-0.5 border border-sky-300 rounded uppercase text-xs"
                 />
               </div>

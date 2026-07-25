@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { fetchLREntriesFromDB } from "../utils/storage";
+import { fetchLREntriesFromDB, getFinancialYear } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
-import { Search, Eye, Printer, Download, Share2, Edit3, Plus, FileText } from "lucide-react";
+import { Search, Eye, Printer, Download, Share2, Edit3, Plus, FileText, Calendar } from "lucide-react";
 
 export default function LRList() {
   const navigate = useNavigate();
@@ -11,6 +11,9 @@ export default function LRList() {
   const [selectedLR, setSelectedLR] = useState(null);
   const [activeAutoAction, setActiveAutoAction] = useState(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
+
+  const currentFYLabel = getFinancialYear(new Date()).label;
+  const [selectedYear, setSelectedYear] = useState(currentFYLabel);
 
   useEffect(() => {
     loadLREntries();
@@ -40,14 +43,31 @@ export default function LRList() {
     navigate("/lr-entry", { state: { editLR: lr } });
   };
 
-  const filteredLRs = lrEntries.filter(
-    (lr) =>
-      (lr.lrNumber && lr.lrNumber.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (lr.consignorName && lr.consignorName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (lr.consigneeName && lr.consigneeName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (lr.truckNo && lr.truckNo.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (lr.toPlace && lr.toPlace.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  // Dynamic available financial years sorted descending
+  const availableYears = Array.from(
+    new Set([
+      currentFYLabel,
+      ...lrEntries.map((lr) => (lr.dateTime ? getFinancialYear(lr.dateTime).label : null)).filter(Boolean),
+    ])
+  ).sort((a, b) => b.localeCompare(a));
+
+  const filteredLRs = lrEntries.filter((lr) => {
+    // 1. Financial Year Filter
+    if (selectedYear !== "ALL") {
+      const lrFY = lr.dateTime ? getFinancialYear(lr.dateTime).label : null;
+      if (lrFY !== selectedYear) return false;
+    }
+
+    // 2. Search Query Filter
+    const q = searchQuery.toLowerCase();
+    return (
+      (lr.lrNumber && lr.lrNumber.toLowerCase().includes(q)) ||
+      (lr.consignorName && lr.consignorName.toLowerCase().includes(q)) ||
+      (lr.consigneeName && lr.consigneeName.toLowerCase().includes(q)) ||
+      (lr.truckNo && lr.truckNo.toLowerCase().includes(q)) ||
+      (lr.toPlace && lr.toPlace.toLowerCase().includes(q))
+    );
+  });
 
   if (showPrintModal && selectedLR) {
     return (
@@ -69,7 +89,7 @@ export default function LRList() {
         {/* Sleek Combined Top Header & Control Bar */}
         <div className="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 shadow flex flex-wrap items-center justify-between gap-2 shrink-0">
           
-          {/* Title */}
+          {/* Title & Stats */}
           <div className="flex items-center gap-2">
             <h1 className="text-sm sm:text-base font-black text-amber-400 flex items-center gap-1.5">
               <FileText className="w-5 h-5" /> Saved LR Records
@@ -79,16 +99,39 @@ export default function LRList() {
             </span>
           </div>
 
-          {/* Search Input */}
-          <div className="relative w-64 sm:w-80">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search LR No, Consignor, Consignee, Truck..."
-              className="w-full pl-8 pr-2.5 py-1 bg-slate-900 border border-slate-600 rounded text-xs text-white focus:outline-none focus:border-amber-400"
-            />
+          {/* Financial Year Selector & Search Input */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Financial Year Dropdown */}
+            <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-600 px-2.5 py-1 rounded">
+              <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-bold text-slate-300">F.Y.:</span>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="bg-transparent text-amber-400 font-bold text-xs outline-none cursor-pointer"
+              >
+                {availableYears.map((fy) => (
+                  <option key={fy} value={fy} className="bg-slate-800 text-white">
+                    {fy === currentFYLabel ? `FY ${fy} (Current)` : `FY ${fy}`}
+                  </option>
+                ))}
+                <option value="ALL" className="bg-slate-800 text-white">
+                  All Years (सभी वर्ष)
+                </option>
+              </select>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative w-56 sm:w-72">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search LR No, Consignor, Consignee, Truck..."
+                className="w-full pl-8 pr-2.5 py-1 bg-slate-900 border border-slate-600 rounded text-xs text-white focus:outline-none focus:border-amber-400"
+              />
+            </div>
           </div>
 
           {/* Actions */}
