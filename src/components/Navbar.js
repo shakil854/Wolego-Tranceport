@@ -85,7 +85,7 @@ export default function Navbar() {
     <header className="bg-slate-900 text-white shadow-md sticky top-0 z-50 border-b border-amber-500/40 font-sans">
       
       {/* Top Info Bar */}
-      <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 px-4 py-1 text-xs font-semibold flex justify-between items-center text-white">
+      <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 px-4 py-1 text-xs font-semibold flex justify-between items-center text-white max-w-full overflow-hidden">
         <div className="flex items-center space-x-3 overflow-hidden text-ellipsis whitespace-nowrap">
           <span>📍 8-A NATIONAL HIGHWAY, CHOTILA ROAD, WANKANER-363621 (GUJ.)</span>
           <span className="hidden md:inline">| GSTIN: 24DLTPS8567M1ZT</span>

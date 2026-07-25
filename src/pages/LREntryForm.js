@@ -354,8 +354,8 @@ export default function LREntryForm() {
   }
 
   return (
-    <div className="h-[calc(100vh-68px)] overflow-hidden bg-slate-900 p-1.5 text-slate-100 flex flex-col">
-      <div className="max-w-[1440px] w-full mx-auto flex-1 flex flex-col min-h-0">
+    <div className="h-full w-full overflow-hidden bg-slate-900 p-1.5 text-slate-100 flex flex-col flex-1 min-h-0">
+      <div className="w-full max-w-full mx-auto flex-1 flex flex-col min-h-0">
 
         {/* Main Classic Software Card Frame */}
         <div className="bg-sky-900/90 border-2 border-sky-400 rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm flex-1 flex flex-col min-h-0">
