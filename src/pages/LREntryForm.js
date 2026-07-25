@@ -253,7 +253,6 @@ export default function LREntryForm() {
         consigneeName: party.partyName,
         consigneeAddress: fullAddr,
         consigneeGst: party.gstNo || "",
-        toPlace: party.city || prev.toPlace,
       }));
     } else {
       setFormData((prev) => ({ ...prev, consigneeName: partyName }));
