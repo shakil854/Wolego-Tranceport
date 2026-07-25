@@ -6,6 +6,7 @@ import session from "express-session";
 import sequelize from "./config/database.js";
 import partyRoutes from "./routes/partyRoutes.js";
 import lrRoutes from "./routes/lrRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use(
 );
 
 // Register API Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/parties", partyRoutes);
 app.use("/api/lr-entries", lrRoutes);
 

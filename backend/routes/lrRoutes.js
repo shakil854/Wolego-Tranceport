@@ -37,4 +37,36 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// Update Payment Status (Party or Truck)
+router.put("/:id/payment-status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      partyPaymentStatus,
+      partyPaidAmount,
+      partyPaidDate,
+      truckPaymentStatus,
+      truckPaidAmount,
+      truckPaidDate,
+    } = req.body;
+
+    const lr = await LREntry.findByPk(id);
+    if (!lr) {
+      return res.status(404).json({ error: "LR Entry not found." });
+    }
+
+    if (partyPaymentStatus !== undefined) lr.partyPaymentStatus = partyPaymentStatus;
+    if (partyPaidAmount !== undefined) lr.partyPaidAmount = partyPaidAmount;
+    if (partyPaidDate !== undefined) lr.partyPaidDate = partyPaidDate;
+    if (truckPaymentStatus !== undefined) lr.truckPaymentStatus = truckPaymentStatus;
+    if (truckPaidAmount !== undefined) lr.truckPaidAmount = truckPaidAmount;
+    if (truckPaidDate !== undefined) lr.truckPaidDate = truckPaidDate;
+
+    await lr.save();
+    res.json({ success: true, lr });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

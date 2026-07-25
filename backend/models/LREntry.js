@@ -67,6 +67,27 @@ const LREntry = sequelize.define("LREntry", {
   consigneeEwayBill: DataTypes.STRING,
   remarks: DataTypes.TEXT,
   debitAmountTo: DataTypes.STRING,
+
+  // Accounting & Payment Tracking
+  partyPaymentStatus: {
+    type: DataTypes.ENUM("UNPAID", "PAID"),
+    defaultValue: "UNPAID",
+  },
+  partyPaidAmount: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+  },
+  partyPaidDate: DataTypes.STRING,
+
+  truckPaymentStatus: {
+    type: DataTypes.ENUM("UNPAID", "PAID"),
+    defaultValue: "UNPAID",
+  },
+  truckPaidAmount: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+  },
+  truckPaidDate: DataTypes.STRING,
 });
 
 export default LREntry;

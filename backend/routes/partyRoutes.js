@@ -1,5 +1,6 @@
 import express from "express";
 import Party from "../models/Party.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -21,6 +22,27 @@ router.post("/", async (req, res) => {
       partyData.id = "PARTY-" + Date.now().toString().slice(-4);
     }
     const [party, created] = await Party.upsert(partyData);
+
+    // Auto register party user account(s) using mobile numbers
+    if (partyData.mobileNos) {
+      const nums = String(partyData.mobileNos)
+        .split(/[,/ ]+/)
+        .map((n) => n.trim())
+        .filter(Boolean);
+
+      for (const num of nums) {
+        await User.upsert({
+          id: "USER-PARTY-" + (party.id || partyData.id) + "-" + num.slice(-4),
+          username: num,
+          password: "12345",
+          role: "PARTY",
+          partyId: party.id || partyData.id,
+          partyName: party.partyName || partyData.partyName,
+          mobileNo: num,
+        });
+      }
+    }
+
     res.json({ success: true, party });
   } catch (err) {
     res.status(500).json({ error: err.message });
