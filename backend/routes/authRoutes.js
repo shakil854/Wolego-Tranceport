@@ -17,11 +17,13 @@ router.post("/login", async (req, res) => {
     // Check user table in database
     let user = await User.findOne({ where: { username: cleanUsername } });
 
-    // Fallback: If user is not found in User table, check if it matches a Party's mobileNos
+    // Fallback: If user is not found in User table, check if it matches a Party's mobileNos with CONSIGNEE or BOTH status
     if (!user) {
       const parties = await Party.findAll();
       const matchedParty = parties.find((p) => {
         if (!p.mobileNos) return false;
+        const isConsigneeOrBoth = p.selectType === "CONSIGNEE" || p.selectType === "BOTH";
+        if (!isConsigneeOrBoth) return false;
         const nums = p.mobileNos.split(/[,/ ]+/);
         return nums.some((num) => num.trim() === cleanUsername);
       });

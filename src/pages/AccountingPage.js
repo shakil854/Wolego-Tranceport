@@ -55,21 +55,32 @@ export default function AccountingPage() {
     fetchData();
   }, []);
 
-  // Update Payment Status Helper
-  const handleUpdatePayment = async (lrId, type, newStatus, amount) => {
+  // Update Payment Status Helper with Confirmation & Payment Date
+  const handleUpdatePayment = async (lrId, lrNumber, type, amount) => {
+    const targetLabel = type === "PARTY" ? "Party" : "Truck";
+    const todayStr = new Date().toLocaleDateString("en-GB"); // DD/MM/YYYY format
+
+    const userDate = window.prompt(
+      `Mark ${targetLabel} Payment as PAID for LR #${lrNumber || "-"}?\n\nAmount: ₹${Number(amount || 0).toLocaleString("en-IN")}\n\nEnter Payment Date (DD/MM/YYYY):`,
+      todayStr
+    );
+
+    if (!userDate) {
+      return; // Cancelled
+    }
+
     setUpdatingId(lrId);
     try {
       const payload = {};
-      const today = new Date().toISOString().split("T")[0];
 
       if (type === "PARTY") {
-        payload.partyPaymentStatus = newStatus;
-        payload.partyPaidAmount = newStatus === "PAID" ? amount : 0;
-        payload.partyPaidDate = newStatus === "PAID" ? today : "";
+        payload.partyPaymentStatus = "PAID";
+        payload.partyPaidAmount = amount;
+        payload.partyPaidDate = userDate.trim();
       } else if (type === "TRUCK") {
-        payload.truckPaymentStatus = newStatus;
-        payload.truckPaidAmount = newStatus === "PAID" ? amount : 0;
-        payload.truckPaidDate = newStatus === "PAID" ? today : "";
+        payload.truckPaymentStatus = "PAID";
+        payload.truckPaidAmount = amount;
+        payload.truckPaidDate = userDate.trim();
       }
 
       const res = await fetch(`http://localhost:8002/api/lr-entries/${lrId}/payment-status`, {
@@ -347,10 +358,17 @@ export default function AccountingPage() {
                         </td>
                         <td className="py-2.5 px-3 text-center">
                           {isPaid ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>PAID</span>
-                            </span>
+                            <div className="flex flex-col items-center">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                                <CheckCircle2 className="w-3 h-3" />
+                                <span>PAID</span>
+                              </span>
+                              {lr.partyPaidDate && (
+                                <span className="text-[10px] text-emerald-400/80 font-mono mt-0.5">
+                                  📅 {lr.partyPaidDate}
+                                </span>
+                              )}
+                            </div>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/40">
                               <Clock className="w-3 h-3" />
@@ -655,10 +673,17 @@ export default function AccountingPage() {
                       <td className="py-2.5 px-3 text-center">
                         {activeTab === "PARTY" ? (
                           partyPaid ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>PAID</span>
-                            </span>
+                            <div className="flex flex-col items-center">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                                <CheckCircle2 className="w-3 h-3" />
+                                <span>PAID</span>
+                              </span>
+                              {lr.partyPaidDate && (
+                                <span className="text-[10px] text-emerald-400/80 font-mono mt-0.5">
+                                  📅 {lr.partyPaidDate}
+                                </span>
+                              )}
+                            </div>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/40">
                               <Clock className="w-3 h-3" />
@@ -666,10 +691,17 @@ export default function AccountingPage() {
                             </span>
                           )
                         ) : truckPaid ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>PAID</span>
-                          </span>
+                          <div className="flex flex-col items-center">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>PAID</span>
+                            </span>
+                            {lr.truckPaidDate && (
+                              <span className="text-[10px] text-emerald-400/80 font-mono mt-0.5">
+                                📅 {lr.truckPaidDate}
+                              </span>
+                            )}
+                          </div>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/40">
                             <Clock className="w-3 h-3" />
@@ -684,30 +716,24 @@ export default function AccountingPage() {
                           <span className="text-[10px] text-amber-400 animate-pulse">Updating...</span>
                         ) : activeTab === "PARTY" ? (
                           partyPaid ? (
-                            <button
-                              onClick={() => handleUpdatePayment(lr.id, "PARTY", "UNPAID", 0)}
-                              className="px-2.5 py-0.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded text-[11px] font-bold transition cursor-pointer"
-                            >
-                              Mark Pending
-                            </button>
+                            <span className="text-[11px] font-bold text-emerald-400 opacity-80">
+                              ✓ Completed
+                            </span>
                           ) : (
                             <button
-                              onClick={() => handleUpdatePayment(lr.id, "PARTY", "PAID", amount)}
+                              onClick={() => handleUpdatePayment(lr.id, lr.lrNumber, "PARTY", amount)}
                               className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
                             >
                               Mark PAID
                             </button>
                           )
                         ) : truckPaid ? (
-                          <button
-                            onClick={() => handleUpdatePayment(lr.id, "TRUCK", "UNPAID", 0)}
-                            className="px-2.5 py-0.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded text-[11px] font-bold transition cursor-pointer"
-                          >
-                            Mark Pending
-                          </button>
+                          <span className="text-[11px] font-bold text-emerald-400 opacity-80">
+                            ✓ Completed
+                          </span>
                         ) : (
                           <button
-                            onClick={() => handleUpdatePayment(lr.id, "TRUCK", "PAID", amount)}
+                            onClick={() => handleUpdatePayment(lr.id, lr.lrNumber, "TRUCK", amount)}
                             className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
                           >
                             Mark PAID
