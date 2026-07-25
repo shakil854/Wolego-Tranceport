@@ -88,32 +88,32 @@ export default function Navbar() {
     <header className="bg-slate-900 text-white shadow-md sticky top-0 z-50 border-b border-amber-500/40 font-sans">
       
       {/* Top Info Bar */}
-      <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 px-4 py-1 text-xs font-semibold flex justify-between items-center text-white max-w-full overflow-hidden">
-        <div className="flex items-center space-x-3 overflow-hidden text-ellipsis whitespace-nowrap">
-          <span>📍 8-A NATIONAL HIGHWAY, CHOTILA ROAD, WANKANER-363621 (GUJ.)</span>
+      <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 px-2 sm:px-4 py-1 text-[10px] sm:text-xs font-semibold flex justify-between items-center text-white max-w-full overflow-hidden">
+        <div className="flex items-center space-x-2 overflow-hidden text-ellipsis whitespace-nowrap min-w-0">
+          <span className="truncate">📍 8-A NATIONAL HIGHWAY, WANKANER-363621</span>
           <span className="hidden md:inline">| GSTIN: 24DLTPS8567M1ZT</span>
         </div>
-        <div className="flex items-center space-x-3 text-amber-100 shrink-0">
-          <span className="flex items-center gap-1"><Phone size={12}/> +91 9979111555</span>
+        <div className="flex items-center space-x-2 text-amber-100 shrink-0 ml-2">
+          <span className="flex items-center gap-1 font-mono text-[10px] sm:text-xs"><Phone size={11}/> +91 9979111555</span>
           <span className="hidden sm:inline-flex items-center gap-1"><ShieldCheck size={12}/> Goods Consignment Note</span>
         </div>
       </div>
 
       {/* Main Navbar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           
           {/* Logo / Brand */}
-          <Link to={isParty ? "/accounting" : "/"} className="flex items-center space-x-3 group">
-            <div className="bg-white p-1 rounded-lg shadow-lg transform group-hover:scale-105 transition-transform flex items-center justify-center">
-              <img src={logoImg} alt="Wolego Transport Logo" className="h-10 w-auto object-contain" />
+          <Link to={isParty ? "/accounting" : "/"} className="flex items-center space-x-1.5 sm:space-x-3 shrink-0 group">
+            <div className="bg-white p-0.5 sm:p-1 rounded-lg shadow-lg transform group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
+              <img src={logoImg} alt="Wolego Transport Logo" className="h-7 sm:h-10 w-auto object-contain" />
             </div>
-            <div>
-              <div className="font-extrabold text-xl tracking-wider text-amber-400 font-serif leading-none flex items-center gap-2">
+            <div className="flex flex-col justify-center">
+              <div className="font-extrabold text-xs xs:text-sm sm:text-xl tracking-tight sm:tracking-wider text-amber-400 font-serif leading-none whitespace-nowrap">
                 WOLEGO TRANSPORT
               </div>
-              <div className="text-[10px] uppercase tracking-widest text-slate-400 font-medium">
-                Transport Contractor & Commission Agent
+              <div className="text-[7.5px] xs:text-[9px] sm:text-[10px] uppercase tracking-wider text-slate-400 font-medium leading-tight whitespace-nowrap">
+                Transport Contractor & Agent
               </div>
             </div>
           </Link>
@@ -230,30 +230,30 @@ export default function Navbar() {
           </nav>
 
           {/* Mobile menu toggle */}
-          <div className="md:hidden flex items-center gap-2">
+          <div className="md:hidden flex items-center gap-1 shrink-0">
             {user && (
               <>
                 <button
                   onClick={() => setIsChangePasswordOpen(true)}
-                  className="p-2 text-amber-400 hover:bg-slate-800 rounded-lg"
+                  className="p-1.5 text-amber-400 hover:bg-slate-800 rounded-lg bg-amber-500/10 border border-amber-500/30"
                   title="Change Password"
                 >
-                  <Key className="w-5 h-5" />
+                  <Key className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="p-2 text-red-400 hover:bg-slate-800 rounded-lg"
+                  className="p-1.5 text-red-400 hover:bg-slate-800 rounded-lg bg-red-500/10 border border-red-500/30"
                   title="Logout"
                 >
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-4 h-4" />
                 </button>
               </>
             )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none"
+              className="p-1.5 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>

@@ -83,11 +83,11 @@ export default function LRList() {
   }
 
   return (
-    <div className="h-[calc(100vh-68px)] overflow-hidden bg-slate-900 p-1.5 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-[calc(100vh-68px)] md:h-[calc(100vh-68px)] overflow-y-auto md:overflow-hidden bg-slate-900 p-1.5 text-slate-100 flex flex-col font-sans">
       <div className="max-w-[1440px] w-full mx-auto flex-1 flex flex-col space-y-1.5 min-h-0">
         
         {/* Sleek Combined Top Header & Control Bar */}
-        <div className="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 shadow flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 shadow flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-2 shrink-0">
           
           {/* Title & Stats */}
           <div className="flex items-center gap-2">

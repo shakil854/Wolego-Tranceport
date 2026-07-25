@@ -134,7 +134,7 @@ export default function PartyMaster() {
   );
 
   return (
-    <div className="h-[calc(100vh-68px)] overflow-hidden bg-slate-900 p-2 text-slate-100 font-sans flex flex-col">
+    <div className="min-h-[calc(100vh-68px)] lg:h-[calc(100vh-68px)] overflow-y-auto lg:overflow-hidden bg-slate-900 p-2 sm:p-3 text-slate-100 font-sans flex flex-col pb-8 lg:pb-2">
       <div className="max-w-[1440px] w-full mx-auto flex-1 flex flex-col min-h-0 space-y-2">
 
         {/* Status Notification Alert */}
@@ -145,13 +145,13 @@ export default function PartyMaster() {
         )}
 
         {/* 50-50 Split Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 flex-1 min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
           
           {/* LEFT COLUMN: Clean Add New Party Form */}
-          <div className="bg-sky-900/90 border-2 border-yellow-400 rounded-lg shadow-xl overflow-hidden backdrop-blur-sm flex flex-col justify-between">
+          <div className="bg-sky-900/90 border-2 border-yellow-400 rounded-lg shadow-xl overflow-visible lg:overflow-hidden backdrop-blur-sm flex flex-col justify-between">
             
             {/* Form Title Header */}
-            <div className="bg-sky-950 px-3 py-1 border-b border-yellow-400 flex justify-between items-center shrink-0">
+            <div className="bg-sky-950 px-3 py-1.5 border-b border-yellow-400 flex justify-between items-center shrink-0">
               <h2 className="text-xs sm:text-sm font-black text-blue-100 uppercase tracking-wider flex items-center gap-1.5">
                 <Plus className="w-4 h-4 text-yellow-400" /> Add New Party
               </h2>
@@ -161,7 +161,7 @@ export default function PartyMaster() {
             </div>
 
             {/* Form Inputs */}
-            <form onSubmit={handleSaveNewParty} className="p-2 space-y-1 flex-1 flex flex-col justify-between overflow-hidden">
+            <form onSubmit={handleSaveNewParty} className="p-2.5 space-y-2 lg:space-y-1 flex-1 flex flex-col lg:justify-between overflow-visible lg:overflow-hidden">
               
               {/* Party Name */}
               <div>
@@ -183,7 +183,7 @@ export default function PartyMaster() {
                 <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                   Address Line 1 & Line 2
                 </label>
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                   <input
                     type="text"
                     value={addFormData.address1}
@@ -203,7 +203,7 @@ export default function PartyMaster() {
 
               {/* City, District, State & Code */}
               <div className="grid grid-cols-12 gap-1.5">
-                <div className="col-span-3">
+                <div className="col-span-6 sm:col-span-3">
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     City
                   </label>
@@ -215,7 +215,7 @@ export default function PartyMaster() {
                     className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
-                <div className="col-span-3">
+                <div className="col-span-6 sm:col-span-3">
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     District
                   </label>
@@ -227,7 +227,7 @@ export default function PartyMaster() {
                     className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
-                <div className="col-span-4">
+                <div className="col-span-8 sm:col-span-4">
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     State
                   </label>
@@ -239,7 +239,7 @@ export default function PartyMaster() {
                     className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-4 sm:col-span-2">
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     Code
                   </label>
@@ -254,7 +254,7 @@ export default function PartyMaster() {
               </div>
 
               {/* GST No. & PAN No. */}
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 <div>
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     GST No.
@@ -282,7 +282,7 @@ export default function PartyMaster() {
               </div>
 
               {/* Contact Name & Mobile Nos */}
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 <div>
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     Contact Person
@@ -346,7 +346,7 @@ export default function PartyMaster() {
           </div>
 
           {/* RIGHT COLUMN: Directory List */}
-          <div className="bg-slate-800 rounded-lg p-2 border border-slate-700 shadow-xl flex flex-col min-h-0 overflow-hidden">
+          <div className="bg-slate-800 rounded-lg p-2.5 border border-slate-700 shadow-xl flex flex-col min-h-[400px] lg:min-h-0 overflow-visible lg:overflow-hidden">
             
             {/* Header & Search Bar */}
             <div className="flex justify-between items-center gap-2 border-b border-slate-700 pb-1.5 shrink-0">

@@ -355,16 +355,16 @@ export default function LREntryForm() {
   }
 
   return (
-    <div className="h-full w-full overflow-hidden bg-slate-900 p-1.5 text-slate-100 flex flex-col flex-1 min-h-0">
+    <div className="min-h-screen md:h-full w-full overflow-y-auto md:overflow-hidden bg-slate-900 p-1.5 text-slate-100 flex flex-col flex-1 min-h-0 font-sans">
       <div className="w-full max-w-full mx-auto flex-1 flex flex-col min-h-0">
 
         {/* Main Classic Software Card Frame */}
         <div className="bg-sky-900/90 border-2 border-sky-400 rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm flex-1 flex flex-col min-h-0">
 
           {/* Header Bar with Action Buttons Inline */}
-          <div className="bg-sky-950 px-3 py-1 border-b border-sky-400 flex justify-between items-center shrink-0">
+          <div className="bg-sky-950 px-3 py-1.5 border-b border-sky-400 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 shrink-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-sm sm:text-base font-black text-white tracking-wide uppercase font-sans">
+              <h1 className="text-xs sm:text-base font-black text-white tracking-wide uppercase font-sans">
                 L/R ENTRY - ADD / EDIT / CHANGE
               </h1>
               {statusMsg && (
@@ -375,11 +375,11 @@ export default function LREntryForm() {
             </div>
 
             {/* Quick Action Buttons in Top Header */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => handleSave()}
-                className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1 transition-all"
+                className="px-2.5 sm:px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded text-[11px] sm:text-xs uppercase shadow flex items-center gap-1 transition-all"
               >
                 <Save size={13} /> Save LR
               </button>
@@ -387,7 +387,7 @@ export default function LREntryForm() {
               <button
                 type="button"
                 onClick={handleSaveAndPrint}
-                className="px-3 py-1 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1 transition-all"
+                className="px-2.5 sm:px-3 py-1 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded text-[11px] sm:text-xs uppercase shadow flex items-center gap-1 transition-all"
               >
                 <Printer size={13} /> Save & Print
               </button>
@@ -398,7 +398,7 @@ export default function LREntryForm() {
                   const saved = handleSave();
                   if (saved) setShowPrintModal(true);
                 }}
-                className="px-2.5 py-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1"
+                className="px-2 py-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded text-[11px] sm:text-xs uppercase shadow flex items-center gap-1"
               >
                 <Download size={13} /> PDF
               </button>
@@ -409,7 +409,7 @@ export default function LREntryForm() {
                   const saved = handleSave();
                   if (saved) setShowPrintModal(true);
                 }}
-                className="px-2.5 py-1 bg-green-600 hover:bg-green-500 text-white font-black rounded text-xs uppercase shadow flex items-center gap-1"
+                className="px-2 py-1 bg-green-600 hover:bg-green-500 text-white font-black rounded text-[11px] sm:text-xs uppercase shadow flex items-center gap-1"
               >
                 <Share2 size={13} /> WhatsApp
               </button>
@@ -417,20 +417,20 @@ export default function LREntryForm() {
               <button
                 type="button"
                 onClick={handleReset}
-                className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded text-xs uppercase transition-colors flex items-center gap-1"
+                className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded text-[11px] sm:text-xs uppercase transition-colors flex items-center gap-1"
               >
                 <RotateCcw size={13} /> Reset
               </button>
             </div>
           </div>
 
-          {/* Form Content (Fits 100% Viewport Height) */}
-          <form onSubmit={handleSave} onKeyDown={handleKeyDown} className="p-2 space-y-1.5 flex-1 flex flex-col justify-between overflow-hidden">
+          {/* Form Content (Fits Viewport Height on PC, Scrollable on Mobile) */}
+          <form onSubmit={handleSave} onKeyDown={handleKeyDown} className="p-2 space-y-1.5 flex-1 flex flex-col justify-between overflow-y-auto md:overflow-hidden">
 
             {/* Row 1: LR Number, Date, From, To, Delivery At, Truck No */}
             <div className="bg-sky-950/80 p-1.5 rounded border border-sky-600/60 grid grid-cols-12 gap-1.5 items-center shrink-0">
 
-              <div className="col-span-2">
+              <div className="col-span-6 sm:col-span-4 md:col-span-2">
                 <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
                   L/R NUMBER
                 </label>
@@ -443,7 +443,7 @@ export default function LREntryForm() {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-6 sm:col-span-4 md:col-span-2">
                 <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
                   DATE
                 </label>
@@ -464,7 +464,7 @@ export default function LREntryForm() {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-6 sm:col-span-4 md:col-span-2">
                 <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
                   FROM PLACE
                 </label>
@@ -477,7 +477,7 @@ export default function LREntryForm() {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-6 sm:col-span-4 md:col-span-2">
                 <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
                   TO PLACE
                 </label>
@@ -490,7 +490,7 @@ export default function LREntryForm() {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-6 sm:col-span-4 md:col-span-2">
                 <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
                   DELIVERY AT
                 </label>
@@ -503,7 +503,7 @@ export default function LREntryForm() {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-6 sm:col-span-4 md:col-span-2">
                 <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
                   TRUCK NO.
                 </label>
@@ -519,7 +519,7 @@ export default function LREntryForm() {
             </div>
 
             {/* Row 2: Consignor & Consignee Columns */}
-            <div className="grid grid-cols-2 gap-1.5 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 shrink-0">
 
               {/* CONSIGNOR BOX */}
               <div className="bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1">
@@ -664,7 +664,7 @@ export default function LREntryForm() {
 
             {/* Row 3: Goods Section */}
             <div className="bg-sky-950/90 p-2 rounded border border-sky-500 space-y-1 shrink-0">
-              <div className="grid grid-cols-12 gap-1.5 text-[10px] font-bold text-sky-200 uppercase px-0.5">
+              <div className="hidden md:grid grid-cols-12 gap-1.5 text-[10px] font-bold text-sky-200 uppercase px-0.5">
                 <div className="col-span-2">No. of Articles</div>
                 <div className="col-span-4">Description of Goods</div>
                 <div className="col-span-2">Weight</div>
@@ -673,7 +673,7 @@ export default function LREntryForm() {
               </div>
 
               <div className="grid grid-cols-12 gap-1.5">
-                <div className="col-span-2 flex gap-1">
+                <div className="col-span-6 md:col-span-2 flex gap-1">
                   <input
                     type="text"
                     value={formData.noOfArticles}
@@ -690,7 +690,7 @@ export default function LREntryForm() {
                   />
                 </div>
 
-                <div className="col-span-4">
+                <div className="col-span-6 md:col-span-4">
                   <input
                     type="text"
                     value={formData.descriptionOfGoods}
@@ -700,7 +700,7 @@ export default function LREntryForm() {
                   />
                 </div>
 
-                <div className="col-span-2">
+                <div className="col-span-4 md:col-span-2">
                   <input
                     type="text"
                     value={formData.weightKgs}
@@ -710,7 +710,7 @@ export default function LREntryForm() {
                   />
                 </div>
 
-                <div className="col-span-2">
+                <div className="col-span-4 md:col-span-2">
                   <input
                     type="text"
                     value={formData.ratePerTon}
@@ -720,7 +720,7 @@ export default function LREntryForm() {
                   />
                 </div>
 
-                <div className="col-span-2">
+                <div className="col-span-4 md:col-span-2">
                   <select
                     value={formData.toPayOrPaid}
                     onChange={(e) => setFormData({ ...formData, toPayOrPaid: e.target.value })}
@@ -734,7 +734,7 @@ export default function LREntryForm() {
 
               {/* Sanitaryware Optional Row */}
               <div className="grid grid-cols-12 gap-1.5 pt-0.5 border-t border-sky-800 items-center">
-                <div className="col-span-2 flex gap-1">
+                <div className="col-span-6 md:col-span-2 flex gap-1">
                   <input
                     type="text"
                     value={formData.noOfArticles2}
@@ -751,7 +751,7 @@ export default function LREntryForm() {
                   />
                 </div>
 
-                <div className="col-span-4">
+                <div className="col-span-6 md:col-span-4">
                   <input
                     type="text"
                     value={formData.descriptionOfGoods2}
@@ -761,17 +761,17 @@ export default function LREntryForm() {
                   />
                 </div>
 
-                <div className="col-span-6 text-[10px] text-amber-300 font-medium italic px-1">
+                <div className="col-span-12 md:col-span-6 text-[10px] text-amber-300 font-medium italic px-1">
                   (Optional 2nd Item: Sanitaryware)
                 </div>
               </div>
             </div>
 
             {/* Row 4: 3-Column Bottom Grid */}
-            <div className="grid grid-cols-12 gap-1.5 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-1.5 shrink-0">
 
               {/* Col A (4 cols): GST Payable By, Bills, Invoice Value */}
-              <div className="col-span-4 bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1 text-xs">
+              <div className="col-span-1 md:col-span-4 bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1 text-xs">
                 <div className="flex items-center justify-between gap-1">
                   <span className="font-extrabold text-yellow-300 text-[10px]">GST PAYABLE:</span>
                   <select
@@ -812,7 +812,7 @@ export default function LREntryForm() {
               </div>
 
               {/* Col B (4 cols): Driver & E-Way Bills */}
-              <div className="col-span-4 bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1 text-xs">
+              <div className="col-span-1 md:col-span-4 bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1 text-xs">
                 <div className="flex items-center justify-between gap-1">
                   <span className="font-extrabold text-yellow-300 text-[10px]">E-WAY BILL & DRIVER DETAILS:</span>
                 </div>
@@ -860,7 +860,7 @@ export default function LREntryForm() {
               </div>
 
               {/* Col C (4 cols): Calculations */}
-              <div className="col-span-4 bg-sky-950/90 p-2 rounded border-2 border-yellow-400 space-y-1 text-xs font-bold">
+              <div className="col-span-1 md:col-span-4 bg-sky-950/90 p-2 rounded border-2 border-yellow-400 space-y-1 text-xs font-bold">
                 <div className="flex items-center justify-between gap-1">
                   <span className="font-extrabold text-yellow-300 text-[10px]">FREIGHT & CALCULATIONS:</span>
                 </div>

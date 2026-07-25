@@ -106,46 +106,46 @@ export default function FreightReceipt() {
   };
 
   return (
-    <div className="h-[calc(100vh-68px)] overflow-hidden bg-slate-900 p-4 text-slate-100 flex flex-col">
+    <div className="min-h-[calc(100vh-68px)] bg-slate-900 p-2 sm:p-4 text-slate-100 flex flex-col overflow-y-auto font-sans">
       
       {/* Top Header Bar */}
-      <div className="max-w-4xl w-full mx-auto bg-slate-800 px-4 py-2.5 rounded-xl border border-slate-700 shadow-lg flex justify-between items-center shrink-0 print:hidden mb-4">
+      <div className="max-w-4xl w-full mx-auto bg-slate-800 px-3 sm:px-4 py-2.5 rounded-xl border border-slate-700 shadow-lg flex flex-wrap justify-between items-center gap-2 shrink-0 print:hidden mb-3">
         <div>
-          <h1 className="text-base sm:text-lg font-black text-amber-400 flex items-center gap-2">
-            <Receipt className="w-6 h-6" /> Freight Receipt Generator
+          <h1 className="text-sm sm:text-lg font-black text-amber-400 flex items-center gap-2">
+            <Receipt className="w-5 h-5 sm:w-6 sm:h-6" /> Freight Receipt Generator
           </h1>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={handlePrint}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow flex items-center gap-2 transition-all transform hover:scale-105"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow flex items-center gap-1.5 transition-all transform hover:scale-105"
           >
-            <Printer size={16} /> Print Receipt
+            <Printer size={15} /> Print Receipt
           </button>
           <button
             onClick={handleExportPDF}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow flex items-center gap-2 transition-all transform hover:scale-105"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow flex items-center gap-1.5 transition-all transform hover:scale-105"
           >
-            <Download size={16} /> Export PDF
+            <Download size={15} /> Export PDF
           </button>
         </div>
       </div>
 
-      {/* Main Full-Width Form Card (Clean 1-Screen View) */}
-      <div className="max-w-4xl w-full mx-auto bg-slate-800/90 rounded-xl p-5 border-2 border-slate-700 shadow-2xl space-y-4 print:hidden">
+      {/* Main Full-Width Form Card */}
+      <div className="max-w-4xl w-full mx-auto bg-slate-800/90 rounded-xl p-3 sm:p-5 border-2 border-slate-700 shadow-2xl space-y-3 sm:space-y-4 print:hidden">
         
         {/* Step 1: Mode Selector */}
-        <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-700 space-y-2">
+        <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-700 space-y-2">
           <label className="text-xs font-extrabold text-amber-400 uppercase tracking-wider block">
             1. Select Receipt Type
           </label>
-          <div className="grid grid-cols-2 gap-3 max-w-md">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 max-w-md">
             <button
               type="button"
               onClick={() => setReceiptType("CHEQUE")}
-              className={`py-2 px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all ${
+              className={`py-2 px-3 sm:px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer ${
                 receiptType === "CHEQUE"
                   ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
                   : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
@@ -157,7 +157,7 @@ export default function FreightReceipt() {
             <button
               type="button"
               onClick={() => setReceiptType("CASH")}
-              className={`py-2 px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all ${
+              className={`py-2 px-3 sm:px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer ${
                 receiptType === "CASH"
                   ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
                   : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
@@ -169,7 +169,7 @@ export default function FreightReceipt() {
         </div>
 
         {/* Step 2: Freight Receipt Form Inputs */}
-        <div className="space-y-3 bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+        <div className="space-y-3 bg-slate-900/60 p-3 sm:p-4 rounded-xl border border-slate-700">
           <h2 className="text-xs font-extrabold text-amber-400 uppercase tracking-wider border-b border-slate-700 pb-1.5">
             2. Freight Receipt Form Details
           </h2>
@@ -239,7 +239,7 @@ export default function FreightReceipt() {
             </div>
           </div>
 
-          {receiptType === "CHEQUE" && (
+          {receiptType === "CHEQUE" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
                 <label className="block text-[10px] font-bold text-slate-300 uppercase mb-0.5">
@@ -260,6 +260,26 @@ export default function FreightReceipt() {
                 </label>
                 <div className="w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded font-mono font-black text-amber-400 text-xs">
                   ₹ {calculatedCashPaid.toLocaleString("en-IN")}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">
+                  Receipt Mode
+                </label>
+                <div className="w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded font-mono font-black text-amber-400 text-xs">
+                  CASH ONLY
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">
+                  Cash Paid (Full Freight)
+                </label>
+                <div className="w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded font-mono font-black text-amber-400 text-xs">
+                  ₹ {calculatedTotalFreight.toLocaleString("en-IN")}
                 </div>
               </div>
             </div>
@@ -331,7 +351,7 @@ export default function FreightReceipt() {
               </tr>
 
               {/* CHEQUE SPECIFIC ROWS */}
-              {receiptType === "CHEQUE" && (
+              {receiptType === "CHEQUE" ? (
                 <>
                   {/* PAID BY CHEQUE */}
                   <tr className="border-b-2 border-black">
@@ -353,6 +373,16 @@ export default function FreightReceipt() {
                     </td>
                   </tr>
                 </>
+              ) : (
+                /* CASH ONLY SPECIFIC ROW */
+                <tr className="border-b-2 border-black">
+                  <td className="w-1/2 p-3 font-extrabold uppercase bg-gray-100 border-r-2 border-black">
+                    CASH PAID
+                  </td>
+                  <td className="w-1/2 p-3 font-mono font-black text-base text-center">
+                    {calculatedTotalFreight > 0 ? calculatedTotalFreight.toLocaleString("en-IN") : ""}
+                  </td>
+                </tr>
               )}
 
               {/* REMARKS */}
