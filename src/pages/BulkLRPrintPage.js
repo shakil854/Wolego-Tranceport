@@ -125,8 +125,18 @@ export default function BulkLRPrintPage() {
   };
 
   const renderLRDocument = (lrData) => (
-    <div className="border-2 border-slate-900 bg-white text-slate-900 h-full flex flex-col justify-between print-document font-sans text-xs box-border overflow-hidden">
-      <div className="flex-1 flex flex-col justify-between">
+    <div className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document relative overflow-hidden text-xs font-sans">
+      
+      {/* Background Watermark Logo */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden print:hidden">
+        <img
+          src={logoImg}
+          alt="Watermark Logo"
+          className="w-[450px] max-w-[75%] opacity-[0.08] object-contain mix-blend-multiply"
+        />
+      </div>
+
+      <div className="relative z-10 flex-1 flex flex-col justify-between">
         
         {/* Header Bar */}
         <div className="border-b-2 border-slate-900 p-3 pb-2">
@@ -221,7 +231,8 @@ export default function BulkLRPrintPage() {
 
         {/* Consignor & Consignee Box */}
         <div className="grid grid-cols-2 border-b-2 border-slate-900 divide-x-2 divide-slate-900 min-h-[90px]">
-          
+
+          {/* Consignor Column */}
           <div className="p-2 space-y-1">
             <div className="font-extrabold text-[11px] underline uppercase text-slate-800">
               CONSIGNOR'S NAME & ADDRESS
@@ -235,6 +246,7 @@ export default function BulkLRPrintPage() {
             </div>
           </div>
 
+          {/* Consignee Column */}
           <div className="p-2 space-y-1">
             <div className="font-extrabold text-[11px] underline uppercase text-slate-800">
               CONSIGNEE'S NAME & ADDRESS
@@ -300,38 +312,46 @@ export default function BulkLRPrintPage() {
           </table>
         </div>
 
-        {/* Bottom Grid */}
+        {/* Bottom Grid: Charges, GST, Invoice, Insurance, Bank details */}
         <div className="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[400px]">
-          
+
+          {/* Left Column (7 cols) */}
           <div className="col-span-7 text-[10px] flex flex-col justify-between h-full">
+            {/* 1. GST Payable By */}
             <div className="font-bold text-slate-900 border-b-2 border-slate-900 px-2 py-1.5">
               GST PAYABLE BY: <span className="bg-yellow-300 px-2 py-0.5 border border-slate-800 rounded font-black">{lrData.gstPayableBy || "CONSIGNEE"}</span>
             </div>
 
+            {/* 2. Invoice No */}
             <div className="font-bold border-b-2 border-slate-900 px-2 py-1.5">
               INVOICE NO. : <span className="font-mono text-xs">{lrData.billNumbers || ""}</span>
             </div>
 
+            {/* 3. Value Rs */}
             <div className="font-bold border-b-2 border-slate-900 px-2 py-1.5">
               VALUE RS. : <span className="font-mono text-xs">{lrData.invoiceValue || ""}</span>
             </div>
 
+            {/* 4. Consignor E-Way Bill */}
             <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1.5">
               CONSIGNOR E-WAY BILL: <strong>{lrData.consignorEwayBill || ""}</strong>
             </div>
 
+            {/* 5. Consignee E-Way Bill */}
             <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1.5">
               CONSIGNEE E-WAY BILL: <strong>{lrData.consigneeEwayBill || ""}</strong>
             </div>
 
+            {/* 6. Remarks / Disclaimer */}
             <div className="px-2 py-1">
               <div className="font-extrabold uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
                 {lrData.remarks || "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA."}
               </div>
             </div>
 
+            {/* 7. Insurance Declaration Box */}
             <div className="px-2 py-1">
-              <div className="border-2 border-slate-900 p-1.5 rounded text-[9px] bg-slate-50 space-y-0.5">
+              <div className="border-2 border-slate-900 p-1.5 rounded text-[9px] bg-transparent space-y-0.5">
                 <div className="font-extrabold uppercase underline">INSURANCE :</div>
                 <div>THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
                 <div className="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-mono">
@@ -342,8 +362,9 @@ export default function BulkLRPrintPage() {
               </div>
             </div>
 
+            {/* 8. ICICI Bank Payment Details */}
             <div className="p-2">
-              <div className="border-2 border-blue-900 p-1.5 rounded bg-blue-50/50 text-[9.5px]">
+              <div className="border-2 border-blue-900 p-1.5 rounded bg-transparent text-[9.5px]">
                 <div className="font-black text-blue-950 uppercase border-b border-blue-200 pb-0.5 mb-0.5">
                   ICICI BANK LTD (RTGS / NEFT PAYMENT)
                 </div>
@@ -357,49 +378,51 @@ export default function BulkLRPrintPage() {
             </div>
           </div>
 
-          <div className="col-span-5 bg-slate-50 flex flex-col justify-between font-mono text-xs h-full">
-            <div className="space-y-0">
-              <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2 py-1.5">
+          {/* Right Column (5 cols) */}
+          <div className="col-span-5 bg-transparent flex flex-col justify-between font-mono text-xs h-full">
+            <div>
+              <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100/40">
                 <span>FREIGHT</span>
                 <span>{lrData.freightAmount || 0}</span>
               </div>
 
-              <div className="flex justify-between text-slate-700 px-2 py-1">
+              <div className="flex justify-between text-slate-700 px-2.5 py-2 border-b border-slate-200">
                 <span>Add : S-G.S.T. @ 2.5%</span>
                 <span>{lrData.sgstAmount || "0.00"}</span>
               </div>
 
-              <div className="flex justify-between text-slate-700 px-2 py-1">
+              <div className="flex justify-between text-slate-700 px-2.5 py-2 border-b border-slate-200">
                 <span>Add : C-G.S.T. @ 2.5%</span>
                 <span>{lrData.cgstAmount || "0.00"}</span>
               </div>
 
-              <div className="flex justify-between text-slate-700 px-2 py-1">
+              <div className="flex justify-between text-slate-700 px-2.5 py-2 border-b-2 border-slate-900">
                 <span>Add : I-G.S.T. @ 5%</span>
                 <span>{lrData.igstAmount || "0.00"}</span>
               </div>
 
-              <div className="flex justify-between font-bold border-t-2 border-b-2 border-slate-900 px-2 py-1.5">
+              <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100/40">
                 <span>TOTAL WITH GST</span>
                 <span>{lrData.totalWithGst || lrData.freightAmount}</span>
               </div>
 
-              <div className="flex justify-between text-slate-700 px-2 py-1">
+              <div className="flex justify-between text-slate-700 px-2.5 py-2 border-b border-slate-200">
                 <span>Other Charges</span>
                 <span>{lrData.otherCharges || "0.00"}</span>
               </div>
 
-              <div className="flex justify-between text-slate-700 border-b-2 border-slate-900 px-2 py-1.5">
+              <div className="flex justify-between text-slate-700 border-b-2 border-slate-900 px-2.5 py-2">
                 <span>Less : Advance Paid</span>
                 <span>{lrData.lessAdvancePaid || "0.00"}</span>
               </div>
 
-              <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2 py-1.5 text-slate-950">
+              <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-yellow-100/40">
                 <span>NET TOTAL:</span>
                 <span>₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
               </div>
             </div>
 
+            {/* Signatory Block Inside Grid */}
             <div className="text-right font-sans p-2 mt-auto flex flex-col items-end justify-end min-h-[60px]">
               <div className="font-extrabold uppercase text-[11px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
               {signatureImg ? (
@@ -423,7 +446,7 @@ export default function BulkLRPrintPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-2 sm:p-4 font-sans print:bg-white print:p-0 print:m-0">
+    <div className="min-h-screen bg-slate-900 text-slate-100 p-2 sm:p-4 font-sans print:bg-white print:p-0 print:m-0 print:block print:h-auto print:overflow-visible">
       
       {/* On-Screen Controls (Hidden during Browser Print) */}
       <div className="max-w-7xl mx-auto space-y-4 print:hidden">

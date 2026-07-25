@@ -8,7 +8,7 @@
   }
 }
 
-/* Guaranteed 1-Sheet A4 Portrait Print Stylesheet */
+/* Guaranteed 1-Sheet & Multi-Page A4 Portrait Print Stylesheet */
 @media print {
   @page {
     size: A4 portrait;
@@ -21,7 +21,17 @@
     color-adjust: exact !important;
   }
 
-  html, body {
+  html, body, #root, #root *, main {
+    overflow: visible !important;
+  }
+
+  html, body, #root, #root > div, main {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    position: static !important;
+    display: block !important;
+    flex: none !important;
     background-color: #ffffff !important;
     background: #ffffff !important;
   }
@@ -34,15 +44,13 @@
     padding: 4mm !important;
     margin: 0 !important;
     box-shadow: none !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-height: 100vh !important;
+    width: 100% !important;
+    height: 285mm !important;
+    max-height: 285mm !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    page-break-before: avoid !important;
-    page-break-after: avoid !important;
   }
 
   .print-document {
@@ -63,15 +71,16 @@
     padding: 4mm !important;
     margin: 0 !important;
     box-shadow: none !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-height: 100vh !important;
+    width: 100% !important;
+    height: 287mm !important;
+    max-height: 287mm !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
     page-break-after: always !important;
     break-after: page !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    display: block !important;
   }
 
   .range-print-sheet:last-child {
