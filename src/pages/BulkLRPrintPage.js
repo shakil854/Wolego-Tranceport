@@ -1,0 +1,712 @@
+import React, { useState, useEffect } from "react";
+import { fetchLREntriesFromDB } from "../utils/storage";
+import { Printer, RefreshCw, Eye, CheckSquare, Layers, ArrowRight, FileText, Info } from "lucide-react";
+import logoImg from "../assets/logo.png";
+
+export default function BulkLRPrintPage() {
+  const [lrEntries, setLrEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Range inputs (e.g. From 0001 to 2001)
+  const [fromLR, setFromLR] = useState("0001");
+  const [toLR, setToLR] = useState("2001");
+
+  // Default: Only Office Copy Checked (as requested!)
+  const [copyState, setCopyState] = useState({
+    consignor: false,
+    consignee: false,
+    truck: false,
+    office: true,
+  });
+
+  const [previewLR, setPreviewLR] = useState(null);
+  const signatureImg = localStorage.getItem("wolego_digital_signature") || null;
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    const data = await fetchLREntriesFromDB();
+    const loaded = data || [];
+    setLrEntries(loaded);
+
+    if (loaded.length > 0) {
+      const numbers = loaded.map((lr) => extractLRNumber(lr.lrNumber)).filter((n) => n > 0);
+      if (numbers.length > 0) {
+        const minNum = Math.min(...numbers);
+        const maxNum = Math.max(...numbers);
+        setFromLR(String(minNum).padStart(4, "0"));
+        setToLR(String(maxNum).padStart(4, "0"));
+      }
+    }
+    setLoading(false);
+  };
+
+  const extractLRNumber = (val) => {
+    if (!val) return 0;
+    const digits = String(val).replace(/\D/g, "");
+    return digits ? parseInt(digits, 10) : 0;
+  };
+
+  const handleCopyToggle = (key) => {
+    setCopyState((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const formatDateDisplay = (dateVal) => {
+    if (!dateVal) return new Date().toLocaleDateString("en-IN");
+    if (typeof dateVal === "string" && dateVal.includes("-")) {
+      const parts = dateVal.split("T")[0].split("-");
+      if (parts.length === 3) {
+        const [y, m, d] = parts;
+        return `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
+      }
+    }
+    return new Date(dateVal).toLocaleDateString("en-IN");
+  };
+
+  const startNum = extractLRNumber(fromLR);
+  const endNum = extractLRNumber(toLR);
+
+  const filteredLRs = lrEntries.filter((lr) => {
+    const lrNum = extractLRNumber(lr.lrNumber);
+
+    if (startNum > 0 && endNum > 0) {
+      const low = Math.min(startNum, endNum);
+      const high = Math.max(startNum, endNum);
+      if (lrNum > 0) {
+        return lrNum >= low && lrNum <= high;
+      }
+    }
+
+    if (fromLR && toLR) {
+      const cleanLR = (lr.lrNumber || "").toLowerCase();
+      const cleanFrom = fromLR.toLowerCase();
+      const cleanTo = toLR.toLowerCase();
+      return cleanLR >= cleanFrom && cleanLR <= cleanTo;
+    }
+
+    return true;
+  });
+
+  filteredLRs.sort((a, b) => {
+    const numA = extractLRNumber(a.lrNumber);
+    const numB = extractLRNumber(b.lrNumber);
+    if (numA > 0 && numB > 0) return numA - numB;
+    return (a.lrNumber || "").localeCompare(b.lrNumber || "", undefined, { numeric: true });
+  });
+
+  const handlePreset = (type) => {
+    if (lrEntries.length === 0) return;
+    const numbers = lrEntries.map((lr) => extractLRNumber(lr.lrNumber)).filter((n) => n > 0);
+    if (numbers.length === 0) return;
+
+    const minNum = Math.min(...numbers);
+    const maxNum = Math.max(...numbers);
+
+    if (type === "all") {
+      setFromLR(String(minNum).padStart(4, "0"));
+      setToLR(String(maxNum).padStart(4, "0"));
+    } else if (type === "sample0001to2001") {
+      setFromLR("0001");
+      setToLR("2001");
+    } else if (type === "last20") {
+      const sorted = [...numbers].sort((a, b) => a - b);
+      const end = sorted[sorted.length - 1];
+      const start = sorted[Math.max(0, sorted.length - 20)];
+      setFromLR(String(start).padStart(4, "0"));
+      setToLR(String(end).padStart(4, "0"));
+    }
+  };
+
+  const handlePrintAll = () => {
+    window.print();
+  };
+
+  const renderLRDocument = (lrData) => (
+    <div className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] flex flex-col justify-between print-document font-sans text-xs">
+      <div className="flex-1 flex flex-col justify-between">
+        
+        {/* Header Bar */}
+        <div className="border-b-2 border-slate-900 p-3 pb-2">
+          
+          {/* Copy Checkboxes Header */}
+          <div className="flex flex-wrap justify-between items-center text-[10px] font-bold border-b border-slate-300 pb-1 mb-2">
+            <div className="flex space-x-4 uppercase">
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" checked={Boolean(copyState.consignor)} onChange={() => handleCopyToggle("consignor")} className="w-3 h-3 accent-slate-900" /> CONSIGNOR COPY
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" checked={Boolean(copyState.consignee)} onChange={() => handleCopyToggle("consignee")} className="w-3 h-3 accent-slate-900" /> CONSIGNEE COPY
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" checked={Boolean(copyState.truck)} onChange={() => handleCopyToggle("truck")} className="w-3 h-3 accent-slate-900" /> TRUCK COPY
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" checked={Boolean(copyState.office)} onChange={() => handleCopyToggle("office")} className="w-3 h-3 accent-slate-900" /> OFFICE COPY
+              </label>
+            </div>
+            <div className="italic text-slate-600 font-serif">EVERYTHING IS FAST</div>
+          </div>
+
+          {/* Company Banner & Logo */}
+          <div className="grid grid-cols-12 gap-2 items-center my-1">
+            <div className="col-span-3 flex justify-center items-center">
+              <img src={logoImg} alt="Wolego Transport Logo" className="h-16 sm:h-20 w-auto object-contain max-w-full" />
+            </div>
+
+            <div className="col-span-9 text-left">
+              <h1 className="text-2xl sm:text-3xl font-black text-green-800 tracking-wider font-serif uppercase leading-none">
+                WOLEGO TRANSPORT
+              </h1>
+              <div className="text-[11px] font-extrabold uppercase tracking-wide text-slate-800 mt-1">
+                TRANSPORT CONTRACTOR AND COMMISSION AGENT
+              </div>
+              <div className="text-[10px] text-slate-700 font-medium leading-tight">
+                8-A NATIONAL HIGHWAY, CHOTILA ROAD, CHANDRAPUR, WANKANER-363 621, DIST. MORBI, (GUJ.)
+              </div>
+              <div className="text-[10px] font-bold text-slate-900 flex flex-wrap gap-x-4 mt-0.5">
+                <span>GSTIN NO.: 24DLTPS8567M1ZT</span>
+                <span>PAN NO.: DLTPS8567M</span>
+                <span>MOBILE: +91 99 79 111 555 / 81 41 111 555</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Title Strip */}
+        <div className="bg-slate-900 text-white font-extrabold text-center py-1 tracking-wider text-xs uppercase flex justify-between px-3 border-b-2 border-slate-900">
+          <span>AT OWNER'S RISK</span>
+          <span>GOODS CONSIGNMENT NOTE</span>
+          <span>SUBJECT TO WANKANER JURISDICTION</span>
+        </div>
+
+        {/* LR Header Grid (LR NO, DATE, FROM, TO) */}
+        <div className="grid grid-cols-12 border-b-2 border-slate-900 font-bold text-[11px] divide-x-2 divide-slate-900">
+          <div className="col-span-3 p-1.5 bg-slate-100 flex items-center gap-2">
+            <span>L.R. NO. :</span>
+            <span className="text-lg font-black text-rose-700 font-mono">{lrData.lrNumber}</span>
+          </div>
+          <div className="col-span-3 p-1.5 flex items-center gap-2">
+            <span>DATE :</span>
+            <span>{formatDateDisplay(lrData.dateTime)}</span>
+          </div>
+          <div className="col-span-3 p-1.5 flex items-center gap-2">
+            <span>FROM :</span>
+            <span className="uppercase font-extrabold">{lrData.fromPlace || ""}</span>
+          </div>
+          <div className="col-span-3 p-1.5 flex items-center gap-2">
+            <span>TO :</span>
+            <span className="uppercase font-extrabold">{lrData.toPlace || ""}</span>
+          </div>
+        </div>
+
+        {/* Truck No & Delivery At */}
+        <div className="grid grid-cols-12 border-b-2 border-slate-900 font-bold text-[11px] divide-x-2 divide-slate-900">
+          <div className="col-span-6 p-1.5 flex items-center gap-2">
+            <span>DELIVERY AT :</span>
+            <span className="font-extrabold uppercase bg-yellow-200 px-2 py-0.5 border border-slate-400">
+              {lrData.deliveryAt || ""}
+            </span>
+          </div>
+          <div className="col-span-6 p-1.5 flex items-center gap-2">
+            <span>TRUCK NO. :</span>
+            <span className="font-mono text-base font-black tracking-wider uppercase text-blue-900">
+              {lrData.truckNo}
+            </span>
+          </div>
+        </div>
+
+        {/* Consignor & Consignee Box */}
+        <div className="grid grid-cols-2 border-b-2 border-slate-900 divide-x-2 divide-slate-900 min-h-[90px]">
+          
+          <div className="p-2 space-y-1">
+            <div className="font-extrabold text-[11px] underline uppercase text-slate-800">
+              CONSIGNOR'S NAME & ADDRESS
+            </div>
+            <div className="font-bold text-xs text-slate-950 uppercase whitespace-pre-line leading-tight">{lrData.consignorName}</div>
+            <div className="text-[10px] text-slate-700 leading-normal uppercase whitespace-pre-line">
+              {lrData.consignorAddress}
+            </div>
+            <div className="font-mono font-bold text-[11px] pt-1 border-t border-slate-300 mt-1">
+              CONSIGNOR GSTIN NO. : <span className="text-blue-900">{lrData.consignorGst || ""}</span>
+            </div>
+          </div>
+
+          <div className="p-2 space-y-1">
+            <div className="font-extrabold text-[11px] underline uppercase text-slate-800">
+              CONSIGNEE'S NAME & ADDRESS
+            </div>
+            <div className="font-bold text-sm text-slate-950 uppercase">{lrData.consigneeName}</div>
+            <div className="text-[10px] text-slate-700 leading-normal uppercase whitespace-pre-line">
+              {lrData.consigneeAddress}
+            </div>
+            <div className="font-mono font-bold text-[11px] pt-1 border-t border-slate-300 mt-1">
+              CONSIGNEE GSTIN NO. : <span className="text-blue-900">{lrData.consigneeGst || ""}</span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Goods Table */}
+        <div className="border-b-2 border-slate-900 min-h-[110px]">
+          <table className="w-full text-left border-collapse text-[11px]">
+            <thead>
+              <tr className="bg-slate-200 border-b-2 border-slate-900 font-extrabold uppercase text-center divide-x-2 divide-slate-900">
+                <th className="p-1.5 w-24">NO. OF ARTICLE</th>
+                <th className="p-1.5">DESCRIPTION OF GOODS</th>
+                <th className="p-1.5 w-32">WEIGHT</th>
+                <th className="p-1.5 w-28">RATE</th>
+                <th className="p-1.5 w-36">FREIGHT ({lrData.toPayOrPaid || "TO-PAY"})</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y border-b-2 border-slate-900 font-semibold">
+              <tr className="divide-x-2 divide-slate-900 text-center min-h-[80px]">
+                <td className="p-2 font-bold align-top">
+                  <div className="min-h-[34px] flex flex-col justify-start">
+                    <div>{lrData.noOfArticles}</div>
+                    <span className="text-[10px] font-normal">{lrData.bundles || ""}</span>
+                  </div>
+                  {lrData.noOfArticles2 && (
+                    <div className="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
+                      <div>{lrData.noOfArticles2}</div>
+                      <span className="text-[10px] font-normal">{lrData.bundles2 || "BUNDLE"}</span>
+                    </div>
+                  )}
+                </td>
+                <td className="p-2 align-top text-left">
+                  <div className="min-h-[34px] flex flex-col justify-start">
+                    <div className="font-bold uppercase text-sm">{lrData.descriptionOfGoods}</div>
+                  </div>
+                  {lrData.noOfArticles2 && (
+                    <div className="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
+                      <div className="font-bold uppercase text-sm">{lrData.descriptionOfGoods2 || "SANITARYWARE"}</div>
+                    </div>
+                  )}
+                </td>
+                <td className="p-2 font-mono font-bold align-top">
+                  {lrData.weightKgs ? `${lrData.weightKgs} K.G.` : ""}
+                </td>
+                <td className="p-2 font-mono font-bold align-top">
+                  {lrData.ratePerTon ? `${lrData.ratePerTon} ${lrData.rateType || ""}` : ""}
+                </td>
+                <td className="p-2 font-mono font-bold text-right align-top text-sm">
+                  {lrData.freightAmount || ""}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Bottom Grid */}
+        <div className="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[400px]">
+          
+          <div className="col-span-7 text-[10px] flex flex-col justify-between h-full">
+            <div className="font-bold text-slate-900 border-b-2 border-slate-900 px-2 py-1.5">
+              GST PAYABLE BY: <span className="bg-yellow-300 px-2 py-0.5 border border-slate-800 rounded font-black">{lrData.gstPayableBy || "CONSIGNEE"}</span>
+            </div>
+
+            <div className="font-bold border-b-2 border-slate-900 px-2 py-1.5">
+              INVOICE NO. : <span className="font-mono text-xs">{lrData.billNumbers || ""}</span>
+            </div>
+
+            <div className="font-bold border-b-2 border-slate-900 px-2 py-1.5">
+              VALUE RS. : <span className="font-mono text-xs">{lrData.invoiceValue || ""}</span>
+            </div>
+
+            <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1.5">
+              CONSIGNOR E-WAY BILL: <strong>{lrData.consignorEwayBill || ""}</strong>
+            </div>
+
+            <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1.5">
+              CONSIGNEE E-WAY BILL: <strong>{lrData.consigneeEwayBill || ""}</strong>
+            </div>
+
+            <div className="px-2 py-1">
+              <div className="font-extrabold uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
+                {lrData.remarks || "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA."}
+              </div>
+            </div>
+
+            <div className="px-2 py-1">
+              <div className="border-2 border-slate-900 p-1.5 rounded text-[9px] bg-slate-50 space-y-0.5">
+                <div className="font-extrabold uppercase underline">INSURANCE :</div>
+                <div>THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
+                <div className="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-mono">
+                  <span>COMPANY: ________</span>
+                  <span>POLICY: ________</span>
+                  <span>RISK: ________</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-2">
+              <div className="border-2 border-blue-900 p-1.5 rounded bg-blue-50/50 text-[9.5px]">
+                <div className="font-black text-blue-950 uppercase border-b border-blue-200 pb-0.5 mb-0.5">
+                  ICICI BANK LTD (RTGS / NEFT PAYMENT)
+                </div>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 font-semibold">
+                  <div>NAME : <span className="font-bold">WOLEGO TRANSPORT</span></div>
+                  <div>ACCOUNT NO. : <span className="font-mono font-bold">118405500444</span></div>
+                  <div>IFSC CODE : <span className="font-mono font-bold">ICIC0001184</span></div>
+                  <div>BRANCH : <span className="font-bold">WANKANER</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-span-5 bg-slate-50 flex flex-col justify-between font-mono text-xs h-full">
+            <div className="space-y-0">
+              <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2 py-1.5">
+                <span>FREIGHT</span>
+                <span>{lrData.freightAmount || 0}</span>
+              </div>
+
+              <div className="flex justify-between text-slate-700 px-2 py-1">
+                <span>Add : S-G.S.T. @ 2.5%</span>
+                <span>{lrData.sgstAmount || "0.00"}</span>
+              </div>
+
+              <div className="flex justify-between text-slate-700 px-2 py-1">
+                <span>Add : C-G.S.T. @ 2.5%</span>
+                <span>{lrData.cgstAmount || "0.00"}</span>
+              </div>
+
+              <div className="flex justify-between text-slate-700 px-2 py-1">
+                <span>Add : I-G.S.T. @ 5%</span>
+                <span>{lrData.igstAmount || "0.00"}</span>
+              </div>
+
+              <div className="flex justify-between font-bold border-t-2 border-b-2 border-slate-900 px-2 py-1.5">
+                <span>TOTAL WITH GST</span>
+                <span>{lrData.totalWithGst || lrData.freightAmount}</span>
+              </div>
+
+              <div className="flex justify-between text-slate-700 px-2 py-1">
+                <span>Other Charges</span>
+                <span>{lrData.otherCharges || "0.00"}</span>
+              </div>
+
+              <div className="flex justify-between text-slate-700 border-b-2 border-slate-900 px-2 py-1.5">
+                <span>Less : Advance Paid</span>
+                <span>{lrData.lessAdvancePaid || "0.00"}</span>
+              </div>
+
+              <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2 py-1.5 text-slate-950">
+                <span>NET TOTAL:</span>
+                <span>₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
+              </div>
+            </div>
+
+            <div className="text-right font-sans p-2 mt-auto flex flex-col items-end justify-end min-h-[60px]">
+              <div className="font-extrabold uppercase text-[11px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
+              {signatureImg ? (
+                <img
+                  src={signatureImg}
+                  alt="Authorised Digital Signature"
+                  className="h-10 w-auto max-w-[150px] object-contain my-1 mix-blend-multiply"
+                />
+              ) : (
+                <div className="my-1 py-1 px-3 border border-emerald-700 bg-emerald-50 rounded text-center text-emerald-900 font-serif italic text-[11px] font-bold shadow-sm inline-block">
+                  <span className="text-emerald-700 not-italic font-sans mr-1">✓</span> Digitally Signed by Wolego Transport
+                </div>
+              )}
+              <div className="text-[9px] text-slate-600 uppercase tracking-wider font-bold">(AUTHORISED SIGNATORY)</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-slate-100 p-2 sm:p-4 font-sans">
+      
+      {/* On-Screen Controls (Hidden during Browser Print) */}
+      <div className="max-w-7xl mx-auto space-y-4 print:hidden">
+        
+        {/* Sleek Header */}
+        <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-xl flex flex-wrap justify-between items-center gap-3">
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-500 text-slate-950 p-2.5 rounded-lg shadow-md">
+              <Printer className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-amber-400 flex items-center gap-2">
+                Range LR Record Print (Sequential LR Print)
+              </h1>
+              <p className="text-xs text-slate-400 font-medium">
+                Select LR From and To numbers (e.g. 0001 to 2001) to print all LRs sequentially.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={loadData}
+              disabled={loading}
+              className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh Data
+            </button>
+
+            <button
+              onClick={handlePrintAll}
+              disabled={filteredLRs.length === 0}
+              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm rounded-lg shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <Printer className="w-5 h-5" /> Print All Range LRs ({filteredLRs.length})
+            </button>
+          </div>
+        </div>
+
+        {/* Range Selection Card */}
+        <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg space-y-4">
+          
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            
+            {/* From LR No. */}
+            <div className="md:col-span-3 space-y-1">
+              <label className="text-xs font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                From LR No. (e.g. 0001)
+              </label>
+              <input
+                type="text"
+                value={fromLR}
+                onChange={(e) => setFromLR(e.target.value)}
+                placeholder="0001"
+                className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white font-mono font-bold focus:outline-none focus:border-amber-400"
+              />
+            </div>
+
+            <div className="hidden md:flex md:col-span-1 justify-center items-center pb-2 text-slate-500 font-bold">
+              <ArrowRight className="w-5 h-5 text-amber-400" />
+            </div>
+
+            {/* To LR No. */}
+            <div className="md:col-span-3 space-y-1">
+              <label className="text-xs font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                To LR No. (e.g. 2001)
+              </label>
+              <input
+                type="text"
+                value={toLR}
+                onChange={(e) => setToLR(e.target.value)}
+                placeholder="2001"
+                className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white font-mono font-bold focus:outline-none focus:border-amber-400"
+              />
+            </div>
+
+            {/* Quick Presets */}
+            <div className="md:col-span-5 space-y-1">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Quick Presets
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => handlePreset("sample0001to2001")}
+                  className="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-amber-300 rounded text-xs font-bold border border-slate-600 transition-all"
+                >
+                  Range 0001 - 2001
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePreset("last20")}
+                  className="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-amber-300 rounded text-xs font-bold border border-slate-600 transition-all"
+                >
+                  Last 20 LRs
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePreset("all")}
+                  className="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-amber-300 rounded text-xs font-bold border border-slate-600 transition-all"
+                >
+                  All LRs
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Copies Selection Bar */}
+          <div className="pt-3 border-t border-slate-700/80 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-extrabold uppercase text-slate-300 flex items-center gap-1">
+                <CheckSquare size={16} className="text-amber-400" /> Copies to Tick:
+              </span>
+              
+              <div className="flex flex-wrap gap-3 items-center text-xs">
+                <label className="flex items-center gap-1.5 cursor-pointer bg-slate-900 px-2.5 py-1.5 rounded border border-slate-700 hover:border-slate-500">
+                  <input
+                    type="checkbox"
+                    checked={copyState.consignor}
+                    onChange={() => handleCopyToggle("consignor")}
+                    className="w-4 h-4 accent-amber-500"
+                  />
+                  <span className="font-semibold text-slate-300">Consignor Copy</span>
+                </label>
+
+                <label className="flex items-center gap-1.5 cursor-pointer bg-slate-900 px-2.5 py-1.5 rounded border border-slate-700 hover:border-slate-500">
+                  <input
+                    type="checkbox"
+                    checked={copyState.consignee}
+                    onChange={() => handleCopyToggle("consignee")}
+                    className="w-4 h-4 accent-amber-500"
+                  />
+                  <span className="font-semibold text-slate-300">Consignee Copy</span>
+                </label>
+
+                <label className="flex items-center gap-1.5 cursor-pointer bg-slate-900 px-2.5 py-1.5 rounded border border-slate-700 hover:border-slate-500">
+                  <input
+                    type="checkbox"
+                    checked={copyState.truck}
+                    onChange={() => handleCopyToggle("truck")}
+                    className="w-4 h-4 accent-amber-500"
+                  />
+                  <span className="font-semibold text-slate-300">Truck Copy</span>
+                </label>
+
+                <label className="flex items-center gap-1.5 cursor-pointer bg-amber-500/20 px-2.5 py-1.5 rounded border-2 border-amber-400">
+                  <input
+                    type="checkbox"
+                    checked={copyState.office}
+                    onChange={() => handleCopyToggle("office")}
+                    className="w-4 h-4 accent-amber-500"
+                  />
+                  <span className="font-extrabold text-amber-300">✓ Office Copy (Checked)</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-amber-200/80 bg-amber-950/40 px-3 py-1 rounded border border-amber-500/30 flex items-center gap-1.5 font-medium">
+              <Info size={14} className="text-amber-400 shrink-0" />
+              <span>Office copy is selected by default for range printing.</span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Results Summary Table */}
+        <div className="bg-slate-800 rounded-xl border border-slate-700 shadow-xl overflow-hidden">
+          
+          <div className="bg-slate-800/90 px-4 py-3 border-b border-slate-700 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Layers className="w-5 h-5 text-amber-400" />
+              <h2 className="text-sm font-black text-slate-100 uppercase tracking-wider">
+                LR Range List ({filteredLRs.length} LRs matched)
+              </h2>
+            </div>
+
+            {filteredLRs.length > 0 && (
+              <span className="text-xs font-mono font-bold text-amber-400 bg-slate-900 px-3 py-1 rounded border border-slate-700">
+                Range: #{filteredLRs[0]?.lrNumber} ➔ #{filteredLRs[filteredLRs.length - 1]?.lrNumber}
+              </span>
+            )}
+          </div>
+
+          {loading ? (
+            <div className="py-12 text-center text-slate-400 font-bold">
+              Loading LRs from database...
+            </div>
+          ) : filteredLRs.length === 0 ? (
+            <div className="py-12 text-center text-slate-400 space-y-2">
+              <FileText className="w-10 h-10 mx-auto text-slate-600" />
+              <p className="font-bold">No LRs found between LR #{fromLR} and #{toLR}.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto max-h-[450px] overflow-y-auto">
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="bg-slate-950 text-amber-400 font-extrabold uppercase sticky top-0 border-b border-slate-700">
+                  <tr>
+                    <th className="p-3 w-12 text-center">#</th>
+                    <th className="p-3">LR No.</th>
+                    <th className="p-3">Date</th>
+                    <th className="p-3">From ➔ To</th>
+                    <th className="p-3">Truck No</th>
+                    <th className="p-3">Consignor</th>
+                    <th className="p-3">Consignee</th>
+                    <th className="p-3 text-right">Freight Amount</th>
+                    <th className="p-3 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700/80 font-medium">
+                  {filteredLRs.map((lr, idx) => (
+                    <tr key={lr.id || idx} className="hover:bg-slate-700/50 transition-colors">
+                      <td className="p-3 text-center font-mono text-slate-400">{idx + 1}</td>
+                      <td className="p-3 font-mono font-black text-amber-400 text-sm">
+                        #{lr.lrNumber}
+                      </td>
+                      <td className="p-3 text-xs whitespace-nowrap">
+                        {lr.dateTime ? new Date(lr.dateTime).toLocaleDateString("en-IN") : "-"}
+                      </td>
+                      <td className="p-3 font-bold uppercase text-slate-200">
+                        {lr.fromPlace || "-"} ➔ {lr.toPlace || "-"}
+                      </td>
+                      <td className="p-3 font-mono font-bold text-white uppercase">
+                        {lr.truckNo || "-"}
+                      </td>
+                      <td className="p-3 font-bold text-white text-xs max-w-[150px] truncate">
+                        {lr.consignorName || "-"}
+                      </td>
+                      <td className="p-3 font-bold text-white text-xs max-w-[150px] truncate">
+                        {lr.consigneeName || "-"}
+                      </td>
+                      <td className="p-3 text-right font-mono font-bold text-emerald-400">
+                        ₹ {lr.netTotalAmount || lr.freightAmount || 0}
+                      </td>
+                      <td className="p-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewLR(lr)}
+                          className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold text-xs rounded transition-all inline-flex items-center gap-1"
+                        >
+                          <Eye size={13} /> Preview
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+        </div>
+
+      </div>
+
+      {/* Single LR Preview Modal */}
+      {previewLR && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto flex flex-col items-center justify-start print:hidden">
+          <div className="w-full max-w-4xl bg-slate-800 p-3 rounded-xl border border-slate-700 mb-3 flex justify-between items-center shadow-2xl">
+            <h3 className="font-extrabold text-amber-400 text-sm flex items-center gap-2">
+              Previewing LR #{previewLR.lrNumber}
+            </h3>
+            <button
+              onClick={() => setPreviewLR(null)}
+              className="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded text-xs transition-all"
+            >
+              Close Preview
+            </button>
+          </div>
+          <div className="w-full max-w-4xl bg-white p-4 rounded shadow-2xl">
+            {renderLRDocument(previewLR)}
+          </div>
+        </div>
+      )}
+
+      {/* PRINTABLE CONTAINER (Rendered only when browser print triggers) */}
+      <div className="hidden print:block bg-white text-black font-sans m-0 p-0">
+        {filteredLRs.map((lr, idx) => (
+          <div key={lr.id || idx} className="print-container print:p-0 print:m-0 print:shadow-none font-sans text-xs">
+            {renderLRDocument(lr)}
+          </div>
+        ))}
+      </div>
+
+    </div>
+  );
+}

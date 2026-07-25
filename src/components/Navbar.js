@@ -1,16 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Truck, Users, FileText, Receipt, Menu, X, Phone, ShieldCheck, FileSpreadsheet } from "lucide-react";
+import {
+  Truck,
+  Users,
+  FileText,
+  Receipt,
+  Menu,
+  X,
+  Phone,
+  ShieldCheck,
+  FileSpreadsheet,
+  Printer,
+  ChevronDown,
+  FolderKanban,
+} from "lucide-react";
 import logoImg from "../assets/logo.png";
 
 export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
-  const navItems = [
+  // Top Primary Navigation Links
+  const primaryItems = [
     { name: "L/R Entry", path: "/lr-entry", icon: Truck },
     { name: "LR Records", path: "/lr-list", icon: FileText },
     { name: "Freight Receipt", path: "/freight-receipt", icon: Receipt },
+  ];
+
+  // Dropdown Items (Range LR Print, Party Statement, CA Excel, Party Master)
+  const dropdownItems = [
+    { name: "Range LR Print", path: "/range-lr-print", icon: Printer },
     { name: "Party Statement", path: "/party-statement", icon: FileSpreadsheet },
     { name: "CA Excel", path: "/ca-excel", icon: FileSpreadsheet },
     { name: "Party Master", path: "/party-master", icon: Users },
@@ -21,8 +42,22 @@ export default function Navbar() {
     return location.pathname.startsWith(path);
   };
 
+  const isDropdownActive = dropdownItems.some((item) => isActive(item.path));
+
+  // Close dropdown when user clicks outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <header className="bg-slate-900 text-white shadow-md sticky top-0 z-50 border-b border-amber-500/40">
+    <header className="bg-slate-900 text-white shadow-md sticky top-0 z-50 border-b border-amber-500/40 font-sans">
+      
       {/* Top Info Bar */}
       <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 px-4 py-1 text-xs font-semibold flex justify-between items-center text-white">
         <div className="flex items-center space-x-3 overflow-hidden text-ellipsis whitespace-nowrap">
@@ -55,8 +90,9 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex space-x-2">
-            {navItems.map((item) => {
+          <nav className="hidden md:flex items-center space-x-2">
+            {/* Primary Nav Items */}
+            {primaryItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
               return (
@@ -74,6 +110,51 @@ export default function Navbar() {
                 </Link>
               );
             })}
+
+            {/* Dropdown Menu for Range LR Print, Party Statement, CA Excel, Party Master */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                onMouseEnter={() => setDropdownOpen(true)}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+                  isDropdownActive
+                    ? "bg-amber-500 text-slate-950 shadow-md font-bold"
+                    : "text-slate-200 hover:bg-slate-800 hover:text-amber-400"
+                }`}
+              >
+                <FolderKanban className="w-4 h-4" />
+                <span>Reports & Master</span>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {/* Dropdown Card */}
+              {dropdownOpen && (
+                <div
+                  onMouseLeave={() => setDropdownOpen(false)}
+                  className="absolute right-0 mt-1 w-56 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 z-50 divide-y divide-slate-700/50 animate-fadeIn"
+                >
+                  {dropdownItems.map((item) => {
+                    const Icon = item.icon;
+                    const active = isActive(item.path);
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.path}
+                        onClick={() => setDropdownOpen(false)}
+                        className={`flex items-center space-x-3 px-4 py-2.5 text-sm font-medium transition-all ${
+                          active
+                            ? "bg-amber-500/20 text-amber-400 font-bold border-l-4 border-amber-400"
+                            : "text-slate-200 hover:bg-slate-700 hover:text-amber-400"
+                        }`}
+                      >
+                        <Icon className="w-4 h-4 text-amber-400" />
+                        <span>{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Mobile menu toggle */}
@@ -91,7 +172,7 @@ export default function Navbar() {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-slate-900 border-t border-slate-800 px-2 pt-2 pb-3 space-y-1 sm:px-3 shadow-2xl">
-          {navItems.map((item) => {
+          {primaryItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
             return (
@@ -110,6 +191,31 @@ export default function Navbar() {
               </Link>
             );
           })}
+
+          <div className="pt-2 border-t border-slate-800">
+            <div className="px-3 text-xs font-bold uppercase text-amber-400 tracking-wider mb-1">
+              Reports & Party Master
+            </div>
+            {dropdownItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium ${
+                    active
+                      ? "bg-amber-500/20 text-amber-400 font-bold border-l-2 border-amber-400"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-amber-400"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 text-amber-400" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       )}
     </header>

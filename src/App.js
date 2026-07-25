@@ -7,6 +7,7 @@ import LRList from "./pages/LRList";
 import FreightReceipt from "./pages/FreightReceipt";
 import PartyStatement from "./pages/PartyStatement";
 import CAExcelExport from "./pages/CAExcelExport";
+import BulkLRPrintPage from "./pages/BulkLRPrintPage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="/lr-entry" element={<LREntryForm />} />
             <Route path="/party-master" element={<PartyMaster />} />
             <Route path="/lr-list" element={<LRList />} />
+            <Route path="/range-lr-print" element={<BulkLRPrintPage />} />
             <Route path="/freight-receipt" element={<FreightReceipt />} />
             <Route path="/party-statement" element={<PartyStatement />} />
             <Route path="/ca-excel" element={<CAExcelExport />} />
