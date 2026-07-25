@@ -212,9 +212,18 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
       {/* Standard Printable Full A4 Page Document */}
       <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-0 print:shadow-none font-sans text-xs">
-        <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document">
+        <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document relative overflow-hidden">
+          
+          {/* Background Watermark Logo (Only for PDF Export - Hidden during Hardcopy Print) */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden print:hidden">
+            <img
+              src={logoImg}
+              alt="Watermark Logo"
+              className="w-[450px] max-w-[75%] opacity-[0.08] object-contain mix-blend-multiply"
+            />
+          </div>
 
-          <div className="flex-1 flex flex-col justify-between">
+          <div className="relative z-10 flex-1 flex flex-col justify-between">
             {/* Header Bar */}
             <div className="border-b-2 border-slate-900 p-3 pb-2">
 
@@ -428,7 +437,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
                 {/* 7. Insurance Declaration Box */}
                 <div className="px-2 py-1">
-                  <div className="border-2 border-slate-900 p-1.5 rounded text-[9px] bg-slate-50 space-y-0.5">
+                  <div className="border-2 border-slate-900 p-1.5 rounded text-[9px] bg-transparent space-y-0.5">
                     <div className="font-extrabold uppercase underline">INSURANCE :</div>
                     <div>THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
                     <div className="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-mono">
@@ -441,7 +450,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
                 {/* 8. ICICI Bank Payment Details */}
                 <div className="p-2">
-                  <div className="border-2 border-blue-900 p-1.5 rounded bg-blue-50/50 text-[9.5px]">
+                  <div className="border-2 border-blue-900 p-1.5 rounded bg-transparent text-[9.5px]">
                     <div className="font-black text-blue-950 uppercase border-b border-blue-200 pb-0.5 mb-0.5">
                       ICICI BANK LTD (RTGS / NEFT PAYMENT)
                     </div>
@@ -456,9 +465,9 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
               </div>
 
               {/* Right Column (5 cols): Freight Breakdown, Net Total & Signatory */}
-              <div className="col-span-5 bg-slate-50 flex flex-col justify-between font-mono text-xs h-full">
+              <div className="col-span-5 bg-transparent flex flex-col justify-between font-mono text-xs h-full">
                 <div>
-                  <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100">
+                  <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100/40">
                     <span>FREIGHT</span>
                     <span>{lrData.freightAmount || 0}</span>
                   </div>
@@ -478,7 +487,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                     <span>{lrData.igstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100">
+                  <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100/40">
                     <span>TOTAL WITH GST</span>
                     <span>{lrData.totalWithGst || lrData.freightAmount}</span>
                   </div>
@@ -493,7 +502,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                     <span>{lrData.lessAdvancePaid || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-yellow-100/60">
+                  <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-yellow-100/40">
                     <span>NET TOTAL:</span>
                     <span>₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
                   </div>
