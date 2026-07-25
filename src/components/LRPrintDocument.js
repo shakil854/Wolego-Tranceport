@@ -147,7 +147,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
   return (
     <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "min-h-screen bg-slate-900 py-4 px-2 sm:px-4 text-slate-900 print:p-0 print:m-0 print:bg-white"}>
-      
+
       {/* Top Action Toolbar (Hidden during Print) */}
       <div className="max-w-4xl mx-auto mb-4 bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 flex flex-wrap justify-between items-center gap-2 print:hidden">
         <button
@@ -213,11 +213,11 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       {/* Standard Printable Full A4 Page Document */}
       <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-0 print:shadow-none font-sans text-xs">
         <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document">
-          
+
           <div className="flex-1 flex flex-col justify-between">
             {/* Header Bar */}
             <div className="border-b-2 border-slate-900 p-3 pb-2">
-              
+
               {/* Copy Checkboxes Header */}
               <div className="flex flex-wrap justify-between items-center text-[10px] font-bold border-b border-slate-300 pb-1 mb-2">
                 <div className="flex space-x-4 uppercase">
@@ -308,7 +308,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
             {/* Consignor & Consignee Box */}
             <div className="grid grid-cols-2 border-b-2 border-slate-900 divide-x-2 divide-slate-900 min-h-[90px]">
-              
+
               {/* Consignor Column */}
               <div className="p-2 space-y-1">
                 <div className="font-extrabold text-[11px] underline uppercase text-slate-800">
@@ -391,7 +391,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
             {/* Bottom Grid: Charges, GST, Invoice, Insurance, Bank details - Stretched to bottom border */}
             <div className="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[400px]">
-              
+
               {/* Left Column (7 cols): Full-width rows stretching edge-to-edge to main grid lines */}
               <div className="col-span-7 text-[10px] flex flex-col justify-between h-full">
                 {/* 1. GST Payable By */}
@@ -457,43 +457,43 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
               {/* Right Column (5 cols): Freight Breakdown, Net Total & Signatory */}
               <div className="col-span-5 bg-slate-50 flex flex-col justify-between font-mono text-xs h-full">
-                <div className="space-y-0">
-                  <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2 py-1.5">
+                <div>
+                  <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100">
                     <span>FREIGHT</span>
                     <span>{lrData.freightAmount || 0}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-700 px-2 py-1">
+                  <div className="flex justify-between text-slate-700 px-2.5 py-2 border-b border-slate-200">
                     <span>Add : S-G.S.T. @ 2.5%</span>
                     <span>{lrData.sgstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-700 px-2 py-1">
+                  <div className="flex justify-between text-slate-700 px-2.5 py-2 border-b border-slate-200">
                     <span>Add : C-G.S.T. @ 2.5%</span>
                     <span>{lrData.cgstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-700 px-2 py-1">
+                  <div className="flex justify-between text-slate-700 px-2.5 py-2 border-b-2 border-slate-900">
                     <span>Add : I-G.S.T. @ 5%</span>
                     <span>{lrData.igstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-bold border-t-2 border-b-2 border-slate-900 px-2 py-1.5">
+                  <div className="flex justify-between font-bold border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100">
                     <span>TOTAL WITH GST</span>
                     <span>{lrData.totalWithGst || lrData.freightAmount}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-700 px-2 py-1">
+                  <div className="flex justify-between text-slate-700 px-2.5 py-2 border-b border-slate-200">
                     <span>Other Charges</span>
                     <span>{lrData.otherCharges || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-700 border-b-2 border-slate-900 px-2 py-1.5">
+                  <div className="flex justify-between text-slate-700 border-b-2 border-slate-900 px-2.5 py-2">
                     <span>Less : Advance Paid</span>
                     <span>{lrData.lessAdvancePaid || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2 py-1.5 text-slate-950">
+                  <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-yellow-100/60">
                     <span>NET TOTAL:</span>
                     <span>₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
                   </div>

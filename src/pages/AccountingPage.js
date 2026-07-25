@@ -11,6 +11,8 @@ import {
   RefreshCw,
   CreditCard,
   Building2,
+  X,
+  Calendar,
 } from "lucide-react";
 
 export default function AccountingPage() {
@@ -29,6 +31,17 @@ export default function AccountingPage() {
 
   // Action modal / quick edit
   const [updatingId, setUpdatingId] = useState(null);
+
+  // Custom Payment Modal State
+  const [paymentModal, setPaymentModal] = useState({
+    isOpen: false,
+    lrId: "",
+    lrNumber: "",
+    type: "PARTY", // "PARTY" or "TRUCK"
+    partyName: "",
+    amount: 0,
+    paymentDate: "",
+  });
 
   // Fetch LRs and Parties
   const fetchData = async () => {
@@ -55,32 +68,56 @@ export default function AccountingPage() {
     fetchData();
   }, []);
 
-  // Update Payment Status Helper with Confirmation & Payment Date
-  const handleUpdatePayment = async (lrId, lrNumber, type, amount) => {
-    const targetLabel = type === "PARTY" ? "Party" : "Truck";
-    const todayStr = new Date().toLocaleDateString("en-GB"); // DD/MM/YYYY format
+  const getTodayIsoDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
-    const userDate = window.prompt(
-      `Mark ${targetLabel} Payment as PAID for LR #${lrNumber || "-"}?\n\nAmount: ₹${Number(amount || 0).toLocaleString("en-IN")}\n\nEnter Payment Date (DD/MM/YYYY):`,
-      todayStr
-    );
-
-    if (!userDate) {
-      return; // Cancelled
+  const formatDisplayDate = (isoStr) => {
+    if (!isoStr) return "";
+    const parts = isoStr.split("-");
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
+    return isoStr;
+  };
+
+  // Open Payment Modal
+  const openPaymentModal = (lrId, lrNumber, type, amount, partyName) => {
+    setPaymentModal({
+      isOpen: true,
+      lrId,
+      lrNumber,
+      type,
+      partyName,
+      amount,
+      paymentDate: getTodayIsoDate(),
+    });
+  };
+
+  // Confirm Payment Submission
+  const handleConfirmPayment = async () => {
+    const { lrId, type, amount, paymentDate } = paymentModal;
+    if (!lrId) return;
 
     setUpdatingId(lrId);
+    setPaymentModal((prev) => ({ ...prev, isOpen: false }));
+
     try {
       const payload = {};
+      const formattedDate = formatDisplayDate(paymentDate) || new Date().toLocaleDateString("en-GB");
 
       if (type === "PARTY") {
         payload.partyPaymentStatus = "PAID";
         payload.partyPaidAmount = amount;
-        payload.partyPaidDate = userDate.trim();
+        payload.partyPaidDate = formattedDate;
       } else if (type === "TRUCK") {
         payload.truckPaymentStatus = "PAID";
         payload.truckPaidAmount = amount;
-        payload.truckPaidDate = userDate.trim();
+        payload.truckPaidDate = formattedDate;
       }
 
       const res = await fetch(`http://localhost:8002/api/lr-entries/${lrId}/payment-status`, {
@@ -721,7 +758,7 @@ export default function AccountingPage() {
                             </span>
                           ) : (
                             <button
-                              onClick={() => handleUpdatePayment(lr.id, lr.lrNumber, "PARTY", amount)}
+                              onClick={() => openPaymentModal(lr.id, lr.lrNumber, "PARTY", amount, partyName)}
                               className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
                             >
                               Mark PAID
@@ -733,7 +770,7 @@ export default function AccountingPage() {
                           </span>
                         ) : (
                           <button
-                            onClick={() => handleUpdatePayment(lr.id, lr.lrNumber, "TRUCK", amount)}
+                            onClick={() => openPaymentModal(lr.id, lr.lrNumber, "TRUCK", amount, partyName)}
                             className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
                           >
                             Mark PAID
@@ -748,6 +785,84 @@ export default function AccountingPage() {
           </table>
         </div>
       </div>
+
+      {/* Custom Payment Confirmation & Date Entry Modal */}
+      {paymentModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-800 border border-amber-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 relative">
+            
+            {/* Header */}
+            <div className="flex justify-between items-center border-b border-slate-700 pb-3">
+              <div className="flex items-center gap-2 text-amber-400 font-bold text-base">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <span>Confirm {paymentModal.type === "PARTY" ? "Party" : "Truck"} Payment</span>
+              </div>
+              <button
+                onClick={() => setPaymentModal((prev) => ({ ...prev, isOpen: false }))}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Info Summary Box */}
+            <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-400 font-medium">LR Number:</span>
+                <span className="font-mono font-bold text-amber-400 text-sm">LR #{paymentModal.lrNumber || "-"}</span>
+              </div>
+              {paymentModal.partyName && (
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-400 font-medium">Party Name:</span>
+                  <span className="font-semibold text-white truncate max-w-[200px]">{paymentModal.partyName}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center text-xs pt-1.5 border-t border-slate-800">
+                <span className="text-slate-400 font-medium">Payment Amount:</span>
+                <span className="font-mono font-extrabold text-emerald-400 text-base">
+                  ₹ {Number(paymentModal.amount || 0).toLocaleString("en-IN")}
+                </span>
+              </div>
+            </div>
+
+            {/* Date Input with Calendar Picker */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                <span>Payment Paid Date (ચુકવણીની તારીખ)</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  value={paymentModal.paymentDate}
+                  onChange={(e) => setPaymentModal((prev) => ({ ...prev, paymentDate: e.target.value }))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 [color-scheme:dark] cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-700/60">
+              <button
+                type="button"
+                onClick={() => setPaymentModal((prev) => ({ ...prev, isOpen: false }))}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl text-xs font-bold transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmPayment}
+                className="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-emerald-600/20 transition cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Mark PAID</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
