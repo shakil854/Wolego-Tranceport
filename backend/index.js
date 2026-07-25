@@ -38,7 +38,7 @@ app.get("/", (req, res) => {
 // Sync database models if connected
 (async () => {
   try {
-    await sequelize.sync({ force: true });
+    await sequelize.sync({ alter: true });
     console.log("Database models synchronized successfully.");
   } catch (error) {
     console.log("Database connection error:", error.message);
