@@ -1,4 +1,5 @@
 import express from "express";
+import bcrypt from "bcrypt";
 import Party from "../models/Party.js";
 import User from "../models/User.js";
 
@@ -32,15 +33,19 @@ router.post("/", async (req, res) => {
         .filter(Boolean);
 
       for (const num of nums) {
-        await User.upsert({
-          id: "USER-PARTY-" + (party.id || partyData.id) + "-" + num.slice(-4),
-          username: num,
-          password: "12345",
-          role: "PARTY",
-          partyId: party.id || partyData.id,
-          partyName: party.partyName || partyData.partyName,
-          mobileNo: num,
-        });
+        const existingUser = await User.findOne({ where: { username: num } });
+        if (!existingUser) {
+          const hashedPassword = await bcrypt.hash("12345", 10);
+          await User.create({
+            id: "USER-PARTY-" + (party.id || partyData.id) + "-" + num.slice(-4),
+            username: num,
+            password: hashedPassword,
+            role: "PARTY",
+            partyId: party.id || partyData.id,
+            partyName: party.partyName || partyData.partyName,
+            mobileNo: num,
+          });
+        }
       }
     }
 

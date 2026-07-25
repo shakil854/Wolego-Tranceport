@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import ChangePasswordModal from "./ChangePasswordModal";
 import {
   Truck,
   Users,
@@ -18,6 +19,7 @@ import {
   LogOut,
   LogIn,
   User,
+  Key,
 } from "lucide-react";
 import logoImg from "../assets/logo.png";
 
@@ -28,6 +30,7 @@ export default function Navbar() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   // Primary Navigation Items for Owner
@@ -184,7 +187,7 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Auth / User Status Badge & Logout */}
+            {/* Auth / User Status Badge & Change Password & Logout */}
             <div className="pl-3 border-l border-slate-700 flex items-center gap-2">
               {user ? (
                 <div className="flex items-center gap-2">
@@ -199,6 +202,13 @@ export default function Navbar() {
                       </div>
                     </div>
                   </div>
+                  <button
+                    onClick={() => setIsChangePasswordOpen(true)}
+                    title="Change Password (पासवर्ड बदलें)"
+                    className="p-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-amber-200 rounded-xl transition cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                  >
+                    <Key className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={handleLogout}
                     title="Logout"
@@ -222,13 +232,22 @@ export default function Navbar() {
           {/* Mobile menu toggle */}
           <div className="md:hidden flex items-center gap-2">
             {user && (
-              <button
-                onClick={handleLogout}
-                className="p-2 text-red-400 hover:bg-slate-800 rounded-lg"
-                title="Logout"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
+              <>
+                <button
+                  onClick={() => setIsChangePasswordOpen(true)}
+                  className="p-2 text-amber-400 hover:bg-slate-800 rounded-lg"
+                  title="Change Password"
+                >
+                  <Key className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-red-400 hover:bg-slate-800 rounded-lg"
+                  title="Logout"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </>
             )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -252,12 +271,23 @@ export default function Navbar() {
                 </div>
                 <div className="text-[11px] text-slate-400 font-mono">Mobile: {user.username}</div>
               </div>
-              <button
-                onClick={handleLogout}
-                className="text-xs text-red-400 font-bold bg-red-500/10 px-2.5 py-1 rounded"
-              >
-                Logout
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setIsChangePasswordOpen(true);
+                  }}
+                  className="text-xs text-amber-300 font-bold bg-amber-500/20 hover:bg-amber-500/30 px-2.5 py-1 rounded flex items-center gap-1"
+                >
+                  <Key size={13} /> Password
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="text-xs text-red-400 font-bold bg-red-500/10 px-2.5 py-1 rounded"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           )}
 
@@ -309,6 +339,14 @@ export default function Navbar() {
           )}
         </div>
       )}
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        user={user}
+      />
     </header>
   );
 }
+
