@@ -11,6 +11,7 @@ import CAExcelExport from "./pages/CAExcelExport";
 import BulkLRPrintPage from "./pages/BulkLRPrintPage";
 import LoginPage from "./pages/LoginPage";
 import AccountingPage from "./pages/AccountingPage";
+import TruckMaster from "./pages/TruckMaster";
 
 // Protected Route for authenticated users
 function ProtectedRoute({ children, allowedRoles }) {
@@ -66,6 +67,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["OWNER"]}>
             <PartyMaster />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/truck-master"
+        element={
+          <ProtectedRoute allowedRoles={["OWNER"]}>
+            <TruckMaster />
           </ProtectedRoute>
         }
       />

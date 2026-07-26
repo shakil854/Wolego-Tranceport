@@ -4,6 +4,7 @@ const API_BASE_URL = "http://localhost:8002/api";
 
 let partiesCache = [];
 let lrCache = [];
+let trucksCache = [];
 
 // Fetch all Parties directly from MySQL Database API
 export const fetchPartiesFromDB = async () => {
@@ -35,9 +36,53 @@ export const fetchLREntriesFromDB = async () => {
   return lrCache;
 };
 
+// Fetch all Trucks directly from MySQL Database API
+export const fetchTrucksFromDB = async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/trucks`);
+    if (res.ok) {
+      const data = await res.json();
+      trucksCache = data || [];
+      return trucksCache;
+    }
+  } catch (err) {
+    console.error("Backend MySQL API Error (Trucks):", err.message);
+  }
+  return trucksCache;
+};
+
 // Synchronous getters
 export const getParties = () => partiesCache;
 export const getLREntries = () => lrCache;
+export const getTrucks = () => trucksCache;
+
+// Save or Update Truck in MySQL Database API
+export const saveTruck = async (truckData) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/trucks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(truckData),
+    });
+    if (res.ok) {
+      return await fetchTrucksFromDB();
+    }
+  } catch (err) {
+    console.error("Save Truck MySQL API Error:", err);
+  }
+  return trucksCache;
+};
+
+// Delete Truck from MySQL Database API
+export const deleteTruck = async (truckId) => {
+  try {
+    await fetch(`${API_BASE_URL}/trucks/${truckId}`, { method: "DELETE" });
+    return await fetchTrucksFromDB();
+  } catch (err) {
+    console.error("Delete Truck MySQL API Error:", err);
+  }
+  return trucksCache;
+};
 
 // Save or Update Party in MySQL Database API
 export const saveParty = async (partyData) => {

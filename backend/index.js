@@ -7,6 +7,7 @@ import sequelize from "./config/database.js";
 import partyRoutes from "./routes/partyRoutes.js";
 import lrRoutes from "./routes/lrRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import truckRoutes from "./routes/truckRoutes.js";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/parties", partyRoutes);
 app.use("/api/lr-entries", lrRoutes);
+app.use("/api/trucks", truckRoutes);
 
 app.get("/", (req, res) => {
   res.send("Wolego Transport Billing Server is Running!");

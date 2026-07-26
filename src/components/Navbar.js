@@ -54,6 +54,7 @@ export default function Navbar() {
     { name: "Party Statement", path: "/party-statement", icon: FileSpreadsheet },
     { name: "CA Excel", path: "/ca-excel", icon: FileSpreadsheet },
     { name: "Party Master", path: "/party-master", icon: Users },
+    { name: "Truck Master", path: "/truck-master", icon: Truck },
   ];
 
   const isActive = (path) => {
