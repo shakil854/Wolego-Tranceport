@@ -83,7 +83,7 @@ export default function LREntryForm() {
     driverMobile: "",
     consignorEwayBill: "",
     consigneeEwayBill: "",
-    remarks: "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE.",
+    remarks: "",
     debitAmountTo: "CONSIGNEE",
   };
 

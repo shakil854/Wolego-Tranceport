@@ -136,7 +136,7 @@ export default function FreightReceipt() {
 
   return (
     <div className="min-h-[calc(100vh-68px)] bg-slate-900 p-2 sm:p-4 text-slate-100 flex flex-col overflow-y-auto font-sans">
-      
+
       {/* Top Header Bar */}
       <div className="max-w-4xl w-full mx-auto bg-slate-800 px-3 sm:px-4 py-2.5 rounded-xl border border-slate-700 shadow-lg flex flex-wrap justify-between items-center gap-2 shrink-0 print:hidden mb-3">
         <div className="flex items-center gap-3">
@@ -147,7 +147,7 @@ export default function FreightReceipt() {
 
         {/* Financial Year Selector & Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          
+
           {/* Financial Year Filter Dropdown */}
           <div className="flex items-center gap-1.5 bg-slate-900/90 border border-amber-500/40 px-2.5 py-1 rounded-lg">
             <Calendar className="w-4 h-4 text-amber-400" />
@@ -183,7 +183,7 @@ export default function FreightReceipt() {
 
       {/* Main Full-Width Form Card */}
       <div className="max-w-4xl w-full mx-auto bg-slate-800/90 rounded-xl p-3 sm:p-5 border-2 border-slate-700 shadow-2xl space-y-3 sm:space-y-4 print:hidden">
-        
+
         {/* Step 1: Mode Selector */}
         <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-700 space-y-2">
           <label className="text-xs font-extrabold text-amber-400 uppercase tracking-wider block">
@@ -193,11 +193,10 @@ export default function FreightReceipt() {
             <button
               type="button"
               onClick={() => setReceiptType("CHEQUE")}
-              className={`py-2 px-3 sm:px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer ${
-                receiptType === "CHEQUE"
+              className={`py-2 px-3 sm:px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer ${receiptType === "CHEQUE"
                   ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
                   : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
-              }`}
+                }`}
             >
               <CheckCircle2 size={15} /> Cheque + Cash
             </button>
@@ -205,11 +204,10 @@ export default function FreightReceipt() {
             <button
               type="button"
               onClick={() => setReceiptType("CASH")}
-              className={`py-2 px-3 sm:px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer ${
-                receiptType === "CASH"
+              className={`py-2 px-3 sm:px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer ${receiptType === "CASH"
                   ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
                   : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
-              }`}
+                }`}
             >
               <DollarSign size={15} /> Cash Only
             </button>
@@ -218,12 +216,12 @@ export default function FreightReceipt() {
 
         {/* Step 2: Freight Receipt Form Inputs */}
         <div className="space-y-3 bg-slate-900/60 p-3 sm:p-4 rounded-xl border border-slate-700">
-          
+
           <div className="flex flex-wrap justify-between items-center border-b border-slate-700 pb-1.5 gap-2">
             <h2 className="text-xs font-extrabold text-amber-400 uppercase tracking-wider">
               2. Freight Receipt Form Details
             </h2>
-            
+
             {/* Quick LR Selector Dropdown for selected Financial Year */}
             <div className="flex items-center gap-2">
               <label className="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">

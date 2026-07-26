@@ -343,10 +343,17 @@ export default function BulkLRPrintPage() {
             </div>
 
             {/* 6. Remarks / Disclaimer */}
-            <div className="px-2 py-1">
+            <div className="px-2 py-1 space-y-1">
               <div className="font-extrabold uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
-                {lrData.remarks || "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA."}
+                WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA.
               </div>
+              {lrData.remarks &&
+                lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE." &&
+                lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA." && (
+                  <div className="font-extrabold text-slate-900 text-[9.5px] uppercase p-1 border border-slate-900 bg-slate-100">
+                    REMARKS: <span className="font-bold">{lrData.remarks}</span>
+                  </div>
+                )}
             </div>
 
             {/* 7. Insurance Declaration Box */}
