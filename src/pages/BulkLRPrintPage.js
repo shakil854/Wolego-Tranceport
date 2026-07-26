@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { fetchLREntriesFromDB } from "../utils/storage";
-import { Printer, RefreshCw, Eye, CheckSquare, Layers, ArrowRight, FileText, Info } from "lucide-react";
+import { fetchLREntriesFromDB, getFinancialYear } from "../utils/storage";
+import { Printer, RefreshCw, Eye, CheckSquare, Layers, ArrowRight, FileText, Info, Calendar } from "lucide-react";
 import logoImg from "../assets/logo.png";
 
 export default function BulkLRPrintPage() {
   const [lrEntries, setLrEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Financial Year Selection State
+  const currentFYLabel = getFinancialYear(new Date()).label;
+  const [selectedYear, setSelectedYear] = useState(currentFYLabel);
 
   // Range inputs (e.g. From 0001 to 2001)
   const [fromLR, setFromLR] = useState("0001");
@@ -33,6 +37,14 @@ export default function BulkLRPrintPage() {
     setLrEntries(loaded);
 
     if (loaded.length > 0) {
+      // Auto-select latest year created in the system
+      const years = Array.from(
+        new Set(loaded.map((lr) => (lr.dateTime ? getFinancialYear(lr.dateTime).label : null)).filter(Boolean))
+      ).sort((a, b) => b.localeCompare(a));
+      if (years.length > 0) {
+        setSelectedYear(years[0]);
+      }
+
       const numbers = loaded.map((lr) => extractLRNumber(lr.lrNumber)).filter((n) => n > 0);
       if (numbers.length > 0) {
         const minNum = Math.min(...numbers);
@@ -66,10 +78,25 @@ export default function BulkLRPrintPage() {
     return new Date(dateVal).toLocaleDateString("en-IN");
   };
 
+  // Compute available financial years sorted descending
+  const availableYears = Array.from(
+    new Set([
+      currentFYLabel,
+      ...lrEntries.map((lr) => (lr.dateTime ? getFinancialYear(lr.dateTime).label : null)).filter(Boolean),
+    ])
+  ).sort((a, b) => b.localeCompare(a));
+
+  // LRs filtered by selected Financial Year
+  const yearFilteredLRs = lrEntries.filter((lr) => {
+    if (!selectedYear || selectedYear === "ALL") return true;
+    const lrFY = lr.dateTime ? getFinancialYear(lr.dateTime).label : null;
+    return lrFY === selectedYear;
+  });
+
   const startNum = extractLRNumber(fromLR);
   const endNum = extractLRNumber(toLR);
 
-  const filteredLRs = lrEntries.filter((lr) => {
+  const filteredLRs = yearFilteredLRs.filter((lr) => {
     const lrNum = extractLRNumber(lr.lrNumber);
 
     if (startNum > 0 && endNum > 0) {
@@ -98,8 +125,8 @@ export default function BulkLRPrintPage() {
   });
 
   const handlePreset = (type) => {
-    if (lrEntries.length === 0) return;
-    const numbers = lrEntries.map((lr) => extractLRNumber(lr.lrNumber)).filter((n) => n > 0);
+    if (yearFilteredLRs.length === 0) return;
+    const numbers = yearFilteredLRs.map((lr) => extractLRNumber(lr.lrNumber)).filter((n) => n > 0);
     if (numbers.length === 0) return;
 
     const minNum = Math.min(...numbers);
@@ -474,7 +501,25 @@ export default function BulkLRPrintPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Financial Year Selector */}
+            <div className="flex items-center gap-1.5 bg-slate-900 border border-amber-500/40 px-2.5 py-1.5 rounded-lg">
+              <Calendar className="w-4 h-4 text-amber-400" />
+              <label className="text-xs font-bold text-amber-300 uppercase">F.Y.:</label>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="bg-slate-950 text-amber-400 font-extrabold text-xs px-2 py-0.5 rounded border border-slate-700 focus:outline-none focus:border-amber-400 cursor-pointer"
+              >
+                <option value="ALL">ALL YEARS (सभी वर्ष)</option>
+                {availableYears.map((yr) => (
+                  <option key={yr} value={yr}>
+                    F.Y. {yr} {yr === currentFYLabel ? "(Current)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <button
               onClick={loadData}
               disabled={loading}
