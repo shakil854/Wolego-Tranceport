@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
-import { fetchLREntriesFromDB } from "../utils/storage";
-import { Receipt, Printer, Download, Search, CheckCircle2, DollarSign } from "lucide-react";
+import { fetchLREntriesFromDB, getFinancialYear } from "../utils/storage";
+import { Receipt, Printer, Download, Search, CheckCircle2, DollarSign, Calendar } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 export default function FreightReceipt() {
   const [lrEntries, setLrEntries] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [receiptType, setReceiptType] = useState("CHEQUE"); // "CHEQUE" or "CASH"
+
+  // Financial Year Selection State
+  const currentFYLabel = getFinancialYear(new Date()).label;
+  const [selectedYear, setSelectedYear] = useState(currentFYLabel);
 
   // Form Fields
   const [selectedLrNo, setSelectedLrNo] = useState("");
@@ -22,13 +25,40 @@ export default function FreightReceipt() {
   useEffect(() => {
     const loadLRs = async () => {
       const data = await fetchLREntriesFromDB();
-      setLrEntries(data || []);
+      const lrs = data || [];
+      setLrEntries(lrs);
+
+      // Auto-select latest year created in the system
+      if (lrs.length > 0) {
+        const years = Array.from(
+          new Set(lrs.map((lr) => (lr.dateTime ? getFinancialYear(lr.dateTime).label : null)).filter(Boolean))
+        ).sort((a, b) => b.localeCompare(a));
+        if (years.length > 0) {
+          setSelectedYear(years[0]);
+        }
+      }
     };
     loadLRs();
   }, []);
 
-  // Handler when selecting an LR or typing LR number
+  // Compute available financial years sorted descending
+  const availableYears = Array.from(
+    new Set([
+      currentFYLabel,
+      ...lrEntries.map((lr) => (lr.dateTime ? getFinancialYear(lr.dateTime).label : null)).filter(Boolean),
+    ])
+  ).sort((a, b) => b.localeCompare(a));
+
+  // LRs filtered by selected Financial Year
+  const yearFilteredLRs = lrEntries.filter((item) => {
+    if (!selectedYear || selectedYear === "ALL") return true;
+    const lrFY = item.dateTime ? getFinancialYear(item.dateTime).label : null;
+    return lrFY === selectedYear;
+  });
+
+  // Handler when selecting an LR from dropdown or typing LR number
   const handleSelectLR = (lr) => {
+    if (!lr) return;
     setSelectedLrNo(lr.lrNumber || "");
     setTruckNo(lr.truckNo || "");
     setWeightKgs(lr.weightKgs || "");
@@ -40,10 +70,18 @@ export default function FreightReceipt() {
 
   const handleLrNumberChange = (val) => {
     setSelectedLrNo(val);
-    // Find matching LR if exists
-    const match = lrEntries.find(
-      (item) => item.lrNumber && item.lrNumber.toString().trim() === val.toString().trim()
-    );
+    if (!val) return;
+    const cleanVal = val.toString().trim().toLowerCase();
+
+    // Look up matching LR in current selected year first, then in all LRs
+    const match =
+      yearFilteredLRs.find(
+        (item) => item.lrNumber && item.lrNumber.toString().trim().toLowerCase() === cleanVal
+      ) ||
+      lrEntries.find(
+        (item) => item.lrNumber && item.lrNumber.toString().trim().toLowerCase() === cleanVal
+      );
+
     if (match) {
       setTruckNo(match.truckNo || "");
       setWeightKgs(match.weightKgs || "");
@@ -62,15 +100,6 @@ export default function FreightReceipt() {
 
   const numericPaidCheque = parseFloat(paidByCheque) || 0;
   const calculatedCashPaid = Math.max(0, calculatedTotalFreight - numericPaidCheque);
-
-  // Filtered LR list for dropdown suggestions
-  const filteredLRs = searchQuery
-    ? lrEntries.filter(
-        (item) =>
-          item.lrNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (item.truckNo && item.truckNo.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-    : lrEntries;
 
   // Browser Print
   const handlePrint = () => {
@@ -110,14 +139,33 @@ export default function FreightReceipt() {
       
       {/* Top Header Bar */}
       <div className="max-w-4xl w-full mx-auto bg-slate-800 px-3 sm:px-4 py-2.5 rounded-xl border border-slate-700 shadow-lg flex flex-wrap justify-between items-center gap-2 shrink-0 print:hidden mb-3">
-        <div>
+        <div className="flex items-center gap-3">
           <h1 className="text-sm sm:text-lg font-black text-amber-400 flex items-center gap-2">
             <Receipt className="w-5 h-5 sm:w-6 sm:h-6" /> Freight Receipt Generator
           </h1>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        {/* Financial Year Selector & Action Buttons */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          
+          {/* Financial Year Filter Dropdown */}
+          <div className="flex items-center gap-1.5 bg-slate-900/90 border border-amber-500/40 px-2.5 py-1 rounded-lg">
+            <Calendar className="w-4 h-4 text-amber-400" />
+            <label className="text-[11px] font-bold text-amber-300 uppercase">F.Y.:</label>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="bg-slate-950 text-amber-400 font-extrabold text-xs px-2 py-0.5 rounded border border-slate-700 focus:outline-none focus:border-amber-400 cursor-pointer"
+            >
+              <option value="ALL">ALL YEARS (सभी वर्ष)</option>
+              {availableYears.map((yr) => (
+                <option key={yr} value={yr}>
+                  F.Y. {yr} {yr === currentFYLabel ? "(Current)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <button
             onClick={handlePrint}
             className="px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow flex items-center gap-1.5 transition-all transform hover:scale-105"
@@ -170,9 +218,33 @@ export default function FreightReceipt() {
 
         {/* Step 2: Freight Receipt Form Inputs */}
         <div className="space-y-3 bg-slate-900/60 p-3 sm:p-4 rounded-xl border border-slate-700">
-          <h2 className="text-xs font-extrabold text-amber-400 uppercase tracking-wider border-b border-slate-700 pb-1.5">
-            2. Freight Receipt Form Details
-          </h2>
+          
+          <div className="flex flex-wrap justify-between items-center border-b border-slate-700 pb-1.5 gap-2">
+            <h2 className="text-xs font-extrabold text-amber-400 uppercase tracking-wider">
+              2. Freight Receipt Form Details
+            </h2>
+            
+            {/* Quick LR Selector Dropdown for selected Financial Year */}
+            <div className="flex items-center gap-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">
+                Select LR from F.Y. {selectedYear}:
+              </label>
+              <select
+                onChange={(e) => {
+                  const lr = yearFilteredLRs.find((item) => String(item.id) === e.target.value);
+                  if (lr) handleSelectLR(lr);
+                }}
+                className="bg-slate-950 border border-slate-600 text-amber-300 font-bold text-xs px-2 py-1 rounded focus:outline-none focus:border-amber-400 max-w-[220px] truncate cursor-pointer"
+              >
+                <option value="">-- Choose LR ({yearFilteredLRs.length} LRs) --</option>
+                {yearFilteredLRs.map((lr) => (
+                  <option key={lr.id} value={lr.id}>
+                    LR #{lr.lrNumber} - {lr.truckNo || "No Truck"} ({lr.partyConsignorName || lr.consignorName || "Consignor"})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
