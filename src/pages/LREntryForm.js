@@ -845,27 +845,13 @@ export default function LREntryForm() {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-1">
-                  <input
-                    type="text"
-                    value={formData.driverName}
-                    onChange={(e) => setFormData({ ...formData, driverName: e.target.value })}
-                    placeholder="DRIVER"
-                    className="bg-white text-slate-900 font-medium px-1 py-0.5 border rounded text-xs"
-                  />
-                  <input
-                    type="text"
-                    value={formData.licenseNumber}
-                    onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
-                    placeholder="LICENSE"
-                    className="bg-white text-slate-900 font-medium px-1 py-0.5 border rounded text-xs"
-                  />
+                <div>
                   <input
                     type="text"
                     value={formData.driverMobile}
                     onChange={(e) => setFormData({ ...formData, driverMobile: e.target.value })}
-                    placeholder="MOBILE"
-                    className="bg-white text-slate-900 font-bold px-1 py-0.5 border rounded text-xs"
+                    placeholder="DRIVER MOBILE NO."
+                    className="w-full bg-white text-slate-900 font-mono font-bold px-1.5 py-0.5 border rounded text-[11px]"
                   />
                 </div>
               </div>

@@ -345,28 +345,34 @@ export default function BulkLRPrintPage() {
           {/* Left Column (7 cols) */}
           <div className="col-span-7 text-[10px] flex flex-col justify-between h-full">
             {/* 1. GST Payable By */}
-            <div className="font-bold text-slate-900 border-b-2 border-slate-900 px-2 py-1.5">
-              GST PAYABLE BY: <span className="bg-yellow-300 px-2 py-0.5 border border-slate-800 rounded font-black">{lrData.gstPayableBy || "CONSIGNEE"}</span>
+            <div className="font-bold text-slate-900 border-b-2 border-slate-900 px-2 py-1 flex items-center gap-2">
+              <span>GST PAYABLE BY :</span>
+              <span className="bg-yellow-300 px-2 py-0.5 border border-slate-800 rounded font-black">{lrData.gstPayableBy || "CONSIGNEE"}</span>
             </div>
 
             {/* 2. Invoice No */}
-            <div className="font-bold border-b-2 border-slate-900 px-2 py-1.5">
+            <div className="font-bold border-b-2 border-slate-900 px-2 py-1">
               INVOICE NO. : <span className="font-mono text-xs">{lrData.billNumbers || ""}</span>
             </div>
 
             {/* 3. Value Rs */}
-            <div className="font-bold border-b-2 border-slate-900 px-2 py-1.5">
+            <div className="font-bold border-b-2 border-slate-900 px-2 py-1">
               VALUE RS. : <span className="font-mono text-xs">{lrData.invoiceValue || ""}</span>
             </div>
 
             {/* 4. Consignor E-Way Bill */}
-            <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1.5">
+            <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1">
               CONSIGNOR E-WAY BILL: <strong>{lrData.consignorEwayBill || ""}</strong>
             </div>
 
             {/* 5. Consignee E-Way Bill */}
-            <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1.5">
+            <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1">
               CONSIGNEE E-WAY BILL: <strong>{lrData.consigneeEwayBill || ""}</strong>
+            </div>
+
+            {/* 6. Driver Mobile No */}
+            <div className="font-mono text-[10px] border-b-2 border-slate-900 px-2 py-1">
+              DRIVER NO. : <strong>{lrData.driverMobile || ""}</strong>
             </div>
 
             {/* 6. Remarks / Disclaimer */}
