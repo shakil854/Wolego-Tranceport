@@ -12,6 +12,7 @@ import BulkLRPrintPage from "./pages/BulkLRPrintPage";
 import LoginPage from "./pages/LoginPage";
 import AccountingPage from "./pages/AccountingPage";
 import TruckMaster from "./pages/TruckMaster";
+import DailyReport from "./pages/DailyReport";
 
 // Protected Route for authenticated users
 function ProtectedRoute({ children, allowedRoles }) {
@@ -117,6 +118,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["OWNER"]}>
             <PartyStatement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/daily-report"
+        element={
+          <ProtectedRoute allowedRoles={["OWNER"]}>
+            <DailyReport />
           </ProtectedRoute>
         }
       />
