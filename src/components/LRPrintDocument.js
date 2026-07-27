@@ -498,10 +498,14 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                 {/* 6. Remarks / Disclaimer */}
                 <div className="px-2 py-1 space-y-1">
                   <div className="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
-                    WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA.
+                    WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE.
+                  </div>
+                  <div className="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
+                    FULL TRUCK LOAD ACCEPTED ALL OVER INDIA.
                   </div>
                   {lrData.remarks &&
                     lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE." &&
+                    lrData.remarks !== "FULL TRUCK LOAD ACCEPTED ALL OVER INDIA." &&
                     lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA." && (
                       <div className="font-black text-slate-950 text-[9.5px] uppercase p-1 border border-slate-900 bg-slate-100">
                         REMARKS: <span className="font-black">{lrData.remarks}</span>
