@@ -338,7 +338,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
             {/* LR Header Grid (LR NO, DATE, FROM, TO) */}
             <div className="grid grid-cols-12 border-b-2 border-slate-900 font-extrabold text-[11px] divide-x-2 divide-slate-900 text-slate-950">
-              <div className="col-span-3 p-1.5 bg-slate-100 flex items-center gap-2">
+              <div className="col-span-3 p-1.5 bg-slate-100 flex items-center justify-center gap-2">
                 <span>L.R. NO. :</span>
                 <span className="text-lg font-black text-rose-700 font-mono">{lrData.lrNumber}</span>
               </div>
