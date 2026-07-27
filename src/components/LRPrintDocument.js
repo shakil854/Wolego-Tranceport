@@ -245,7 +245,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       {/* Standard Printable Full A4 Page Document */}
       <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-0 print:shadow-none font-sans text-xs">
         <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document relative overflow-hidden">
-          
+
           {/* Background Watermark Logo (Shown during both PDF Export & LR Print) */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
             <img
@@ -257,10 +257,11 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
           <div className="relative z-10 flex-1 flex flex-col justify-between">
             {/* Header Bar */}
-            <div className="border-b-2 border-slate-900 p-3 pb-2">
+            {/* Company Header Block (Line by Line Exact Copy of Image 2) */}
+            <div className="border-b-2 border-slate-900 p-2.5 pb-2">
 
               {/* Copy Checkboxes Header */}
-              <div className="flex flex-wrap justify-between items-center text-[10px] font-bold border-b border-slate-300 pb-1 mb-2">
+              <div className="flex flex-wrap justify-between items-center text-[10px] font-bold border-b border-slate-300 pb-1 mb-1">
                 <div className="flex space-x-4 uppercase">
                   <label className="flex items-center gap-1 cursor-pointer">
                     <input type="checkbox" defaultChecked className="w-3 h-3 accent-slate-900" /> CONSIGNOR COPY
@@ -275,40 +276,64 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                     <input type="checkbox" className="w-3 h-3 accent-slate-900" /> OFFICE COPY
                   </label>
                 </div>
-                <div className="italic text-slate-600 font-serif">EVERYTHING IS FAST</div>
               </div>
 
               {/* Company Banner & Logo */}
-              <div className="grid grid-cols-12 gap-2 items-center my-1">
-                <div className="col-span-3 flex justify-center items-center">
-                  <img src={logoImg} alt="Wolego Transport Logo" className="h-16 sm:h-20 w-auto object-contain max-w-full" />
+              <div className="grid grid-cols-12 gap-1 items-center my-1">
+                {/* Left Logo Column */}
+                <div className="col-span-2 flex justify-center items-center">
+                  <img src={logoImg} alt="Wolego Transport Logo" className="h-24 sm:h-28 w-auto object-contain max-w-full" />
                 </div>
 
-                <div className="col-span-9 text-left">
-                  <h1 className="text-2xl sm:text-3xl font-black text-green-800 tracking-wider font-serif uppercase leading-none">
+                {/* Middle Column: Exact 8-Line Sequence Requested by User */}
+                <div className="col-span-7 text-center flex flex-col items-center justify-center space-y-1">
+                  
+                  {/* Line 1: SUBJECT TO WANKANER JURISDICTION */}
+                  <div className="text-[10px] font-black text-slate-950 uppercase underline tracking-wider whitespace-nowrap">
+                    SUBJECT TO WANKANER JURISDICTION
+                  </div>
+
+                  {/* Line 2: WOLEGO TRANSPORT (Single Unbroken Line - Exact Logo Green Color) */}
+                  <h1 className="text-2xl sm:text-3xl font-black text-[#009a44] tracking-wider font-serif uppercase leading-none whitespace-nowrap">
                     WOLEGO TRANSPORT
                   </h1>
-                  <div className="text-[11px] font-extrabold uppercase tracking-wide text-slate-800 mt-1">
-                    TRANSPORT CONTRACTOR AND COMMISSION AGENT
+
+                  {/* Line 3: EVERYTHING IS FAST (Single Unbroken Line) */}
+                  <div className="text-xs sm:text-sm font-black text-amber-900 italic font-serif whitespace-nowrap">
+                    EVERYTHING IS FAST
                   </div>
-                  <div className="text-[10px] text-slate-700 font-medium leading-tight">
-                    8-A NATIONAL HIGHWAY, CHOTILA ROAD, CHANDRAPUR, WANKANER-363 621, DIST. MORBI, (GUJ.)
+
+                  {/* Line 4: TRANSPORT CONTRACTOR AND COMMISSION AGENT (Single Unbroken Line) */}
+                  <div className="whitespace-nowrap">
+                    <span className="text-[10.5px] sm:text-xs font-black uppercase tracking-wider bg-blue-900 text-white px-3 py-0.5 inline-block">
+                      TRANSPORT CONTRACTOR AND COMMISSION AGENT
+                    </span>
                   </div>
-                  <div className="text-[10px] font-bold text-slate-900 flex flex-wrap gap-x-4 mt-0.5">
-                    <span>GSTIN NO.: 24DLTPS8567M1ZT</span>
-                    <span>PAN NO.: DLTPS8567M</span>
-                    <span>MOBILE: +91 99 79 111 555 / 81 41 111 555</span>
+
+                  {/* Line 5 & 6: Address (Line by Line) */}
+                  <div className="text-[10px] sm:text-[10.5px] text-red-900 font-black tracking-tight uppercase leading-tight space-y-0.5 whitespace-nowrap text-center">
+                    <div>SURVEY NUMBER NA 178P8, 27 NATIONAL HIGHWAY,</div>
+                    <div>CHANDRAPUR, WANKANER-363621 DISTRICT-MORBI ( GUJRAT )</div>
                   </div>
+
                 </div>
+
+                {/* Right Side Column: Mobile Numbers, PAN, GSTIN (Stacked Vertically) */}
+                <div className="col-span-3 text-right text-[9.5px] sm:text-[10px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-2">
+                  <div>MOBILE NO. +91 99 79 111 555</div>
+                  <div>MOBILE NO. +91 81 41 111 555</div>
+                  <div>PAN NO. : DLTPS8567M</div>
+                  <div>GSTIN NO. : 24DLTPS8567M1ZT</div>
+                </div>
+
               </div>
 
             </div>
 
-            {/* Title Strip */}
-            <div className="bg-slate-900 text-white font-extrabold text-center py-1 tracking-wider text-xs uppercase flex justify-between px-3 border-b-2 border-slate-900">
-              <span>AT OWNER'S RISK</span>
-              <span>GOODS CONSIGNMENT NOTE</span>
-              <span>SUBJECT TO WANKANER JURISDICTION</span>
+            {/* Title Strip (Line 7 & Line 8) */}
+            <div className="bg-slate-900 text-white font-extrabold text-center py-1 tracking-wider text-xs uppercase flex flex-col items-center justify-center space-y-0.5 border-b-2 border-slate-900">
+              <div className="text-xs font-black tracking-widest text-white">GOODS CONSIGNMENT NOTE</div>
+              <div className="text-[9.5px] font-bold tracking-wider text-amber-300">AT OWNER'S RISK</div>
             </div>
 
             {/* LR Header Grid (LR NO, DATE, FROM, TO) */}

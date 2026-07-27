@@ -88,7 +88,7 @@ export default function Navbar() {
 
   return (
     <header className="bg-slate-900 text-white shadow-md sticky top-0 z-50 border-b border-amber-500/40 font-sans">
-      
+
       {/* Top Info Bar */}
       <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 px-2 sm:px-4 py-1 text-[10px] sm:text-xs font-semibold flex justify-between items-center text-white max-w-full overflow-hidden">
         <div className="flex items-center space-x-2 overflow-hidden text-ellipsis whitespace-nowrap min-w-0">
@@ -96,15 +96,15 @@ export default function Navbar() {
           <span className="hidden md:inline">| GSTIN: 24DLTPS8567M1ZT</span>
         </div>
         <div className="flex items-center space-x-2 text-amber-100 shrink-0 ml-2">
-          <span className="flex items-center gap-1 font-mono text-[10px] sm:text-xs"><Phone size={11}/> +91 9979111555</span>
-          <span className="hidden sm:inline-flex items-center gap-1"><ShieldCheck size={12}/> Goods Consignment Note</span>
+          <span className="flex items-center gap-1 font-mono text-[10px] sm:text-xs"><Phone size={11} /> +91 9979111555</span>
+          <span className="hidden sm:inline-flex items-center gap-1"><ShieldCheck size={12} /> Goods Consignment Note</span>
         </div>
       </div>
 
       {/* Main Navbar */}
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
-          
+
           {/* Logo / Brand */}
           <Link to={isParty ? "/accounting" : "/"} className="flex items-center space-x-1.5 sm:space-x-3 shrink-0 group">
             <div className="bg-white p-0.5 sm:p-1 rounded-lg shadow-lg transform group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
@@ -130,11 +130,10 @@ export default function Navbar() {
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    active
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${active
                       ? "bg-amber-500 text-slate-950 shadow-md font-bold"
                       : "text-slate-200 hover:bg-slate-800 hover:text-amber-400"
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.name}</span>
@@ -148,11 +147,10 @@ export default function Navbar() {
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   onMouseEnter={() => setDropdownOpen(true)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                    isDropdownActive
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${isDropdownActive
                       ? "bg-amber-500 text-slate-950 shadow-md font-bold"
                       : "text-slate-200 hover:bg-slate-800 hover:text-amber-400"
-                  }`}
+                    }`}
                 >
                   <FolderKanban className="w-4 h-4" />
                   <span>Reports & Master</span>
@@ -173,11 +171,10 @@ export default function Navbar() {
                           key={item.name}
                           to={item.path}
                           onClick={() => setDropdownOpen(false)}
-                          className={`flex items-center space-x-3 px-4 py-2.5 text-sm font-medium transition-all ${
-                            active
+                          className={`flex items-center space-x-3 px-4 py-2.5 text-sm font-medium transition-all ${active
                               ? "bg-amber-500/20 text-amber-400 font-bold border-l-4 border-amber-400"
                               : "text-slate-200 hover:bg-slate-700 hover:text-amber-400"
-                          }`}
+                            }`}
                         >
                           <Icon className="w-4 h-4 text-amber-400" />
                           <span>{item.name}</span>
@@ -264,7 +261,7 @@ export default function Navbar() {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-slate-900 border-t border-slate-800 px-2 pt-2 pb-3 space-y-1 sm:px-3 shadow-2xl">
-          
+
           {user && (
             <div className="px-3 py-2 bg-slate-800 rounded-lg mb-2 flex justify-between items-center">
               <div>
@@ -301,11 +298,10 @@ export default function Navbar() {
                 key={item.name}
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center space-x-3 px-3 py-3 rounded-md text-base font-medium ${
-                  active
+                className={`flex items-center space-x-3 px-3 py-3 rounded-md text-base font-medium ${active
                     ? "bg-amber-500 text-slate-950 font-bold"
                     : "text-slate-300 hover:bg-slate-800 hover:text-amber-400"
-                }`}
+                  }`}
               >
                 <Icon className="w-5 h-5" />
                 <span>{item.name}</span>
@@ -326,11 +322,10 @@ export default function Navbar() {
                     key={item.name}
                     to={item.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium ${
-                      active
+                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium ${active
                         ? "bg-amber-500/20 text-amber-400 font-bold border-l-2 border-amber-400"
                         : "text-slate-300 hover:bg-slate-800 hover:text-amber-400"
-                    }`}
+                      }`}
                   >
                     <Icon className="w-4 h-4 text-amber-400" />
                     <span>{item.name}</span>
