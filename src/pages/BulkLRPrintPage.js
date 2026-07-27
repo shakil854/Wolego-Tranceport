@@ -343,7 +343,7 @@ export default function BulkLRPrintPage() {
                     </div>
                   )}
                 </td>
-                <td className="p-2 align-top text-left">
+                <td className="p-2 align-top text-center">
                   <div className="min-h-[34px] flex flex-col justify-start">
                     <div className="font-black uppercase text-sm text-slate-950">{lrData.descriptionOfGoods}</div>
                   </div>
