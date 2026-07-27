@@ -226,8 +226,8 @@ export default function BulkLRPrintPage() {
 
             </div>
 
-            {/* Right Side Column: Mobile Numbers, PAN, GSTIN (Stacked Vertically) */}
-            <div className="col-span-3 text-right text-[9.5px] sm:text-[10px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-2">
+            {/* Right Side Column: Mobile Numbers, PAN, GSTIN (Left Aligned for Straight Alignment) */}
+            <div className="col-span-3 text-left text-[9.5px] sm:text-[10px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-3">
               <div>MOBILE NO. +91 99 79 111 555</div>
               <div>MOBILE NO. +91 81 41 111 555</div>
               <div>PAN NO. : DLTPS8567M</div>
@@ -238,10 +238,10 @@ export default function BulkLRPrintPage() {
 
         </div>
 
-        {/* Title Strip (Line 7 & Line 8 - Blue Background) */}
-        <div className="bg-blue-900 text-white font-extrabold text-center py-1 tracking-wider text-xs uppercase flex flex-col items-center justify-center space-y-0.5 border-b-2 border-blue-900">
-          <div className="text-xs font-black tracking-widest text-white">GOODS CONSIGNMENT NOTE</div>
-          <div className="text-[9.5px] font-bold tracking-wider text-amber-300">AT OWNER'S RISK</div>
+        {/* Title Strip (Slightly Smaller Height) */}
+        <div className="bg-blue-900 text-white font-extrabold text-center py-0.5 tracking-wider uppercase flex flex-col items-center justify-center border-b-2 border-blue-900">
+          <div className="text-[11px] font-black tracking-widest text-white leading-tight">GOODS CONSIGNMENT NOTE</div>
+          <div className="text-[8.5px] font-bold tracking-wider text-amber-300 leading-tight">AT OWNER'S RISK</div>
         </div>
 
         {/* LR Header Grid (LR NO, DATE, FROM, TO) */}
@@ -281,16 +281,18 @@ export default function BulkLRPrintPage() {
         </div>
 
         {/* Consignor & Consignee Box */}
-        <div className="grid grid-cols-2 border-b-2 border-slate-900 divide-x-2 divide-slate-900 min-h-[90px]">
+        <div className="grid grid-cols-2 border-b-2 border-slate-900 divide-x-2 divide-slate-900 min-h-[95px]">
 
           {/* Consignor Column */}
-          <div className="p-2 space-y-1">
-            <div className="font-black text-[11px] underline uppercase text-slate-950">
-              CONSIGNOR'S NAME & ADDRESS
-            </div>
-            <div className="font-black text-xs text-slate-950 uppercase whitespace-pre-line leading-tight">{lrData.consignorName}</div>
-            <div className="text-[10.5px] font-bold text-slate-950 leading-tight uppercase whitespace-pre-line">
-              {lrData.consignorAddress}
+          <div className="p-2 flex flex-col justify-between">
+            <div className="space-y-0.5">
+              <div className="font-black text-[11px] underline uppercase text-slate-950">
+                CONSIGNOR'S NAME & ADDRESS
+              </div>
+              <div className="font-black text-xs text-slate-950 uppercase whitespace-pre-line leading-tight">{lrData.consignorName}</div>
+              <div className="text-[10.5px] font-bold text-slate-950 leading-tight uppercase whitespace-pre-line">
+                {lrData.consignorAddress}
+              </div>
             </div>
             <div className="font-mono font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
               CONSIGNOR GSTIN NO. : <span className="font-black text-slate-950">{lrData.consignorGst || ""}</span>
@@ -298,13 +300,15 @@ export default function BulkLRPrintPage() {
           </div>
 
           {/* Consignee Column */}
-          <div className="p-2 space-y-1">
-            <div className="font-black text-[11px] underline uppercase text-slate-950">
-              CONSIGNEE'S NAME & ADDRESS
-            </div>
-            <div className="font-black text-sm text-slate-950 uppercase">{lrData.consigneeName}</div>
-            <div className="text-[10.5px] font-bold text-slate-950 leading-tight uppercase whitespace-pre-line">
-              {lrData.consigneeAddress}
+          <div className="p-2 flex flex-col justify-between">
+            <div className="space-y-0.5">
+              <div className="font-black text-[11px] underline uppercase text-slate-950">
+                CONSIGNEE'S NAME & ADDRESS
+              </div>
+              <div className="font-black text-sm text-slate-950 uppercase">{lrData.consigneeName}</div>
+              <div className="text-[10.5px] font-bold text-slate-950 leading-tight uppercase whitespace-pre-line">
+                {lrData.consigneeAddress}
+              </div>
             </div>
             <div className="font-mono font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
               CONSIGNEE GSTIN NO. : <span className="font-black text-slate-950">{lrData.consigneeGst || ""}</span>

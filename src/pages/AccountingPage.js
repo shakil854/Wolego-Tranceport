@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getFinancialYear } from "../utils/storage";
 import {
   FileSpreadsheet,
   CheckCircle2,
@@ -17,6 +19,7 @@ import {
 
 export default function AccountingPage() {
   const { user, isOwner, isParty } = useAuth();
+  const location = useLocation();
 
   const [lrEntries, setLrEntries] = useState([]);
   const [parties, setParties] = useState([]);
@@ -24,10 +27,22 @@ export default function AccountingPage() {
 
   // Owner View state
   const [activeTab, setActiveTab] = useState("PARTY"); // "PARTY" or "TRUCK"
+  const [selectedFY, setSelectedFY] = useState("ALL"); // Financial Year Filter
   const [selectedPartyName, setSelectedPartyName] = useState("ALL");
   const [selectedTruckNo, setSelectedTruckNo] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, PAID, UNPAID
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Sync tab with URL search parameter (?tab=TRUCK or ?tab=PARTY)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get("tab");
+    if (tabParam === "TRUCK") {
+      setActiveTab("TRUCK");
+    } else if (tabParam === "PARTY") {
+      setActiveTab("PARTY");
+    }
+  }, [location.search]);
 
   // Action modal / quick edit
   const [updatingId, setUpdatingId] = useState(null);
@@ -55,7 +70,26 @@ export default function AccountingPage() {
       const lrData = await lrRes.json();
       const partyData = await partyRes.json();
 
-      if (Array.isArray(lrData)) setLrEntries(lrData);
+      if (Array.isArray(lrData)) {
+        setLrEntries(lrData);
+        // Auto-select latest Financial Year present in database (e.g. 2026-27 or 2027-28)
+        if (lrData.length > 0) {
+          const dbYears = Array.from(
+            new Set(
+              lrData
+                .map((lr) => {
+                  const d = lr.dateTime || lr.date;
+                  return d ? getFinancialYear(d).label : null;
+                })
+                .filter(Boolean)
+            )
+          ).sort((a, b) => b.localeCompare(a));
+
+          if (dbYears.length > 0) {
+            setSelectedFY(dbYears[0]);
+          }
+        }
+      }
       if (Array.isArray(partyData)) setParties(partyData);
     } catch (err) {
       console.error("Error fetching accounting data:", err);
@@ -154,6 +188,19 @@ export default function AccountingPage() {
     return lr.consigneeName?.trim() || lr.consignorName?.trim() || "-";
   };
 
+  // Extract unique Financial Years present in Dataset
+  const availableFYs = Array.from(
+    new Set([
+      getFinancialYear(new Date()).label,
+      ...lrEntries
+        .map((lr) => {
+          const d = lr.dateTime || lr.date;
+          return d ? getFinancialYear(d).label : null;
+        })
+        .filter(Boolean),
+    ])
+  ).sort((a, b) => b.localeCompare(a));
+
   // Extract unique Truck numbers
   const uniqueTrucks = Array.from(
     new Set(lrEntries.map((lr) => lr.truckNo?.trim()?.toUpperCase()).filter(Boolean))
@@ -172,6 +219,11 @@ export default function AccountingPage() {
   // Filtered LRs for Party Role
   const partyLrEntries = isParty
     ? lrEntries.filter((lr) => {
+        if (selectedFY !== "ALL") {
+          const d = lr.dateTime || lr.date;
+          const lrFY = d ? getFinancialYear(d).label : "";
+          if (lrFY !== selectedFY) return false;
+        }
         const pName = user?.partyName?.toLowerCase()?.trim();
         const pCalculated = getPartyName(lr).toLowerCase().trim();
         const consignor = lr.consignorName?.toLowerCase()?.trim();
@@ -190,6 +242,13 @@ export default function AccountingPage() {
 
   // Filtered LRs for Owner View
   const filteredOwnerEntries = lrEntries.filter((lr) => {
+    // Financial Year filter
+    if (selectedFY !== "ALL") {
+      const d = lr.dateTime || lr.date;
+      const lrFY = d ? getFinancialYear(d).label : "";
+      if (lrFY !== selectedFY) return false;
+    }
+
     // Search query filter
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -585,38 +644,58 @@ export default function AccountingPage() {
       {/* Filter Bar */}
       <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-wrap items-center justify-between gap-3">
         
-        {/* Dropdown Filter for Party Name or Truck No */}
-        <div className="flex items-center gap-2">
-          <Filter className="w-3.5 h-3.5 text-amber-400" />
-          <span className="text-xs font-bold text-slate-300 uppercase">Filter:</span>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Financial Year (FY) Filter Dropdown */}
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-bold text-slate-300 uppercase">Year / FY:</span>
+            <select
+              value={selectedFY}
+              onChange={(e) => setSelectedFY(e.target.value)}
+              className="bg-slate-900 border border-slate-700 text-white text-xs font-mono font-bold rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+            >
+              <option value="ALL">All Years</option>
+              {availableFYs.map((fy) => (
+                <option key={fy} value={fy}>
+                  FY {fy}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          {activeTab === "PARTY" ? (
-            <select
-              value={selectedPartyName}
-              onChange={(e) => setSelectedPartyName(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-            >
-              <option value="ALL">All Parties</option>
-              {uniqueParties.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <select
-              value={selectedTruckNo}
-              onChange={(e) => setSelectedTruckNo(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono"
-            >
-              <option value="ALL">All Trucks</option>
-              {uniqueTrucks.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          )}
+          {/* Dropdown Filter for Party Name or Truck No */}
+          <div className="flex items-center gap-1.5">
+            <Filter className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-bold text-slate-300 uppercase">Filter:</span>
+
+            {activeTab === "PARTY" ? (
+              <select
+                value={selectedPartyName}
+                onChange={(e) => setSelectedPartyName(e.target.value)}
+                className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              >
+                <option value="ALL">All Parties</option>
+                {uniqueParties.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <select
+                value={selectedTruckNo}
+                onChange={(e) => setSelectedTruckNo(e.target.value)}
+                className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono"
+              >
+                <option value="ALL">All Trucks</option>
+                {uniqueTrucks.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
         </div>
 
         {/* Status Filter buttons (ALL, PAID, UNPAID) */}

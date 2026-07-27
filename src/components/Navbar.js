@@ -20,6 +20,7 @@ import {
   LogIn,
   User,
   Key,
+  LayoutDashboard,
 } from "lucide-react";
 import logoImg from "../assets/logo.png";
 
@@ -35,6 +36,7 @@ export default function Navbar() {
 
   // Primary Navigation Items for Owner
   const ownerPrimaryItems = [
+    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { name: "L/R Entry", path: "/lr-entry", icon: Truck },
     { name: "LR Records", path: "/lr-list", icon: FileText },
     { name: "Freight Receipt", path: "/freight-receipt", icon: Receipt },
@@ -59,7 +61,7 @@ export default function Navbar() {
   ];
 
   const isActive = (path) => {
-    if (path === "/lr-entry" && (location.pathname === "/" || location.pathname === "/lr-entry")) return true;
+    if (path === "/dashboard" && (location.pathname === "/" || location.pathname === "/dashboard")) return true;
     return location.pathname.startsWith(path);
   };
 
@@ -106,22 +108,22 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14 sm:h-16">
 
           {/* Logo / Brand */}
-          <Link to={isParty ? "/accounting" : "/"} className="flex items-center space-x-1.5 sm:space-x-3 shrink-0 group">
-            <div className="bg-white p-0.5 sm:p-1 rounded-lg shadow-lg transform group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
-              <img src={logoImg} alt="Wolego Transport Logo" className="h-7 sm:h-10 w-auto object-contain" />
+          <Link to={isParty ? "/accounting" : "/"} className="flex items-center space-x-2 shrink-0 group">
+            <div className="bg-white p-1 rounded-lg shadow-md transform group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
+              <img src={logoImg} alt="Wolego Transport Logo" className="h-7 sm:h-8 w-auto object-contain" />
             </div>
             <div className="flex flex-col justify-center">
-              <div className="font-extrabold text-xs xs:text-sm sm:text-xl tracking-tight sm:tracking-wider text-amber-400 font-serif leading-none whitespace-nowrap">
+              <div className="font-extrabold text-xs sm:text-base tracking-tight text-amber-400 font-serif leading-none whitespace-nowrap">
                 WOLEGO TRANSPORT
               </div>
-              <div className="text-[7.5px] xs:text-[9px] sm:text-[10px] uppercase tracking-wider text-slate-400 font-medium leading-tight whitespace-nowrap">
+              <div className="hidden lg:block text-[8.5px] uppercase tracking-wider text-slate-400 font-medium leading-tight whitespace-nowrap">
                 Transport Contractor & Agent
               </div>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-2">
+          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
             {/* Primary Nav Items */}
             {primaryItems.map((item) => {
               const Icon = item.icon;
@@ -130,13 +132,13 @@ export default function Navbar() {
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${active
-                      ? "bg-amber-500 text-slate-950 shadow-md font-bold"
+                  className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${active
+                      ? "bg-amber-500 text-slate-950 shadow-md font-extrabold"
                       : "text-slate-200 hover:bg-slate-800 hover:text-amber-400"
                     }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.name}</span>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="whitespace-nowrap">{item.name}</span>
                 </Link>
               );
             })}
@@ -147,14 +149,14 @@ export default function Navbar() {
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   onMouseEnter={() => setDropdownOpen(true)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${isDropdownActive
-                      ? "bg-amber-500 text-slate-950 shadow-md font-bold"
+                  className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${isDropdownActive
+                      ? "bg-amber-500 text-slate-950 shadow-md font-extrabold"
                       : "text-slate-200 hover:bg-slate-800 hover:text-amber-400"
                     }`}
                 >
-                  <FolderKanban className="w-4 h-4" />
-                  <span>Reports & Master</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
+                  <FolderKanban className="w-4 h-4 shrink-0" />
+                  <span className="whitespace-nowrap">Reports & Master</span>
+                  <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 {/* Dropdown Card */}

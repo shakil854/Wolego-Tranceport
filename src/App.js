@@ -14,6 +14,8 @@ import AccountingPage from "./pages/AccountingPage";
 import TruckMaster from "./pages/TruckMaster";
 import DailyReport from "./pages/DailyReport";
 
+import DashboardPage from "./pages/DashboardPage";
+
 // Protected Route for authenticated users
 function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
@@ -32,14 +34,24 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to={user.role === "PARTY" ? "/accounting" : "/lr-entry"} replace /> : <LoginPage />} />
+      <Route path="/login" element={user ? <Navigate to={user.role === "PARTY" ? "/accounting" : "/dashboard"} replace /> : <LoginPage />} />
 
       {/* Main Home Route */}
       <Route
         path="/"
         element={
           <ProtectedRoute>
-            {user?.role === "PARTY" ? <Navigate to="/accounting" replace /> : <Navigate to="/lr-entry" replace />}
+            {user?.role === "PARTY" ? <Navigate to="/accounting" replace /> : <Navigate to="/dashboard" replace />}
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Dashboard Route */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["OWNER"]}>
+            <DashboardPage />
           </ProtectedRoute>
         }
       />
