@@ -227,11 +227,31 @@ export default function AccountingPage() {
     ])
   ).sort((a, b) => b.localeCompare(a));
 
+  // Helper to accurately extract freight amount from LR record
+  const getLRFreightAmount = (lr) => {
+    if (!lr) return 0;
+    const net = parseFloat(lr.netTotalAmount);
+    if (!isNaN(net) && net > 0) return net;
+
+    const totalGst = parseFloat(lr.totalWithGst);
+    if (!isNaN(totalGst) && totalGst > 0) return totalGst;
+
+    const freight = parseFloat(lr.freightAmount);
+    if (!isNaN(freight) && freight > 0) return freight;
+
+    const w = parseFloat(lr.weightKgs) || 0;
+    const r = parseFloat(lr.ratePerTon) || 0;
+    if (w > 0 && r > 0) {
+      return w > 1000 ? Math.round((w / 1000) * r) : Math.round(w * r);
+    }
+
+    return net || 0;
+  };
+
   // Extract unique Truck numbers
   const uniqueTrucks = Array.from(
     new Set(
       lrEntries
-        .filter((lr) => (lr.toPayOrPaid || "").trim().toUpperCase() !== "TO-PAY")
         .map((lr) => lr.truckNo?.trim()?.toUpperCase())
         .filter(Boolean)
     )
@@ -241,9 +261,7 @@ export default function AccountingPage() {
   const uniqueParties = Array.from(
     new Set([
       ...parties.map((p) => p.partyName?.trim()),
-      ...lrEntries
-        .filter((lr) => (lr.toPayOrPaid || "").trim().toUpperCase() !== "TO-PAY")
-        .map((lr) => getPartyName(lr)),
+      ...lrEntries.map((lr) => getPartyName(lr)),
     ])
   )
     .filter((p) => p && p !== "-" && p !== "CONSIGNEE" && p !== "CONSIGNOR")
@@ -252,10 +270,6 @@ export default function AccountingPage() {
   // Filtered LRs for Party Role
   const partyLrEntries = isParty
     ? lrEntries.filter((lr) => {
-        // Rule: TO-PAY LRs generate NO accounting baki entry
-        const status = (lr.toPayOrPaid || "").trim().toUpperCase();
-        if (status === "TO-PAY") return false;
-
         const lrFY = getLRFYLabel(lr);
         if (!matchFY(lrFY, selectedFY)) return false;
 
@@ -264,6 +278,7 @@ export default function AccountingPage() {
         const consignor = lr.consignorName?.toLowerCase()?.trim();
         const consignee = lr.consigneeName?.toLowerCase()?.trim();
 
+        const status = (lr.toPayOrPaid || "").trim().toUpperCase();
         if (status === "PAID") {
           return consignor === pName || pCalculated === pName;
         }
@@ -276,19 +291,15 @@ export default function AccountingPage() {
     : [];
 
   // Metrics for Party Role
-  const partyTotalBilled = partyLrEntries.reduce((sum, item) => sum + (Number(item.netTotalAmount) || 0), 0);
+  const partyTotalBilled = partyLrEntries.reduce((sum, item) => sum + getLRFreightAmount(item), 0);
   const partyTotalPaid = partyLrEntries.reduce((sum, item) => {
-    if (item.partyPaymentStatus === "PAID") return sum + (Number(item.netTotalAmount) || 0);
+    if (item.partyPaymentStatus === "PAID") return sum + getLRFreightAmount(item);
     return sum + (Number(item.partyPaidAmount) || 0);
   }, 0);
   const partyTotalRemaining = partyTotalBilled - partyTotalPaid;
 
   // 1. Base Filtered LRs for Owner View (Filtered by FY, Search Query, Party/Truck selection)
   const baseOwnerEntries = lrEntries.filter((lr) => {
-    // Rule: TO-PAY LRs do NOT generate pending/baki accounting entries in office ledger
-    const status = (lr.toPayOrPaid || "").trim().toUpperCase();
-    if (status === "TO-PAY") return false;
-
     // Financial Year filter
     const lrFY = getLRFYLabel(lr);
     if (!matchFY(lrFY, selectedFY)) return false;
@@ -325,21 +336,21 @@ export default function AccountingPage() {
 
   // 2. Owner View Top Metrics (Calculated for selected FY & active tab)
   const ownerTotalBilled = baseOwnerEntries.reduce(
-    (sum, item) => sum + (Number(item.netTotalAmount) || 0),
+    (sum, item) => sum + getLRFreightAmount(item),
     0
   );
   const ownerTotalPartyReceived = baseOwnerEntries.reduce((sum, item) => {
-    if (item.partyPaymentStatus === "PAID") return sum + (Number(item.netTotalAmount) || 0);
+    if (item.partyPaymentStatus === "PAID") return sum + getLRFreightAmount(item);
     return sum + (Number(item.partyPaidAmount) || 0);
   }, 0);
   const ownerPartyPending = ownerTotalBilled - ownerTotalPartyReceived;
 
   const ownerTotalTruckPayable = baseOwnerEntries.reduce(
-    (sum, item) => sum + (Number(item.netTotalAmount) || 0),
+    (sum, item) => sum + getLRFreightAmount(item),
     0
   );
   const ownerTotalTruckPaid = baseOwnerEntries.reduce((sum, item) => {
-    if (item.truckPaymentStatus === "PAID") return sum + (Number(item.netTotalAmount) || 0);
+    if (item.truckPaymentStatus === "PAID") return sum + getLRFreightAmount(item);
     return sum + (Number(item.truckPaidAmount) || 0);
   }, 0);
   const ownerTruckPending = ownerTotalTruckPayable - ownerTotalTruckPaid;
@@ -898,7 +909,7 @@ export default function AccountingPage() {
                   const partyName = getPartyName(lr);
                   const partyPaid = lr.partyPaymentStatus === "PAID";
                   const truckPaid = lr.truckPaymentStatus === "PAID";
-                  const amount = Number(lr.netTotalAmount) || 0;
+                  const amount = getLRFreightAmount(lr);
 
                   return (
                     <tr key={lr.id} className="hover:bg-slate-700/40 transition">
