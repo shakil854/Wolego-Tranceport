@@ -62,7 +62,7 @@ export default function FreightReceipt() {
     setSelectedLrNo(lr.lrNumber || "");
     setTruckNo(lr.truckNo || "");
     setWeightKgs(lr.weightKgs || "");
-    setRatePerMt(lr.ratePerTon || "");
+    // ratePerMt is NOT auto-filled from LR (user will enter manually)
     const chequeAmt = lr.netTotalAmount || lr.freightAmount || "";
     setPaidByCheque(chequeAmt);
     setRemarks(lr.remarks || "");
@@ -85,7 +85,7 @@ export default function FreightReceipt() {
     if (match) {
       setTruckNo(match.truckNo || "");
       setWeightKgs(match.weightKgs || "");
-      setRatePerMt(match.ratePerTon || "");
+      // ratePerMt is NOT auto-filled from LR (user will enter manually)
       const chequeAmt = match.netTotalAmount || match.freightAmount || "";
       setPaidByCheque(chequeAmt);
       setRemarks(match.remarks || "");
