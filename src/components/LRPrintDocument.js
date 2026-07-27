@@ -214,8 +214,8 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-0 print:shadow-none font-sans text-xs">
         <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document relative overflow-hidden">
           
-          {/* Background Watermark Logo (Only for PDF Export - Hidden during Hardcopy Print) */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden print:hidden">
+          {/* Background Watermark Logo (Shown during both PDF Export & LR Print) */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
             <img
               src={logoImg}
               alt="Watermark Logo"
