@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getFinancialYear } from "../utils/storage";
+import PartyPortalStatementDocument from "../components/PartyPortalStatementDocument";
 import {
   FileSpreadsheet,
   CheckCircle2,
@@ -15,6 +16,8 @@ import {
   Building2,
   X,
   Calendar,
+  Download,
+  Printer,
 } from "lucide-react";
 
 export default function AccountingPage() {
@@ -32,6 +35,10 @@ export default function AccountingPage() {
   const [selectedTruckNo, setSelectedTruckNo] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, PAID, UNPAID
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Statement PDF & Print Modal state
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [activeAutoAction, setActiveAutoAction] = useState(null);
 
   // Sync tab with URL search parameter (?tab=TRUCK or ?tab=PARTY)
   useEffect(() => {
@@ -352,11 +359,29 @@ export default function AccountingPage() {
   // 1. PARTY ROLE VIEW (COMPACT PARTY PORTAL)
   // ----------------------------------------------------
   if (isParty) {
+    if (showPrintModal) {
+      return (
+        <PartyPortalStatementDocument
+          partyName={user?.partyName || "Party Account Statement"}
+          selectedFY={selectedFY}
+          partyTotalBilled={partyTotalBilled}
+          partyTotalPaid={partyTotalPaid}
+          partyTotalRemaining={partyTotalRemaining}
+          records={partyLrEntries}
+          autoAction={activeAutoAction}
+          onClose={() => {
+            setShowPrintModal(false);
+            setActiveAutoAction(null);
+          }}
+        />
+      );
+    }
+
     return (
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 font-sans space-y-4">
         
         {/* Compact Welcome Banner */}
-        <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 px-4 shadow flex justify-between items-center gap-3">
+        <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 px-4 shadow flex flex-wrap justify-between items-center gap-3">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-amber-500/20 text-amber-400 rounded-lg">
               <Building2 className="w-5 h-5" />
@@ -376,7 +401,7 @@ export default function AccountingPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {/* Financial Year Selector */}
             <div className="flex items-center gap-1.5 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700">
               <Calendar className="w-3.5 h-3.5 text-amber-400" />
@@ -394,6 +419,28 @@ export default function AccountingPage() {
                 ))}
               </select>
             </div>
+
+            <button
+              onClick={() => {
+                setActiveAutoAction("pdf");
+                setShowPrintModal(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg text-xs font-black transition cursor-pointer shadow"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export Statement PDF</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveAutoAction("print");
+                setShowPrintModal(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-black transition cursor-pointer shadow"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Print A4</span>
+            </button>
 
             <button
               onClick={fetchData}
@@ -457,9 +504,20 @@ export default function AccountingPage() {
               <CreditCard className="w-4 h-4 text-amber-400" />
               <span>LR Records & Statements</span>
             </h2>
-            <span className="text-[11px] font-mono bg-slate-700 text-slate-300 px-2.5 py-0.5 rounded-full">
-              {partyLrEntries.length} Records
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setActiveAutoAction("pdf");
+                  setShowPrintModal(true);
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black rounded transition shadow cursor-pointer"
+              >
+                <Download size={13} /> Export Statement PDF
+              </button>
+              <span className="text-[11px] font-mono bg-slate-700 text-slate-300 px-2.5 py-0.5 rounded-full">
+                {partyLrEntries.length} Records
+              </span>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
