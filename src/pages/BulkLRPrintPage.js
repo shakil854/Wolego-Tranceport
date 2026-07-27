@@ -268,7 +268,7 @@ export default function BulkLRPrintPage() {
         <div className="grid grid-cols-12 border-b-2 border-slate-900 font-extrabold text-[11px] divide-x-2 divide-slate-900 text-slate-950">
           <div className="col-span-6 p-1.5 flex items-center gap-2">
             <span>DELIVERY AT :</span>
-            <span className="font-black uppercase bg-yellow-300 px-2 py-0.5 border border-slate-900 rounded text-slate-950">
+            <span className="font-black uppercase text-slate-950">
               {lrData.deliveryAt || ""}
             </span>
           </div>
@@ -379,7 +379,7 @@ export default function BulkLRPrintPage() {
             {/* 1. GST Payable By */}
             <div className="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1 flex items-center gap-2">
               <span>GST PAYABLE BY :</span>
-              <span className="bg-yellow-300 px-2 py-0.5 border border-slate-900 rounded font-black text-slate-950">{lrData.gstPayableBy || "CONSIGNEE"}</span>
+              <span className="font-black uppercase text-slate-950">{lrData.gstPayableBy || "CONSIGNEE"}</span>
             </div>
 
             {/* 2. Invoice No */}
