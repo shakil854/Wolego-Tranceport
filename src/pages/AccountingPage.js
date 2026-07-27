@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 export default function AccountingPage() {
-  const { user, isOwner, isParty } = useAuth();
+  const { user, isParty } = useAuth();
   const location = useLocation();
 
   const [lrEntries, setLrEntries] = useState([]);
@@ -188,13 +188,32 @@ export default function AccountingPage() {
     return lr.consigneeName?.trim() || lr.consignorName?.trim() || "-";
   };
 
+  // Date and FY helper functions
+  const getLRDate = (lr) => {
+    return lr?.dateTime || lr?.date || lr?.createdAt || null;
+  };
+
+  const getLRFYLabel = (lr) => {
+    const d = getLRDate(lr);
+    return d ? getFinancialYear(d).label : "";
+  };
+
+  const matchFY = (lrFY, targetFY) => {
+    if (!targetFY || targetFY === "ALL") return true;
+    if (!lrFY) return false;
+    if (lrFY === targetFY) return true;
+    if (targetFY.length === 5 && lrFY.endsWith(targetFY)) return true;
+    if (lrFY.length === 5 && targetFY.endsWith(lrFY)) return true;
+    return false;
+  };
+
   // Extract unique Financial Years present in Dataset
   const availableFYs = Array.from(
     new Set([
       getFinancialYear(new Date()).label,
       ...lrEntries
         .map((lr) => {
-          const d = lr.dateTime || lr.date;
+          const d = getLRDate(lr);
           return d ? getFinancialYear(d).label : null;
         })
         .filter(Boolean),
@@ -219,11 +238,9 @@ export default function AccountingPage() {
   // Filtered LRs for Party Role
   const partyLrEntries = isParty
     ? lrEntries.filter((lr) => {
-        if (selectedFY !== "ALL") {
-          const d = lr.dateTime || lr.date;
-          const lrFY = d ? getFinancialYear(d).label : "";
-          if (lrFY !== selectedFY) return false;
-        }
+        const lrFY = getLRFYLabel(lr);
+        if (!matchFY(lrFY, selectedFY)) return false;
+
         const pName = user?.partyName?.toLowerCase()?.trim();
         const pCalculated = getPartyName(lr).toLowerCase().trim();
         const consignor = lr.consignorName?.toLowerCase()?.trim();
@@ -240,14 +257,12 @@ export default function AccountingPage() {
   }, 0);
   const partyTotalRemaining = partyTotalBilled - partyTotalPaid;
 
-  // Filtered LRs for Owner View
-  const filteredOwnerEntries = lrEntries.filter((lr) => {
+  // 1. Base Filtered LRs for Owner View (Filtered by FY, Search Query, Party/Truck selection)
+  // This ensures upper overview metrics strictly reflect the selected FY and selection!
+  const baseOwnerEntries = lrEntries.filter((lr) => {
     // Financial Year filter
-    if (selectedFY !== "ALL") {
-      const d = lr.dateTime || lr.date;
-      const lrFY = d ? getFinancialYear(d).label : "";
-      if (lrFY !== selectedFY) return false;
-    }
+    const lrFY = getLRFYLabel(lr);
+    if (!matchFY(lrFY, selectedFY)) return false;
 
     // Search query filter
     if (searchQuery) {
@@ -267,8 +282,6 @@ export default function AccountingPage() {
           lr.consigneeName?.trim() === selectedPartyName;
         if (!partyMatch) return false;
       }
-      if (statusFilter === "PAID" && lr.partyPaymentStatus !== "PAID") return false;
-      if (statusFilter === "UNPAID" && lr.partyPaymentStatus === "PAID") return false;
     }
 
     // Truck Tab filtering
@@ -276,33 +289,53 @@ export default function AccountingPage() {
       if (selectedTruckNo !== "ALL") {
         if (lr.truckNo?.trim()?.toUpperCase() !== selectedTruckNo) return false;
       }
+    }
+
+    return true;
+  });
+
+  // 2. Owner View Top Metrics (Calculated for selected FY & active tab)
+  const ownerTotalBilled = baseOwnerEntries.reduce(
+    (sum, item) => sum + (Number(item.netTotalAmount) || 0),
+    0
+  );
+  const ownerTotalPartyReceived = baseOwnerEntries.reduce((sum, item) => {
+    if (item.partyPaymentStatus === "PAID") return sum + (Number(item.netTotalAmount) || 0);
+    return sum + (Number(item.partyPaidAmount) || 0);
+  }, 0);
+  const ownerPartyPending = ownerTotalBilled - ownerTotalPartyReceived;
+
+  const ownerTotalTruckPayable = baseOwnerEntries.reduce(
+    (sum, item) => sum + (Number(item.netTotalAmount) || 0),
+    0
+  );
+  const ownerTotalTruckPaid = baseOwnerEntries.reduce((sum, item) => {
+    if (item.truckPaymentStatus === "PAID") return sum + (Number(item.netTotalAmount) || 0);
+    return sum + (Number(item.truckPaidAmount) || 0);
+  }, 0);
+  const ownerTruckPending = ownerTotalTruckPayable - ownerTotalTruckPaid;
+
+  // Status button badges counts
+  const ownerAllCount = baseOwnerEntries.length;
+  const ownerPaidCount = baseOwnerEntries.filter((lr) =>
+    activeTab === "PARTY" ? lr.partyPaymentStatus === "PAID" : lr.truckPaymentStatus === "PAID"
+  ).length;
+  const ownerUnpaidCount = ownerAllCount - ownerPaidCount;
+
+  // 3. Final Table Filtered LRs (Applies PAID / UNPAID status filter for list view)
+  const filteredOwnerEntries = baseOwnerEntries.filter((lr) => {
+    if (activeTab === "PARTY") {
+      if (statusFilter === "PAID" && lr.partyPaymentStatus !== "PAID") return false;
+      if (statusFilter === "UNPAID" && lr.partyPaymentStatus === "PAID") return false;
+    }
+
+    if (activeTab === "TRUCK") {
       if (statusFilter === "PAID" && lr.truckPaymentStatus !== "PAID") return false;
       if (statusFilter === "UNPAID" && lr.truckPaymentStatus === "PAID") return false;
     }
 
     return true;
   });
-
-  // Owner View Metrics
-  const ownerTotalBilled = filteredOwnerEntries.reduce(
-    (sum, item) => sum + (Number(item.netTotalAmount) || 0),
-    0
-  );
-  const ownerTotalPartyReceived = filteredOwnerEntries.reduce((sum, item) => {
-    if (item.partyPaymentStatus === "PAID") return sum + (Number(item.netTotalAmount) || 0);
-    return sum + (Number(item.partyPaidAmount) || 0);
-  }, 0);
-  const ownerPartyPending = ownerTotalBilled - ownerTotalPartyReceived;
-
-  const ownerTotalTruckPayable = filteredOwnerEntries.reduce(
-    (sum, item) => sum + (Number(item.netTotalAmount) || 0),
-    0
-  );
-  const ownerTotalTruckPaid = filteredOwnerEntries.reduce((sum, item) => {
-    if (item.truckPaymentStatus === "PAID") return sum + (Number(item.netTotalAmount) || 0);
-    return sum + (Number(item.truckPaidAmount) || 0);
-  }, 0);
-  const ownerTruckPending = ownerTotalTruckPayable - ownerTotalTruckPaid;
 
   if (loading) {
     return (
@@ -343,13 +376,33 @@ export default function AccountingPage() {
             </div>
           </div>
 
-          <button
-            onClick={fetchData}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-semibold transition cursor-pointer"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Refresh</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Financial Year Selector */}
+            <div className="flex items-center gap-1.5 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700">
+              <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-bold text-slate-300 uppercase">Year:</span>
+              <select
+                value={selectedFY}
+                onChange={(e) => setSelectedFY(e.target.value)}
+                className="bg-transparent text-white text-xs font-mono font-bold focus:outline-none cursor-pointer"
+              >
+                <option value="ALL" className="bg-slate-900 text-white">All Years</option>
+                {availableFYs.map((fy) => (
+                  <option key={fy} value={fy} className="bg-slate-900 text-white">
+                    FY {fy}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={fetchData}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-semibold transition cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
 
         {/* 3 Compact Metric Cards */}
@@ -708,7 +761,7 @@ export default function AccountingPage() {
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            All ({filteredOwnerEntries.length})
+            All ({ownerAllCount})
           </button>
           <button
             onClick={() => setStatusFilter("PAID")}
@@ -718,7 +771,7 @@ export default function AccountingPage() {
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            Paid Only
+            Paid Only ({ownerPaidCount})
           </button>
           <button
             onClick={() => setStatusFilter("UNPAID")}
@@ -728,7 +781,7 @@ export default function AccountingPage() {
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            Pending Only
+            Pending Only ({ownerUnpaidCount})
           </button>
         </div>
       </div>
