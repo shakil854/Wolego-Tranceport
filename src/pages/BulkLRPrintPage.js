@@ -238,8 +238,8 @@ export default function BulkLRPrintPage() {
 
         </div>
 
-        {/* Title Strip (Line 7 & Line 8) */}
-        <div className="bg-slate-900 text-white font-extrabold text-center py-1 tracking-wider text-xs uppercase flex flex-col items-center justify-center space-y-0.5 border-b-2 border-slate-900">
+        {/* Title Strip (Line 7 & Line 8 - Blue Background) */}
+        <div className="bg-blue-900 text-white font-extrabold text-center py-1 tracking-wider text-xs uppercase flex flex-col items-center justify-center space-y-0.5 border-b-2 border-blue-900">
           <div className="text-xs font-black tracking-widest text-white">GOODS CONSIGNMENT NOTE</div>
           <div className="text-[9.5px] font-bold tracking-wider text-amber-300">AT OWNER'S RISK</div>
         </div>
