@@ -635,17 +635,29 @@ export default function LREntryForm() {
                     <Building2 className="w-3.5 h-3.5 text-amber-400" />
                     <span>CONSIGNOR (माल भेजने वाला)</span>
                   </h3>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAddPartyTarget("CONSIGNOR");
-                      setNewPartyForm({ ...initialBlankPartyForm, selectType: "CONSIGNOR" });
-                      setShowAddPartyModal(true);
-                    }}
-                    className="px-2 py-0.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-extrabold rounded flex items-center gap-1 shadow transition cursor-pointer"
-                  >
-                    <Plus size={12} /> + Add Party
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPartySearchQuery("");
+                        setSearchConsignorModal(true);
+                      }}
+                      className="px-2 py-0.5 bg-yellow-400 hover:bg-yellow-300 text-slate-950 text-[10px] font-extrabold rounded flex items-center gap-1 shadow cursor-pointer uppercase"
+                    >
+                      <Search size={12} /> Search
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddPartyTarget("CONSIGNOR");
+                        setNewPartyForm({ ...initialBlankPartyForm, selectType: "CONSIGNOR" });
+                        setShowAddPartyModal(true);
+                      }}
+                      className="px-2 py-0.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-extrabold rounded flex items-center gap-1 shadow transition cursor-pointer uppercase"
+                    >
+                      <Plus size={12} /> + Add Party
+                    </button>
+                  </div>
                 </div>
 
                 {/* Selected Consignors Badges / Chips */}
@@ -672,18 +684,6 @@ export default function LREntryForm() {
                     </button>
                   </div>
                 )}
-
-                <SearchablePartySelect
-                  parties={consignorsList}
-                  value=""
-                  onSelectParty={(name) => handleAddConsignor(name)}
-                  placeholder={selectedConsignors.length > 0 ? "+ Add Consignor..." : "-- Select Consignor Party --"}
-                  partyType="Consignor"
-                  onSearchButtonClick={() => {
-                    setPartySearchQuery("");
-                    setSearchConsignorModal(true);
-                  }}
-                />
 
                 <input
                   type="text"
@@ -718,30 +718,30 @@ export default function LREntryForm() {
                     <Building2 className="w-3.5 h-3.5 text-amber-400" />
                     <span>CONSIGNEE (माल प्राप्तकर्ता)</span>
                   </h3>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAddPartyTarget("CONSIGNEE");
-                      setNewPartyForm({ ...initialBlankPartyForm, selectType: "CONSIGNEE" });
-                      setShowAddPartyModal(true);
-                    }}
-                    className="px-2 py-0.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-extrabold rounded flex items-center gap-1 shadow transition cursor-pointer"
-                  >
-                    <Plus size={12} /> + Add Party
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPartySearchQuery("");
+                        setSearchConsigneeModal(true);
+                      }}
+                      className="px-2 py-0.5 bg-yellow-400 hover:bg-yellow-300 text-slate-950 text-[10px] font-extrabold rounded flex items-center gap-1 shadow cursor-pointer uppercase"
+                    >
+                      <Search size={12} /> Search
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddPartyTarget("CONSIGNEE");
+                        setNewPartyForm({ ...initialBlankPartyForm, selectType: "CONSIGNEE" });
+                        setShowAddPartyModal(true);
+                      }}
+                      className="px-2 py-0.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-extrabold rounded flex items-center gap-1 shadow transition cursor-pointer uppercase"
+                    >
+                      <Plus size={12} /> + Add Party
+                    </button>
+                  </div>
                 </div>
-
-                <SearchablePartySelect
-                  parties={consigneesList}
-                  value={formData.consigneeName}
-                  onSelectParty={(name) => handleSelectConsignee(name)}
-                  placeholder="-- Select Consignee Party --"
-                  partyType="Consignee"
-                  onSearchButtonClick={() => {
-                    setPartySearchQuery("");
-                    setSearchConsigneeModal(true);
-                  }}
-                />
 
                 <input
                   type="text"
@@ -1299,7 +1299,7 @@ export default function LREntryForm() {
         {showAddPartyModal && (
           <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3">
             <div className="bg-sky-900/90 border-2 border-yellow-400 rounded-lg max-w-2xl w-full shadow-2xl overflow-hidden backdrop-blur-sm flex flex-col max-h-[90vh]">
-              
+
               {/* Form Title Header (Matches Screenshot) */}
               <div className="bg-sky-950 px-3 py-1.5 border-b border-yellow-400 flex justify-between items-center shrink-0">
                 <h2 className="text-xs sm:text-sm font-black text-blue-100 uppercase tracking-wider flex items-center gap-1.5">
@@ -1321,7 +1321,7 @@ export default function LREntryForm() {
 
               {/* Form Inputs (Matches Screenshot Layout) */}
               <form onSubmit={handleSaveNewParty} className="p-3 space-y-2 text-xs overflow-y-auto">
-                
+
                 {/* Party Name */}
                 <div>
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
