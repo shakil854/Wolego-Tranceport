@@ -495,7 +495,7 @@ export default function BulkLRPrintPage() {
             </div>
 
             {/* Signatory Block Inside Grid */}
-            <div className="text-right font-sans p-2 mt-auto flex flex-col items-end justify-end min-h-[60px]">
+            <div className="text-center font-sans p-2 mt-auto flex flex-col items-center justify-end min-h-[60px]">
               <div className="font-black uppercase text-[11px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
               {signatureImg ? (
                 <img
