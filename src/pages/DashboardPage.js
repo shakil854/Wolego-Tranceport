@@ -334,7 +334,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-amber-400" />
             <h2 className="text-sm font-bold text-white tracking-wide">
-              Quick Application Shortcuts (પેજ શોટકટ)
+              Quick Application Shortcuts
             </h2>
           </div>
           <span className="text-[11px] text-slate-400 font-medium">
