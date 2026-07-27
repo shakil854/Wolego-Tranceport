@@ -6,6 +6,7 @@ import logoImg from "../assets/logo.png";
 
 export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, autoAction }) {
   const printRef = useRef(null);
+  const termsRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const [signatureImg, setSignatureImg] = useState(() => {
@@ -64,24 +65,44 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     window.print();
   };
 
-  // High-Quality PDF Export
+  // High-Quality Multi-Page PDF Export (Page 1: LR, Page 2: Terms and Conditions)
   const handleExportPDF = async () => {
     if (!printRef.current) return;
     try {
-      const element = printRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2, // High DPI
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff"
-      });
-
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      // Render Page 1 (LR Document)
+      const canvas1 = await html2canvas(printRef.current, {
+        scale: 2, // High DPI
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: "#ffffff"
+      });
+
+      const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
+      pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+
+      // Render Page 2 (Terms and Conditions)
+      if (termsRef.current) {
+        try {
+          const canvas2 = await html2canvas(termsRef.current, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: "#ffffff"
+          });
+          const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
+          pdf.addPage();
+          pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+        } catch (tErr) {
+          console.error("Terms & Conditions page canvas error:", tErr);
+        }
+      }
+
       pdf.save(`LR_${lrData.lrNumber || "Document"}_WolegoTransport.pdf`);
     } catch (err) {
       console.error("PDF export failed:", err);
@@ -89,57 +110,68 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     }
   };
 
-  // Dynamic PDF Generator + WhatsApp Share Function (Shares actual PDF File)
+  // Dynamic PDF Generator + WhatsApp Share Function (Shares ONLY 2-Page PDF File with ZERO text)
   const handleWhatsApp = async () => {
     if (!printRef.current) return;
     try {
-      // 1. Generate high-quality PDF blob
-      const element = printRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff"
-      });
-
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      // 1. Render Page 1 (LR Document)
+      const canvas1 = await html2canvas(printRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: "#ffffff"
+      });
+      const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
+      pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+
+      // 2. Render Page 2 (Terms and Conditions)
+      if (termsRef.current) {
+        try {
+          const canvas2 = await html2canvas(termsRef.current, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: "#ffffff"
+          });
+          const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
+          pdf.addPage();
+          pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+        } catch (tErr) {
+          console.error("Terms page canvas error:", tErr);
+        }
+      }
 
       const filename = `LR_${lrData.lrNumber || "Document"}_WolegoTransport.pdf`;
       const pdfBlob = pdf.output("blob");
       const pdfFile = new File([pdfBlob], filename, { type: "application/pdf" });
 
-      const textSummary = `WOLEGO TRANSPORT - LORRY RECEIPT\nLR No: ${lrData.lrNumber}\nConsignor: ${lrData.consignorName}\nConsignee: ${lrData.consigneeName}\nNet Total: Rs. ${lrData.netTotalAmount || lrData.freightAmount}`;
-
-      // 2. Use Web Share API if supported (Mobile Chrome, Safari, Android, Edge)
+      // 3. Share ONLY the PDF file without any text message
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         await navigator.share({
-          title: `LR #${lrData.lrNumber} - Wolego Transport`,
-          text: textSummary,
           files: [pdfFile]
         });
       } else {
-        // Fallback for desktop: auto download PDF + open WhatsApp
+        // Desktop Fallback: Download PDF & Open WhatsApp Web clean without text
         pdf.save(filename);
-        const encodedText = encodeURIComponent(
-          `*WOLEGO TRANSPORT - LORRY RECEIPT*%0A` +
-          `*LR No:* ${lrData.lrNumber}%0A` +
-          `*Consignor:* ${lrData.consignorName}%0A` +
-          `*Consignee:* ${lrData.consigneeName}%0A` +
-          `*Truck No:* ${lrData.truckNo}%0A` +
-          `*Net Total:* Rs. ${lrData.netTotalAmount || lrData.freightAmount}%0A` +
-          `----------------------------------%0A` +
-          `📄 *PDF document downloaded (${filename}). Please click attachment 📎 -> Document in WhatsApp to send!*`
-        );
-        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, "_blank");
+        window.open(`https://api.whatsapp.com/send`, "_blank");
       }
     } catch (err) {
       console.error("WhatsApp PDF sharing error:", err);
-      window.open(`https://api.whatsapp.com/send?text=LR%20No:%20${lrData.lrNumber}`, "_blank");
+      try {
+        const pdf = new jsPDF("p", "mm", "a4");
+        const canvas1 = await html2canvas(printRef.current, { scale: 1.5, logging: false });
+        pdf.addImage(canvas1.toDataURL("image/jpeg", 0.85), "JPEG", 0, 0, 210, 297, undefined, "FAST");
+        pdf.save(`LR_${lrData.lrNumber || "Document"}_WolegoTransport.pdf`);
+      } catch (e) {
+        console.error("Fallback PDF save failed:", e);
+      }
+      window.open(`https://api.whatsapp.com/send`, "_blank");
     }
   };
 
@@ -540,6 +572,97 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
             </div>
           </div>
 
+        </div>
+      </div>
+
+      {/* Page 2: Terms and Conditions Document (Included in PDF Export) */}
+      <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-0 print:shadow-none font-sans text-xs mt-6 print:hidden">
+        <div
+          ref={termsRef}
+          className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document relative overflow-hidden p-6 sm:p-10"
+        >
+          {/* Inner Rounded Frame matching Photo */}
+          <div className="border border-slate-400 rounded-2xl p-6 sm:p-8 h-full flex flex-col justify-start relative overflow-hidden">
+            {/* Background Watermark Logo */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+              <img
+                src={logoImg}
+                alt="Watermark Logo"
+                className="w-[450px] max-w-[75%] opacity-[0.08] object-contain mix-blend-multiply"
+              />
+            </div>
+
+            <div className="relative z-10 flex-1 flex flex-col justify-start">
+              {/* Header Bar */}
+              <div className="pb-4 mb-6 text-center">
+                <div className="text-[10px] sm:text-[11px] font-bold text-slate-700 tracking-wider uppercase mb-2">
+                  :: GOOD BOOKED ON ARE REVERS CARRIED CARRIED SUBJECT TO THE FOLLOWING ::
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-950 uppercase tracking-widest border-b-2 border-slate-900 inline-block pb-1">
+                  TERMS AND CONDITIONS
+                </h2>
+              </div>
+
+              {/* 8 Terms & Conditions Points */}
+              <div className="space-y-4 text-[11px] sm:text-xs leading-relaxed text-slate-900 font-medium">
+                <div className="flex gap-2.5">
+                  <span className="font-bold text-slate-950 shrink-0 min-w-[20px]">1)</span>
+                  <p>
+                    THE COMPANY DOES NOT GUARANTEE DELIVERY WITHIN ANY SPECIFIED TIME AND THE COMPANY DOES NOT BE LIABLE FOR ANY DELAY IN TRANSPORT OR DELIVERY, NOT ANY NEGLIGENCE FDEFAULT OF THE CARRIEROF HISAGENTS.
+                  </p>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <span className="font-bold text-slate-950 shrink-0 min-w-[20px]">2)</span>
+                  <p>
+                    NATURE, CONTENTE CONDITION AND VALUE OF THE CONSIGNMENT ARE UNKNOWN TO GOODS CARRERS OF INDIA (HEREIN-AFTER CALLED THE COMPANY) THE COMPANY CARRY THE GOODSAND PACKEDAT OWNER'S RISK.
+                  </p>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <span className="font-bold text-slate-950 shrink-0 min-w-[20px]">3)</span>
+                  <p>
+                    THE COMPANY SHALL NOT BE RESPONSIBLE IF THE GOOD S ARE DETAINED SEIZED OR CONFICATED GOVERNMENT AUTHORITIES.
+                  </p>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <span className="font-bold text-slate-950 shrink-0 min-w-[20px]">4)</span>
+                  <p>
+                    THE COMPANY SHALL NOT BE LIABLE FOR ANY LOSS OR DAMAGE DUE TO PILFERAGE THEFT WEALTHIER CONDITIONS STRIKES, RIOTS, DISTURBANCES, FIRE EXPLOSION OR ACCIDENT, PROVIDED HOWEVER ALL REASONABLE PRECAUTIONS ARE TAKEN TO PROVIDE AGAINST SUCHCONTINGENCY.
+                  </p>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <span className="font-bold text-slate-950 shrink-0 min-w-[20px]">5)</span>
+                  <p>
+                    NO ENQUIRY WELL ENTERTAINED RELATING TO ANY CONSIGNMENT AFTER THE EXPIRY OF 30 DAYSFORM THE DATE DELIVERY.
+                  </p>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <span className="font-bold text-slate-950 shrink-0 min-w-[20px]">6)</span>
+                  <p>
+                    THE COMPANY IS NOT RESPONSIBLE FOR LEAKAGE, BREAKAGE OR SHORTAGE BY SUN, RAIN ORWATER DUE TOBAD ROAD CONDUCTION OR DUEIMPROPER PACKING ETC.
+                  </p>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <span className="font-bold text-slate-950 shrink-0 min-w-[20px]">7)</span>
+                  <p>
+                    THE COURT IN WANKANER ALONE SHALL HAVE JURIDITION IN RESPECT OF ALLCLAIMS AND MATTESARISING UNDER THE CONSIGNMENT OF THEGOODS ENTRUSTED FOR TRANSPORT.
+                  </p>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <span className="font-bold text-slate-950 shrink-0 min-w-[20px]">8)</span>
+                  <p>
+                    PLEASE CHEQUETHE DOCUMENT OF THETRUCK & DRIVER LICENCE.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
