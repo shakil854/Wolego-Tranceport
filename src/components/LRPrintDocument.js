@@ -318,8 +318,8 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
                 </div>
 
-                {/* Right Side Column: Mobile Numbers, PAN, GSTIN (Stacked Vertically) */}
-                <div className="col-span-3 text-right text-[9.5px] sm:text-[10px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-2">
+                {/* Right Side Column: Mobile Numbers, PAN, GSTIN (Left Aligned for Straight Alignment) */}
+                <div className="col-span-3 text-left text-[9.5px] sm:text-[10px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-3">
                   <div>MOBILE NO. +91 99 79 111 555</div>
                   <div>MOBILE NO. +91 81 41 111 555</div>
                   <div>PAN NO. : DLTPS8567M</div>
