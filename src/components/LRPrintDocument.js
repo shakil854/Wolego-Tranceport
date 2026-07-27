@@ -65,6 +65,19 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     window.print();
   };
 
+  // Helper to format LR PDF filename: LR_0004_WolegoTransport_GJ28AA2626.pdf
+  const getLRPdfFilename = (lr) => {
+    const lrNo = lr?.lrNumber || "0000";
+    let truck = (lr?.truckNo || "")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .trim();
+
+    if (truck) {
+      return `LR_${lrNo}_WolegoTransport_${truck}.pdf`;
+    }
+    return `LR_${lrNo}_WolegoTransport.pdf`;
+  };
+
   // High-Quality Multi-Page PDF Export (Page 1: LR, Page 2: Terms and Conditions)
   const handleExportPDF = async () => {
     if (!printRef.current) return;
@@ -103,7 +116,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         }
       }
 
-      pdf.save(`LR_${lrData.lrNumber || "Document"}_WolegoTransport.pdf`);
+      pdf.save(getLRPdfFilename(lrData));
     } catch (err) {
       console.error("PDF export failed:", err);
       window.print();
@@ -147,7 +160,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         }
       }
 
-      const filename = `LR_${lrData.lrNumber || "Document"}_WolegoTransport.pdf`;
+      const filename = getLRPdfFilename(lrData);
       const pdfBlob = pdf.output("blob");
       const pdfFile = new File([pdfBlob], filename, { type: "application/pdf" });
 
@@ -167,7 +180,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         const pdf = new jsPDF("p", "mm", "a4");
         const canvas1 = await html2canvas(printRef.current, { scale: 1.5, logging: false });
         pdf.addImage(canvas1.toDataURL("image/jpeg", 0.85), "JPEG", 0, 0, 210, 297, undefined, "FAST");
-        pdf.save(`LR_${lrData.lrNumber || "Document"}_WolegoTransport.pdf`);
+        pdf.save(getLRPdfFilename(lrData));
       } catch (e) {
         console.error("Fallback PDF save failed:", e);
       }
