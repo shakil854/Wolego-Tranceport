@@ -112,7 +112,7 @@ export default function LREntryForm() {
     weightKgs: "",
     ratePerTon: "",
     rateType: "P.M.T.",
-    toPayOrPaid: "TO-PAY", // TO-PAY / PAID
+    toPayOrPaid: "TBB", // TBB / TO-PAY / PAID
     freightAmount: 0,
 
     // GST & Charges
@@ -835,6 +835,7 @@ export default function LREntryForm() {
                     onChange={(e) => setFormData({ ...formData, toPayOrPaid: e.target.value })}
                     className="w-full bg-yellow-400 text-slate-950 font-black px-1 py-0.5 border rounded text-xs uppercase cursor-pointer"
                   >
+                    <option value="TBB">TBB</option>
                     <option value="TO-PAY">TO-PAY</option>
                     <option value="PAID">PAID</option>
                   </select>
