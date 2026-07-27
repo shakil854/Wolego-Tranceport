@@ -286,7 +286,7 @@ export default function LREntryForm() {
 
       const nameVal = `${line1}\n${line2}\n${line3}\n${line4}`;
       const addrVal = "";
-      const gstVal = `(1) ${c1.gstNo || ""}   (2) ${c2.gstNo || ""}`;
+      const gstVal = "AS PER BILL";
 
       setFormData((prev) => ({
         ...prev,
@@ -298,7 +298,7 @@ export default function LREntryForm() {
       // >2 Consignors (3 or more): ONLY Names line-by-line formatted as (1), (2), (3)!
       const nameVal = list.map((c, idx) => `(${idx + 1}) ${c.partyName}`).join("\n");
       const addrVal = "";
-      const gstVal = list.map((c, idx) => `(${idx + 1}) ${c.gstNo || ""}`).join("  ");
+      const gstVal = "AS PER BILL";
 
       setFormData((prev) => ({
         ...prev,

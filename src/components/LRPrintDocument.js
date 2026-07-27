@@ -387,7 +387,11 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   </div>
                 </div>
                 <div className="font-mono font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
-                  CONSIGNOR GSTIN NO. : <span className="font-black text-slate-950">{lrData.consignorGst || ""}</span>
+                  CONSIGNOR GSTIN NO. : <span className="font-black text-slate-950">
+                    {(lrData.consignorName && (lrData.consignorName.includes("(1)") || lrData.consignorName.includes("\n")))
+                      ? "AS PER BILL"
+                      : (lrData.consignorGst || "")}
+                  </span>
                 </div>
               </div>
 
