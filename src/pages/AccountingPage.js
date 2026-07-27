@@ -179,19 +179,19 @@ export default function AccountingPage() {
     }
   };
 
-  // Helper to extract actual party name for an LR entry
+  // Helper to extract actual party name for an LR entry based on TBB (Consignee) / PAID (Consignor)
   const getPartyName = (lr) => {
     if (!lr) return "-";
-    const debit = lr.debitAmountTo?.trim()?.toUpperCase();
-    if (debit === "CONSIGNEE") {
-      return lr.consigneeName?.trim() || lr.consignorName?.trim() || "-";
-    }
-    if (debit === "CONSIGNOR") {
+    const status = (lr.toPayOrPaid || "TBB").trim().toUpperCase();
+    if (status === "PAID") {
       return lr.consignorName?.trim() || lr.consigneeName?.trim() || "-";
     }
-    if (lr.debitAmountTo && lr.debitAmountTo.trim() !== "CONSIGNEE" && lr.debitAmountTo.trim() !== "CONSIGNOR") {
-      return lr.debitAmountTo.trim();
+    if (status === "TBB") {
+      return lr.consigneeName?.trim() || lr.consignorName?.trim() || "-";
     }
+    const debit = lr.debitAmountTo?.trim()?.toUpperCase();
+    if (debit === "CONSIGNEE") return lr.consigneeName?.trim() || "-";
+    if (debit === "CONSIGNOR") return lr.consignorName?.trim() || "-";
     return lr.consigneeName?.trim() || lr.consignorName?.trim() || "-";
   };
 
@@ -229,14 +229,21 @@ export default function AccountingPage() {
 
   // Extract unique Truck numbers
   const uniqueTrucks = Array.from(
-    new Set(lrEntries.map((lr) => lr.truckNo?.trim()?.toUpperCase()).filter(Boolean))
+    new Set(
+      lrEntries
+        .filter((lr) => (lr.toPayOrPaid || "").trim().toUpperCase() !== "TO-PAY")
+        .map((lr) => lr.truckNo?.trim()?.toUpperCase())
+        .filter(Boolean)
+    )
   ).sort();
 
   // Extract unique Parties from LRs & Party master
   const uniqueParties = Array.from(
     new Set([
       ...parties.map((p) => p.partyName?.trim()),
-      ...lrEntries.map((lr) => getPartyName(lr)),
+      ...lrEntries
+        .filter((lr) => (lr.toPayOrPaid || "").trim().toUpperCase() !== "TO-PAY")
+        .map((lr) => getPartyName(lr)),
     ])
   )
     .filter((p) => p && p !== "-" && p !== "CONSIGNEE" && p !== "CONSIGNOR")
@@ -245,6 +252,10 @@ export default function AccountingPage() {
   // Filtered LRs for Party Role
   const partyLrEntries = isParty
     ? lrEntries.filter((lr) => {
+        // Rule: TO-PAY LRs generate NO accounting baki entry
+        const status = (lr.toPayOrPaid || "").trim().toUpperCase();
+        if (status === "TO-PAY") return false;
+
         const lrFY = getLRFYLabel(lr);
         if (!matchFY(lrFY, selectedFY)) return false;
 
@@ -252,6 +263,14 @@ export default function AccountingPage() {
         const pCalculated = getPartyName(lr).toLowerCase().trim();
         const consignor = lr.consignorName?.toLowerCase()?.trim();
         const consignee = lr.consigneeName?.toLowerCase()?.trim();
+
+        if (status === "PAID") {
+          return consignor === pName || pCalculated === pName;
+        }
+        if (status === "TBB") {
+          return consignee === pName || pCalculated === pName;
+        }
+
         return pCalculated === pName || consignor === pName || consignee === pName;
       })
     : [];
@@ -265,8 +284,11 @@ export default function AccountingPage() {
   const partyTotalRemaining = partyTotalBilled - partyTotalPaid;
 
   // 1. Base Filtered LRs for Owner View (Filtered by FY, Search Query, Party/Truck selection)
-  // This ensures upper overview metrics strictly reflect the selected FY and selection!
   const baseOwnerEntries = lrEntries.filter((lr) => {
+    // Rule: TO-PAY LRs do NOT generate pending/baki accounting entries in office ledger
+    const status = (lr.toPayOrPaid || "").trim().toUpperCase();
+    if (status === "TO-PAY") return false;
+
     // Financial Year filter
     const lrFY = getLRFYLabel(lr);
     if (!matchFY(lrFY, selectedFY)) return false;
