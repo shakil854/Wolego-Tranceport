@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, getNextLRNumber } from "../utils/storage";
+import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, getNextLRNumber, saveParty } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
 import SearchablePartySelect from "../components/SearchablePartySelect";
 import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2 } from "lucide-react";
@@ -17,6 +17,60 @@ export default function LREntryForm() {
   const [partySearchQuery, setPartySearchQuery] = useState("");
   const [activeLR, setActiveLR] = useState(null);
   const [statusMsg, setStatusMsg] = useState("");
+
+  const initialBlankPartyForm = {
+    partyName: "",
+    address1: "",
+    address2: "",
+    address3: "",
+    city: "",
+    district: "",
+    state: "GUJARAT",
+    stateCode: "24",
+    gstNo: "",
+    panNo: "",
+    contactName: "",
+    mobileNos: "",
+    selectType: "BOTH",
+  };
+
+  // Add Party Modal State
+  const [showAddPartyModal, setShowAddPartyModal] = useState(false);
+  const [addPartyTarget, setAddPartyTarget] = useState("BOTH"); // "CONSIGNOR", "CONSIGNEE", "BOTH"
+  const [newPartyForm, setNewPartyForm] = useState(initialBlankPartyForm);
+
+  // State code mapping helper
+  const getStateCode = (stateName) => {
+    const stateMap = {
+      GUJARAT: "24",
+      TELANGANA: "36",
+      MAHARASHTRA: "27",
+      RAJASTHAN: "08",
+      DELHI: "07",
+      KARNATAKA: "29",
+      "TAMIL NADU": "33",
+      "MADHYA PRADESH": "23",
+      "UTTAR PRADESH": "09",
+      "ANDHRA PRADESH": "37",
+    };
+    return stateMap[(stateName || "").toUpperCase()] || "24";
+  };
+
+  // State change handler for Modal Add Form
+  const handleStateChange = (stateName) => {
+    const code = getStateCode(stateName);
+    setNewPartyForm((prev) => ({ ...prev, state: stateName, stateCode: code }));
+  };
+
+  // GST handler for Modal Add Form (auto-extracts PAN)
+  const handleAddGstChange = (val) => {
+    const upperVal = val.toUpperCase();
+    let pan = newPartyForm.panNo;
+    if (upperVal.length >= 12) {
+      pan = upperVal.substring(2, 12);
+    }
+    setNewPartyForm((prev) => ({ ...prev, gstNo: upperVal, panNo: pan }));
+  };
 
   const getTodayDateStr = () => {
     const today = new Date();
@@ -314,6 +368,48 @@ export default function LREntryForm() {
     setTimeout(() => setStatusMsg(""), 4000);
   };
 
+  // Handler to Save New Party via Modal and Auto-Select in active field
+  const handleSaveNewParty = async (e) => {
+    if (e) e.preventDefault();
+    if (!newPartyForm.partyName || !newPartyForm.partyName.trim()) {
+      alert("Party Name is required!");
+      return;
+    }
+
+    const payload = {
+      ...newPartyForm,
+      partyName: newPartyForm.partyName.trim().toUpperCase(),
+      address1: (newPartyForm.address1 || "").trim().toUpperCase(),
+      address2: (newPartyForm.address2 || "").trim().toUpperCase(),
+      address3: (newPartyForm.address3 || "").trim().toUpperCase(),
+      city: (newPartyForm.city || "").trim().toUpperCase(),
+      district: (newPartyForm.district || "").trim().toUpperCase(),
+      state: (newPartyForm.state || "GUJARAT").trim().toUpperCase(),
+      stateCode: newPartyForm.stateCode || "24",
+      gstNo: (newPartyForm.gstNo || "").trim().toUpperCase(),
+      panNo: (newPartyForm.panNo || "").trim().toUpperCase(),
+      contactName: (newPartyForm.contactName || "").trim().toUpperCase(),
+      mobileNos: (newPartyForm.mobileNos || "").trim(),
+    };
+
+    const updatedParties = await saveParty(payload);
+    setParties(updatedParties || []);
+
+    const createdName = payload.partyName;
+
+    if (addPartyTarget === "CONSIGNOR") {
+      handleAddConsignor(createdName);
+    } else if (addPartyTarget === "CONSIGNEE") {
+      handleSelectConsignee(createdName);
+    } else {
+      handleSelectConsignee(createdName);
+    }
+
+    setShowAddPartyModal(false);
+    setNewPartyForm(initialBlankPartyForm);
+    flashMsg(`Party "${createdName}" Added & Selected!`);
+  };
+
   // Fast Data Entry: Move to next input field on Enter press & auto-scroll into view
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -535,20 +631,21 @@ export default function LREntryForm() {
               {/* CONSIGNOR BOX */}
               <div className="bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1">
                 <div className="flex justify-between items-center border-b border-sky-700 pb-0.5">
-                  <h3 className="text-[11px] font-extrabold text-yellow-300 uppercase tracking-wider">
-                    CONSIGNOR (माल भेजने वाला)
+                  <h3 className="text-[11px] font-extrabold text-yellow-300 uppercase tracking-wider flex items-center gap-1">
+                    <Building2 className="w-3.5 h-3.5 text-amber-400" />
+                    <span>CONSIGNOR (माल भेजने वाला)</span>
                   </h3>
-                  <div className="text-[10px] flex items-center gap-1 text-sky-200">
-                    <span>Save Master?</span>
-                    <select
-                      value={formData.saveConsignorInMaster}
-                      onChange={(e) => setFormData({ ...formData, saveConsignorInMaster: e.target.value })}
-                      className="bg-yellow-400 text-slate-950 font-bold px-1 rounded text-[10px]"
-                    >
-                      <option value="N">N</option>
-                      <option value="Y">Y</option>
-                    </select>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddPartyTarget("CONSIGNOR");
+                      setNewPartyForm({ ...initialBlankPartyForm, selectType: "CONSIGNOR" });
+                      setShowAddPartyModal(true);
+                    }}
+                    className="px-2 py-0.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-extrabold rounded flex items-center gap-1 shadow transition cursor-pointer"
+                  >
+                    <Plus size={12} /> + Add Party
+                  </button>
                 </div>
 
                 {/* Selected Consignors Badges / Chips */}
@@ -617,20 +714,21 @@ export default function LREntryForm() {
               {/* CONSIGNEE BOX */}
               <div className="bg-sky-950/80 p-2 rounded border border-sky-500 space-y-1">
                 <div className="flex justify-between items-center border-b border-sky-700 pb-0.5">
-                  <h3 className="text-[11px] font-extrabold text-yellow-300 uppercase tracking-wider">
-                    CONSIGNEE (माल प्राप्तकर्ता)
+                  <h3 className="text-[11px] font-extrabold text-yellow-300 uppercase tracking-wider flex items-center gap-1">
+                    <Building2 className="w-3.5 h-3.5 text-amber-400" />
+                    <span>CONSIGNEE (माल प्राप्तकर्ता)</span>
                   </h3>
-                  <div className="text-[10px] flex items-center gap-1 text-sky-200">
-                    <span>Save Master?</span>
-                    <select
-                      value={formData.saveConsigneeInMaster}
-                      onChange={(e) => setFormData({ ...formData, saveConsigneeInMaster: e.target.value })}
-                      className="bg-yellow-400 text-slate-950 font-bold px-1 rounded text-[10px]"
-                    >
-                      <option value="N">N</option>
-                      <option value="Y">Y</option>
-                    </select>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddPartyTarget("CONSIGNEE");
+                      setNewPartyForm({ ...initialBlankPartyForm, selectType: "CONSIGNEE" });
+                      setShowAddPartyModal(true);
+                    }}
+                    className="px-2 py-0.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-extrabold rounded flex items-center gap-1 shadow transition cursor-pointer"
+                  >
+                    <Plus size={12} /> + Add Party
+                  </button>
                 </div>
 
                 <SearchablePartySelect
@@ -1193,6 +1291,219 @@ export default function LREntryForm() {
                     </div>
                   )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add New Party Modal (Exact Party Master Screenshot Match) */}
+        {showAddPartyModal && (
+          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3">
+            <div className="bg-sky-900/90 border-2 border-yellow-400 rounded-lg max-w-2xl w-full shadow-2xl overflow-hidden backdrop-blur-sm flex flex-col max-h-[90vh]">
+              
+              {/* Form Title Header (Matches Screenshot) */}
+              <div className="bg-sky-950 px-3 py-1.5 border-b border-yellow-400 flex justify-between items-center shrink-0">
+                <h2 className="text-xs sm:text-sm font-black text-blue-100 uppercase tracking-wider flex items-center gap-1.5">
+                  <Plus className="w-4 h-4 text-yellow-400" /> + ADD NEW PARTY
+                </h2>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-yellow-400 text-slate-950 font-black rounded text-[10px] uppercase">
+                    NEW ENTRY
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddPartyModal(false)}
+                    className="text-slate-300 hover:text-white p-0.5 rounded transition cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Form Inputs (Matches Screenshot Layout) */}
+              <form onSubmit={handleSaveNewParty} className="p-3 space-y-2 text-xs overflow-y-auto">
+                
+                {/* Party Name */}
+                <div>
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                    PARTY NAME *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    autoFocus
+                    value={newPartyForm.partyName}
+                    onChange={(e) => setNewPartyForm({ ...newPartyForm, partyName: e.target.value.toUpperCase() })}
+                    placeholder="ENTER PARTY NAME"
+                    className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-400 rounded focus:outline-none uppercase"
+                  />
+                </div>
+
+                {/* Address Line 1 & Line 2 */}
+                <div>
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                    ADDRESS LINE 1 & LINE 2
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    <input
+                      type="text"
+                      value={newPartyForm.address1}
+                      onChange={(e) => setNewPartyForm({ ...newPartyForm, address1: e.target.value.toUpperCase() })}
+                      placeholder="ADDRESS LINE 1"
+                      className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                    />
+                    <input
+                      type="text"
+                      value={newPartyForm.address2}
+                      onChange={(e) => setNewPartyForm({ ...newPartyForm, address2: e.target.value.toUpperCase() })}
+                      placeholder="AREA / LANDMARK"
+                      className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                    />
+                  </div>
+                </div>
+
+                {/* City, District, State & Code */}
+                <div className="grid grid-cols-12 gap-1.5">
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      CITY
+                    </label>
+                    <input
+                      type="text"
+                      value={newPartyForm.city}
+                      onChange={(e) => setNewPartyForm({ ...newPartyForm, city: e.target.value.toUpperCase() })}
+                      placeholder="CITY"
+                      className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                    />
+                  </div>
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      DISTRICT
+                    </label>
+                    <input
+                      type="text"
+                      value={newPartyForm.district}
+                      onChange={(e) => setNewPartyForm({ ...newPartyForm, district: e.target.value.toUpperCase() })}
+                      placeholder="DISTRICT"
+                      className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                    />
+                  </div>
+                  <div className="col-span-8 sm:col-span-4">
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      STATE
+                    </label>
+                    <input
+                      type="text"
+                      value={newPartyForm.state}
+                      onChange={(e) => handleStateChange(e.target.value.toUpperCase())}
+                      placeholder="STATE"
+                      className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                    />
+                  </div>
+                  <div className="col-span-4 sm:col-span-2">
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      CODE
+                    </label>
+                    <input
+                      type="text"
+                      value={newPartyForm.stateCode}
+                      onChange={(e) => setNewPartyForm({ ...newPartyForm, stateCode: e.target.value })}
+                      placeholder="24"
+                      className="w-full bg-white text-slate-900 font-bold text-center px-1 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* GST No. & PAN No. */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  <div>
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      GST NO.
+                    </label>
+                    <input
+                      type="text"
+                      value={newPartyForm.gstNo}
+                      onChange={(e) => handleAddGstChange(e.target.value)}
+                      placeholder="24ACCFB3501E1Z8"
+                      className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      PAN NO.
+                    </label>
+                    <input
+                      type="text"
+                      value={newPartyForm.panNo}
+                      onChange={(e) => setNewPartyForm({ ...newPartyForm, panNo: e.target.value.toUpperCase() })}
+                      placeholder="ACCFB3501E"
+                      className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                    />
+                  </div>
+                </div>
+
+                {/* Contact Person & Mobile Nos */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  <div>
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      CONTACT PERSON
+                    </label>
+                    <input
+                      type="text"
+                      value={newPartyForm.contactName}
+                      onChange={(e) => setNewPartyForm({ ...newPartyForm, contactName: e.target.value })}
+                      placeholder="NAME"
+                      className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      MOBILE NUMBERS
+                    </label>
+                    <input
+                      type="text"
+                      value={newPartyForm.mobileNos}
+                      onChange={(e) => setNewPartyForm({ ...newPartyForm, mobileNos: e.target.value })}
+                      placeholder="MOBILE NO."
+                      className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Party Category Dropdown (Matches Screenshot) */}
+                <div>
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                    PARTY CATEGORY
+                  </label>
+                  <select
+                    value={newPartyForm.selectType}
+                    onChange={(e) => setNewPartyForm({ ...newPartyForm, selectType: e.target.value })}
+                    className="w-full bg-yellow-400 text-slate-950 font-extrabold px-2 py-1 text-xs border-2 border-yellow-500 rounded focus:outline-none uppercase cursor-pointer"
+                  >
+                    <option value="CONSIGNEE">CONSIGNEE (माल प्राप्तकर्ता)</option>
+                    <option value="CONSIGNOR">CONSIGNOR (माल भेजने वाला)</option>
+                    <option value="BOTH">BOTH (दोनों)</option>
+                  </select>
+                </div>
+
+                {/* Modal Action Buttons (Matches Screenshot: CLEAR FORM & SAVE NEW PARTY) */}
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-sky-700">
+                  <button
+                    type="button"
+                    onClick={() => setNewPartyForm(initialBlankPartyForm)}
+                    className="px-4 py-1 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded text-xs uppercase cursor-pointer"
+                  >
+                    CLEAR FORM
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center gap-1.5 px-5 py-1 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded text-xs uppercase shadow-md cursor-pointer transition-all"
+                  >
+                    <Save size={14} />
+                    <span>SAVE NEW PARTY</span>
+                  </button>
+                </div>
+              </form>
+
             </div>
           </div>
         )}
