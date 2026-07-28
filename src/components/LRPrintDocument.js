@@ -30,11 +30,15 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     localStorage.removeItem("wolego_digital_signature");
   };
 
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(Boolean(autoAction));
+
   useEffect(() => {
     if (!autoAction) return;
+    setIsGeneratingPdf(true);
     const timer = setTimeout(async () => {
       if (autoAction === "print") {
-        window.print();
+        setIsGeneratingPdf(false);
+        handlePrint();
         if (onClose) onClose();
       } else if (autoAction === "pdf") {
         await handleExportPDF();
@@ -101,6 +105,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
   // High-Quality Multi-Page PDF Export via Puppeteer Backend (Page 1: LR, Page 2: Terms and Conditions)
   const handleExportPDF = async () => {
+    setIsGeneratingPdf(true);
     try {
       const blob = await fetchLRPdfBlob();
       const filename = getLRPdfFilename(lrData);
@@ -115,23 +120,32 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     } catch (err) {
       console.error("PDF export failed:", err);
       window.print();
+    } finally {
+      setIsGeneratingPdf(false);
     }
   };
 
   // Dynamic PDF Generator + WhatsApp Share Function (Shares Puppeteer-generated 2-Page PDF File)
   const handleWhatsApp = async () => {
+    setIsGeneratingPdf(true);
     try {
       const blob = await fetchLRPdfBlob();
       const filename = getLRPdfFilename(lrData);
       const pdfFile = new File([blob], filename, { type: "application/pdf" });
 
-      // Share ONLY the PDF file without any text message
+      setIsGeneratingPdf(false);
+
+      // Share ONLY the PDF file via native Share Sheet (WhatsApp, etc.)
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         await navigator.share({
           files: [pdfFile],
         });
+      } else if (navigator.share) {
+        await navigator.share({
+          files: [pdfFile],
+        });
       } else {
-        // Desktop Fallback: Download PDF & Open WhatsApp Web clean without text
+        // Desktop Fallback when Web Share is unsupported: Download PDF file directly
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -140,19 +154,31 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-
-        window.open(`https://api.whatsapp.com/send`, "_blank");
       }
     } catch (err) {
       console.error("WhatsApp PDF sharing error:", err);
-      window.open(`https://api.whatsapp.com/send`, "_blank");
+      setIsGeneratingPdf(false);
     }
   };
 
   const isAuto = Boolean(autoAction);
 
   return (
-    <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "min-h-screen bg-slate-900 py-4 px-2 sm:px-4 text-slate-900 print:p-0 print:m-0 print:bg-white"}>
+    <>
+      {/* Loading Modal / Popup for PDF Generation & WhatsApp Opening */}
+      {isGeneratingPdf && (
+        <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white p-4 pointer-events-auto opacity-100">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl flex flex-col items-center gap-4 max-w-xs text-center animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <div>
+              <h3 className="font-extrabold text-lg text-white">Generating PDF...</h3>
+              <p className="text-xs text-slate-400 mt-1">Please wait while we prepare your document for WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "min-h-screen bg-slate-900 py-4 px-2 sm:px-4 text-slate-900 print:p-0 print:m-0 print:bg-white"}>
 
       {/* Top Action Toolbar (Hidden during Print) */}
       <div className="max-w-4xl mx-auto mb-4 bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 flex flex-wrap justify-between items-center gap-2 print:hidden">
@@ -677,5 +703,6 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }

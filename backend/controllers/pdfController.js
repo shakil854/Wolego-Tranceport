@@ -50,6 +50,10 @@ const getBrowserInstance = async () => {
         "--disable-dev-shm-usage",
         "--disable-accelerated-2d-canvas",
         "--disable-gpu",
+        "--no-first-run",
+        "--no-zygote",
+        "--disable-extensions",
+        "--disable-background-networking",
       ],
     };
 
@@ -63,6 +67,9 @@ const getBrowserInstance = async () => {
   return browserInstance;
 };
 
+// Pre-warm browser instance on server start
+getBrowserInstance().catch(() => {});
+
 export const generateLRPdf = async (req, res) => {
   let page = null;
   try {
@@ -75,16 +82,16 @@ export const generateLRPdf = async (req, res) => {
     // 1. Generate full HTML in memory
     const htmlContent = generateLRHtml(lrData, signatureImg);
 
-    // 2. Obtain Puppeteer browser instance
+    // 2. Obtain pre-warmed Puppeteer browser instance
     const browser = await getBrowserInstance();
     page = await browser.newPage();
 
     // Set viewport matching A4 portrait aspect ratio
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 2 });
 
-    // Load HTML content
+    // Load HTML content instantly without networkidle delay
     await page.setContent(htmlContent, {
-      waitUntil: ["load", "networkidle0"],
+      waitUntil: "domcontentloaded",
     });
 
     // 3. Generate PDF Buffer in memory (NO DISK SAVE)
