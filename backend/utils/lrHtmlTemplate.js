@@ -216,7 +216,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
           </div>
           <div class="col-span-6 p-1.5 flex items-center gap-2">
             <span>TRUCK NO. :</span>
-            <span class="font-mono text-base font-black tracking-wider uppercase text-slate-950">${lrData.truckNo || ""}</span>
+            <span class="font-sans text-base font-black tracking-wider uppercase text-slate-950">${lrData.truckNo || ""}</span>
           </div>
         </div>
 
@@ -229,7 +229,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
               <div class="font-black text-xs text-slate-950 uppercase whitespace-pre-line leading-tight">${lrData.consignorName || ""}</div>
               <div class="text-[10.5px] font-bold text-slate-950 leading-tight uppercase whitespace-pre-line">${lrData.consignorAddress || ""}</div>
             </div>
-            <div class="font-mono font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
+            <div class="font-sans font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
               CONSIGNOR GSTIN NO. : <span class="font-black text-slate-950">${consignorGstDisplay}</span>
             </div>
           </div>
@@ -241,7 +241,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
               <div class="font-black text-sm text-slate-950 uppercase">${lrData.consigneeName || ""}</div>
               <div class="text-[10.5px] font-bold text-slate-950 leading-tight uppercase whitespace-pre-line">${lrData.consigneeAddress || ""}</div>
             </div>
-            <div class="font-mono font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
+            <div class="font-sans font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
               CONSIGNEE GSTIN NO. : <span class="font-black text-slate-950">${lrData.consigneeGst || ""}</span>
             </div>
           </div>
@@ -287,13 +287,13 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
                       : ""
                   }
                 </td>
-                <td class="p-2 font-mono font-black align-top text-slate-950">
+                <td class="p-2 font-sans font-black align-top text-slate-950">
                   ${lrData.weightKgs ? `${lrData.weightKgs} K.G.` : ""}
                 </td>
-                <td class="p-2 font-mono font-black align-top text-slate-950">
+                <td class="p-2 font-sans font-black align-top text-slate-950">
                   ${lrData.ratePerTon ? `${lrData.ratePerTon} ${lrData.rateType || ""}` : ""}
                 </td>
-                <td class="p-2 font-mono font-black text-center align-top text-sm text-slate-950">
+                <td class="p-2 font-sans font-black text-center align-top text-sm text-slate-950">
                   ${lrData.freightAmount || ""}
                 </td>
               </tr>
@@ -353,7 +353,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
               <div class="border-2 border-slate-900 p-1.5 rounded text-[9.5px] bg-transparent space-y-0.5 text-slate-950 font-bold">
                 <div class="font-black uppercase underline text-slate-950">INSURANCE :</div>
                 <div class="font-bold text-slate-950">THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
-                <div class="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-mono font-extrabold text-slate-950">
+                <div class="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-sans font-extrabold text-slate-950">
                   <span>COMPANY: ________</span>
                   <span>POLICY: ________</span>
                   <span>RISK: ________</span>
@@ -368,8 +368,8 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
                 </div>
                 <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 font-bold text-slate-950">
                   <div>NAME : <span class="font-black text-slate-950">WOLEGO TRANSPORT</span></div>
-                  <div>ACCOUNT NO. : <span class="font-mono font-black text-slate-950">118405500444</span></div>
-                  <div>IFSC CODE : <span class="font-mono font-black text-slate-950">ICIC0001184</span></div>
+                  <div>ACCOUNT NO. : <span class="font-sans font-black text-slate-950">118405500444</span></div>
+                  <div>IFSC CODE : <span class="font-sans font-black text-slate-950">ICIC0001184</span></div>
                   <div>BRANCH : <span class="font-black text-slate-950">WANKANER</span></div>
                 </div>
               </div>
@@ -377,7 +377,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
           </div>
 
           <!-- Right Column (5 cols) -->
-          <div class="col-span-5 bg-transparent flex flex-col justify-between font-mono text-xs h-full text-slate-950">
+          <div class="col-span-5 bg-transparent flex flex-col justify-between font-sans text-xs h-full text-slate-950">
             <div>
               <div class="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-200 text-slate-950">
                 <span>FREIGHT</span>
