@@ -51,7 +51,6 @@ export default function Navbar() {
 
   // Dropdown Items (Owner only)
   const dropdownItems = [
-    { name: "Letter Pad", path: "/letter-pad", icon: FileText },
     { name: "Daily Report", path: "/daily-report", icon: FileText },
     { name: "Accounting", path: "/accounting", icon: Calculator },
     { name: "Range LR Print", path: "/range-lr-print", icon: Printer },
@@ -59,6 +58,7 @@ export default function Navbar() {
     { name: "CA Excel", path: "/ca-excel", icon: FileSpreadsheet },
     { name: "Party Master", path: "/party-master", icon: Users },
     { name: "Truck Master", path: "/truck-master", icon: Truck },
+    { name: "Letter Pad", path: "/letter-pad", icon: FileText },
   ];
 
   const isActive = (path) => {
