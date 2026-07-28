@@ -51,6 +51,7 @@ export default function Navbar() {
 
   // Dropdown Items (Owner only)
   const dropdownItems = [
+    { name: "Letter Pad", path: "/letter-pad", icon: FileText },
     { name: "Daily Report", path: "/daily-report", icon: FileText },
     { name: "Accounting", path: "/accounting", icon: Calculator },
     { name: "Range LR Print", path: "/range-lr-print", icon: Printer },

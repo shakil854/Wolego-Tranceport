@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import AccountingPage from "./pages/AccountingPage";
 import TruckMaster from "./pages/TruckMaster";
 import DailyReport from "./pages/DailyReport";
+import LetterPadPage from "./pages/LetterPadPage";
 
 import DashboardPage from "./pages/DashboardPage";
 
@@ -112,6 +113,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["OWNER"]}>
             <BulkLRPrintPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/letter-pad"
+        element={
+          <ProtectedRoute allowedRoles={["OWNER"]}>
+            <LetterPadPage />
           </ProtectedRoute>
         }
       />

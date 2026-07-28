@@ -132,6 +132,15 @@ export default function DashboardPage() {
       borderColor: "border-cyan-500/30 hover:border-cyan-400",
     },
     {
+      title: "Letter Pad (A4)",
+      path: "/letter-pad",
+      icon: FileText,
+      badge: "Official Pad",
+      color: "from-indigo-500 to-indigo-700",
+      textColor: "text-indigo-400",
+      borderColor: "border-indigo-500/30 hover:border-indigo-400",
+    },
+    {
       title: "Range LR Print",
       path: "/range-lr-print",
       icon: Printer,
