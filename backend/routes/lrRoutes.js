@@ -1,7 +1,12 @@
 import express from "express";
 import LREntry from "../models/LREntry.js";
+import { generateLRPdf } from "../controllers/pdfController.js";
 
 const router = express.Router();
+
+// Generate PDF via Puppeteer (In-Memory A4 Binary Response)
+router.post("/generate-pdf", generateLRPdf);
+
 
 // Get all LRs
 router.get("/", async (req, res) => {

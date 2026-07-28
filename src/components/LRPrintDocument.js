@@ -78,112 +78,73 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     return `LR_${lrNo}_WolegoTransport.pdf`;
   };
 
-  // High-Quality Multi-Page PDF Export (Page 1: LR, Page 2: Terms and Conditions)
+  // Helper to fetch in-memory Puppeteer-generated A4 PDF Blob from backend
+  const fetchLRPdfBlob = async () => {
+    const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8002";
+    const response = await fetch(`${API_URL}/api/lr/generate-pdf`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        lrData,
+        signatureImg,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`PDF generation server error: ${response.statusText}`);
+    }
+
+    return await response.blob();
+  };
+
+  // High-Quality Multi-Page PDF Export via Puppeteer Backend (Page 1: LR, Page 2: Terms and Conditions)
   const handleExportPDF = async () => {
-    if (!printRef.current) return;
     try {
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // Render Page 1 (LR Document)
-      const canvas1 = await html2canvas(printRef.current, {
-        scale: 2, // High DPI
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: "#ffffff"
-      });
-
-      const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
-      pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-
-      // Render Page 2 (Terms and Conditions)
-      if (termsRef.current) {
-        try {
-          const canvas2 = await html2canvas(termsRef.current, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: "#ffffff"
-          });
-          const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
-          pdf.addPage();
-          pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-        } catch (tErr) {
-          console.error("Terms & Conditions page canvas error:", tErr);
-        }
-      }
-
-      pdf.save(getLRPdfFilename(lrData));
+      const blob = await fetchLRPdfBlob();
+      const filename = getLRPdfFilename(lrData);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error("PDF export failed:", err);
       window.print();
     }
   };
 
-  // Dynamic PDF Generator + WhatsApp Share Function (Shares ONLY 2-Page PDF File with ZERO text)
+  // Dynamic PDF Generator + WhatsApp Share Function (Shares Puppeteer-generated 2-Page PDF File)
   const handleWhatsApp = async () => {
-    if (!printRef.current) return;
     try {
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // 1. Render Page 1 (LR Document)
-      const canvas1 = await html2canvas(printRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: "#ffffff"
-      });
-      const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
-      pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-
-      // 2. Render Page 2 (Terms and Conditions)
-      if (termsRef.current) {
-        try {
-          const canvas2 = await html2canvas(termsRef.current, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: "#ffffff"
-          });
-          const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
-          pdf.addPage();
-          pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-        } catch (tErr) {
-          console.error("Terms page canvas error:", tErr);
-        }
-      }
-
+      const blob = await fetchLRPdfBlob();
       const filename = getLRPdfFilename(lrData);
-      const pdfBlob = pdf.output("blob");
-      const pdfFile = new File([pdfBlob], filename, { type: "application/pdf" });
+      const pdfFile = new File([blob], filename, { type: "application/pdf" });
 
-      // 3. Share ONLY the PDF file without any text message
+      // Share ONLY the PDF file without any text message
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         await navigator.share({
-          files: [pdfFile]
+          files: [pdfFile],
         });
       } else {
         // Desktop Fallback: Download PDF & Open WhatsApp Web clean without text
-        pdf.save(filename);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
         window.open(`https://api.whatsapp.com/send`, "_blank");
       }
     } catch (err) {
       console.error("WhatsApp PDF sharing error:", err);
-      try {
-        const pdf = new jsPDF("p", "mm", "a4");
-        const canvas1 = await html2canvas(printRef.current, { scale: 1.5, logging: false });
-        pdf.addImage(canvas1.toDataURL("image/jpeg", 0.85), "JPEG", 0, 0, 210, 297, undefined, "FAST");
-        pdf.save(getLRPdfFilename(lrData));
-      } catch (e) {
-        console.error("Fallback PDF save failed:", e);
-      }
       window.open(`https://api.whatsapp.com/send`, "_blank");
     }
   };

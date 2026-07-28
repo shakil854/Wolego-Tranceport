@@ -15,8 +15,8 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(
   session({
@@ -31,6 +31,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/parties", partyRoutes);
 app.use("/api/lr-entries", lrRoutes);
+app.use("/api/lr", lrRoutes);
 app.use("/api/trucks", truckRoutes);
 
 app.get("/", (req, res) => {
