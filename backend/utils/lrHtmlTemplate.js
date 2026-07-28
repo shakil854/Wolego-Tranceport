@@ -420,9 +420,9 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
               </div>
             </div>
 
-            <!-- Logo Centered Between NET TOTAL and Signatory Block -->
-            <div class="my-auto py-2 flex items-center justify-center flex-1 w-full px-2">
-              <img src="${logoBase64}" alt="Wolego Transport Logo" class="w-full max-w-[230px] h-auto max-h-[190px] object-contain mix-blend-multiply opacity-95" />
+            <!-- Logo Centered Between NET TOTAL and Signatory Block (Bottom tagline clipped out) -->
+            <div class="my-auto pt-3.5 pb-1 flex items-center justify-center flex-1 w-full px-2 overflow-hidden">
+              <img src="${logoBase64}" alt="Wolego Transport Logo" class="w-full max-w-[260px] h-auto max-h-[200px] object-contain mix-blend-multiply opacity-95" style="clip-path: inset(0 0 18% 0); transform: scale(1.1);" />
             </div>
 
             <!-- Signatory Block -->
