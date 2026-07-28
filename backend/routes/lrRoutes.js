@@ -50,9 +50,11 @@ router.put("/:id/payment-status", async (req, res) => {
       partyPaymentStatus,
       partyPaidAmount,
       partyPaidDate,
+      partyChequeNo,
       truckPaymentStatus,
       truckPaidAmount,
       truckPaidDate,
+      truckChequeNo,
     } = req.body;
 
     const lr = await LREntry.findByPk(id);
@@ -63,9 +65,11 @@ router.put("/:id/payment-status", async (req, res) => {
     if (partyPaymentStatus !== undefined) lr.partyPaymentStatus = partyPaymentStatus;
     if (partyPaidAmount !== undefined) lr.partyPaidAmount = partyPaidAmount;
     if (partyPaidDate !== undefined) lr.partyPaidDate = partyPaidDate;
+    if (partyChequeNo !== undefined) lr.partyChequeNo = partyChequeNo;
     if (truckPaymentStatus !== undefined) lr.truckPaymentStatus = truckPaymentStatus;
     if (truckPaidAmount !== undefined) lr.truckPaidAmount = truckPaidAmount;
     if (truckPaidDate !== undefined) lr.truckPaidDate = truckPaidDate;
+    if (truckChequeNo !== undefined) lr.truckChequeNo = truckChequeNo;
 
     await lr.save();
     res.json({ success: true, lr });

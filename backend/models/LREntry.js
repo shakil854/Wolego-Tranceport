@@ -78,6 +78,7 @@ const LREntry = sequelize.define("LREntry", {
     defaultValue: 0,
   },
   partyPaidDate: DataTypes.STRING,
+  partyChequeNo: DataTypes.STRING,
 
   truckPaymentStatus: {
     type: DataTypes.ENUM("UNPAID", "PAID"),
@@ -88,6 +89,7 @@ const LREntry = sequelize.define("LREntry", {
     defaultValue: 0,
   },
   truckPaidDate: DataTypes.STRING,
+  truckChequeNo: DataTypes.STRING,
 });
 
 export default LREntry;

@@ -63,6 +63,7 @@ export default function AccountingPage() {
     partyName: "",
     amount: 0,
     paymentDate: "",
+    chequeNo: "",
   });
 
   // Fetch LRs and Parties
@@ -127,7 +128,7 @@ export default function AccountingPage() {
   };
 
   // Open Payment Modal
-  const openPaymentModal = (lrId, lrNumber, type, amount, partyName) => {
+  const openPaymentModal = (lrId, lrNumber, type, amount, partyName, existingChequeNo = "") => {
     setPaymentModal({
       isOpen: true,
       lrId,
@@ -136,12 +137,13 @@ export default function AccountingPage() {
       partyName,
       amount,
       paymentDate: getTodayIsoDate(),
+      chequeNo: existingChequeNo || "",
     });
   };
 
   // Confirm Payment Submission
   const handleConfirmPayment = async () => {
-    const { lrId, type, amount, paymentDate } = paymentModal;
+    const { lrId, type, amount, paymentDate, chequeNo } = paymentModal;
     if (!lrId) return;
 
     setUpdatingId(lrId);
@@ -155,10 +157,12 @@ export default function AccountingPage() {
         payload.partyPaymentStatus = "PAID";
         payload.partyPaidAmount = amount;
         payload.partyPaidDate = formattedDate;
+        payload.partyChequeNo = chequeNo ? chequeNo.trim() : "";
       } else if (type === "TRUCK") {
         payload.truckPaymentStatus = "PAID";
         payload.truckPaidAmount = amount;
         payload.truckPaidDate = formattedDate;
+        payload.truckChequeNo = chequeNo ? chequeNo.trim() : "";
       }
 
       const res = await fetch(`http://localhost:8002/api/lr-entries/${lrId}/payment-status`, {
@@ -943,6 +947,11 @@ export default function AccountingPage() {
                                   📅 {lr.partyPaidDate}
                                 </span>
                               )}
+                              {lr.partyChequeNo && (
+                                <span className="text-[10px] text-slate-300 font-mono mt-0.5">
+                                  💳 {lr.partyChequeNo}
+                                </span>
+                              )}
                             </div>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/40">
@@ -959,6 +968,11 @@ export default function AccountingPage() {
                             {lr.truckPaidDate && (
                               <span className="text-[10px] text-emerald-400/80 font-mono mt-0.5">
                                 📅 {lr.truckPaidDate}
+                              </span>
+                            )}
+                            {lr.truckChequeNo && (
+                              <span className="text-[10px] text-slate-300 font-mono mt-0.5">
+                                💳 {lr.truckChequeNo}
                               </span>
                             )}
                           </div>
@@ -981,7 +995,7 @@ export default function AccountingPage() {
                             </span>
                           ) : (
                             <button
-                              onClick={() => openPaymentModal(lr.id, lr.lrNumber, "PARTY", amount, partyName)}
+                              onClick={() => openPaymentModal(lr.id, lr.lrNumber, "PARTY", amount, partyName, lr.partyChequeNo)}
                               className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
                             >
                               Mark PAID
@@ -993,7 +1007,7 @@ export default function AccountingPage() {
                           </span>
                         ) : (
                           <button
-                            onClick={() => openPaymentModal(lr.id, lr.lrNumber, "TRUCK", amount, partyName)}
+                            onClick={() => openPaymentModal(lr.id, lr.lrNumber, "TRUCK", amount, partyName, lr.truckChequeNo)}
                             className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
                           >
                             Mark PAID
@@ -1062,6 +1076,21 @@ export default function AccountingPage() {
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 [color-scheme:dark] cursor-pointer"
                 />
               </div>
+            </div>
+
+            {/* Optional Cheque / Ref No Input */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+                <span>Cheque No. / Ref No. (Optional)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. CHQ123456 / UTR No. (Optional)"
+                value={paymentModal.chequeNo}
+                onChange={(e) => setPaymentModal((prev) => ({ ...prev, chequeNo: e.target.value }))}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-slate-500"
+              />
             </div>
 
             {/* Action Buttons */}
