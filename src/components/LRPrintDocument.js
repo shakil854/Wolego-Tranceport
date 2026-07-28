@@ -245,8 +245,8 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       </div>
 
       {/* Standard Printable Full A4 Page Document */}
-      <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-[4mm] print:m-0 print:w-[210mm] print:h-[297mm] print:max-w-none print:shadow-none font-sans text-xs">
-        <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document relative overflow-hidden">
+      <div className="w-full max-w-[210mm] mx-auto bg-white p-[4mm] shadow-2xl rounded-sm print-container print:p-[4mm] print:m-0 print:w-[210mm] print:h-[297mm] print:max-w-none print:shadow-none font-sans text-xs box-border">
+        <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[287mm] h-full flex flex-col justify-between print-document relative overflow-hidden box-border">
 
           {/* Background Watermark Logo (Shown during both PDF Export & LR Print) */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
@@ -590,6 +590,15 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                     <span>NET TOTAL:</span>
                     <span>₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
                   </div>
+                </div>
+
+                {/* Logo Centered Between NET TOTAL and Signatory Block */}
+                <div className="my-auto py-2 flex items-center justify-center flex-1 w-full px-2">
+                  <img
+                    src={logoImg}
+                    alt="Wolego Transport Logo"
+                    className="w-full max-w-[230px] h-auto max-h-[190px] object-contain mix-blend-multiply opacity-95"
+                  />
                 </div>
 
                 {/* Signatory Block Inside Grid */}

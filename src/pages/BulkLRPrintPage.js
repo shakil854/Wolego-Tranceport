@@ -152,7 +152,7 @@ export default function BulkLRPrintPage() {
   };
 
   const renderLRDocument = (lrData) => (
-    <div className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document relative overflow-hidden text-xs font-sans">
+    <div className="border-2 border-slate-900 bg-white text-slate-900 min-h-[287mm] h-full flex flex-col justify-between print-document relative overflow-hidden text-xs font-sans box-border">
 
       {/* Background Watermark Logo */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
@@ -498,6 +498,15 @@ export default function BulkLRPrintPage() {
               </div>
             </div>
 
+            {/* Logo Centered Between NET TOTAL and Signatory Block */}
+            <div className="my-auto py-2 flex items-center justify-center flex-1 w-full px-2">
+              <img
+                src={logoImg}
+                alt="Wolego Transport Logo"
+                className="w-full max-w-[230px] h-auto max-h-[190px] object-contain mix-blend-multiply opacity-95"
+              />
+            </div>
+
             {/* Signatory Block Inside Grid */}
             <div className="text-center font-sans p-2 mt-auto flex flex-col items-center justify-end min-h-[60px]">
               <div className="font-black uppercase text-[11px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
@@ -508,9 +517,7 @@ export default function BulkLRPrintPage() {
                   className="h-10 w-auto max-w-[150px] object-contain my-1 mix-blend-multiply"
                 />
               ) : (
-                <div className="my-1 py-1 px-3 border border-emerald-700 bg-emerald-50 rounded text-center text-emerald-900 font-serif italic text-[11px] font-bold shadow-sm inline-block">
-                  <span className="text-emerald-700 not-italic font-sans mr-1">✓</span> Digitally Signed by Wolego Transport
-                </div>
+                <div className="h-6"></div>
               )}
               <div className="text-[9.5px] text-slate-950 uppercase tracking-wider font-extrabold">(AUTHORISED SIGNATORY)</div>
             </div>
@@ -808,7 +815,7 @@ export default function BulkLRPrintPage() {
               Close Preview
             </button>
           </div>
-          <div className="w-full max-w-4xl bg-white p-4 rounded shadow-2xl">
+          <div className="w-full max-w-[210mm] bg-white p-[4mm] rounded shadow-2xl box-border">
             {renderLRDocument(previewLR)}
           </div>
         </div>

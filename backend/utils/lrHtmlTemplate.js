@@ -414,10 +414,15 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
                 <span class="font-extrabold text-slate-950">${lrData.lessAdvancePaid || "0.00"}</span>
               </div>
 
-              <div class="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-slate-200">
+              <div class="flex justify-between font-black text-[11px] border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-slate-200">
                 <span>NET TOTAL:</span>
                 <span>₹ ${lrData.netTotalAmount || lrData.freightAmount || 0}</span>
               </div>
+            </div>
+
+            <!-- Logo Centered Between NET TOTAL and Signatory Block -->
+            <div class="my-auto py-2 flex items-center justify-center flex-1 w-full px-2">
+              <img src="${logoBase64}" alt="Wolego Transport Logo" class="w-full max-w-[230px] h-auto max-h-[190px] object-contain mix-blend-multiply opacity-95" />
             </div>
 
             <!-- Signatory Block -->
