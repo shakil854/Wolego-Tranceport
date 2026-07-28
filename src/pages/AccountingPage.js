@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getFinancialYear } from "../utils/storage";
 import PartyPortalStatementDocument from "../components/PartyPortalStatementDocument";
+import AccountingStatementDocument from "../components/AccountingStatementDocument";
 import {
   FileSpreadsheet,
   CheckCircle2,
@@ -38,6 +39,7 @@ export default function AccountingPage() {
 
   // Statement PDF & Print Modal state
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [showOwnerStatementModal, setShowOwnerStatementModal] = useState(false);
   const [activeAutoAction, setActiveAutoAction] = useState(null);
 
   // Sync tab with URL search parameter (?tab=TRUCK or ?tab=PARTY)
@@ -637,7 +639,8 @@ export default function AccountingPage() {
   // 2. OWNER VIEW (FULL ACCOUNTING LEDGER & TOGGLES)
   // ----------------------------------------------------
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 font-sans space-y-4">
+    <>
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 font-sans space-y-4 print:hidden">
       
       {/* Main Tabs (Party Ledger vs Truck Ledger) & Search */}
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
@@ -846,37 +849,48 @@ export default function AccountingPage() {
           </div>
         </div>
 
-        {/* Status Filter buttons (ALL, PAID, UNPAID) */}
-        <div className="flex bg-slate-900 p-0.5 rounded-lg border border-slate-700">
+        {/* Status Filter & Print Statement Buttons */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex bg-slate-900 p-0.5 rounded-lg border border-slate-700">
+            <button
+              onClick={() => setStatusFilter("ALL")}
+              className={`px-2.5 py-1 rounded text-xs font-bold transition ${
+                statusFilter === "ALL"
+                  ? "bg-amber-500 text-slate-950 font-extrabold"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              All ({ownerAllCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter("PAID")}
+              className={`px-2.5 py-1 rounded text-xs font-bold transition ${
+                statusFilter === "PAID"
+                  ? "bg-emerald-500 text-slate-950 font-extrabold"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Paid Only ({ownerPaidCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter("UNPAID")}
+              className={`px-2.5 py-1 rounded text-xs font-bold transition ${
+                statusFilter === "UNPAID"
+                  ? "bg-amber-500 text-slate-950 font-extrabold"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Pending Only ({ownerUnpaidCount})
+            </button>
+          </div>
+
           <button
-            onClick={() => setStatusFilter("ALL")}
-            className={`px-2.5 py-1 rounded text-xs font-bold transition ${
-              statusFilter === "ALL"
-                ? "bg-amber-500 text-slate-950 font-extrabold"
-                : "text-slate-400 hover:text-white"
-            }`}
+            onClick={() => setShowOwnerStatementModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 rounded-lg text-xs font-black shadow transition cursor-pointer"
+            title="Print A4 Statement of current filtered records"
           >
-            All ({ownerAllCount})
-          </button>
-          <button
-            onClick={() => setStatusFilter("PAID")}
-            className={`px-2.5 py-1 rounded text-xs font-bold transition ${
-              statusFilter === "PAID"
-                ? "bg-emerald-500 text-slate-950 font-extrabold"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Paid Only ({ownerPaidCount})
-          </button>
-          <button
-            onClick={() => setStatusFilter("UNPAID")}
-            className={`px-2.5 py-1 rounded text-xs font-bold transition ${
-              statusFilter === "UNPAID"
-                ? "bg-amber-500 text-slate-950 font-extrabold"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Pending Only ({ownerUnpaidCount})
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print Statement (A4)</span>
           </button>
         </div>
       </div>
@@ -1116,6 +1130,20 @@ export default function AccountingPage() {
         </div>
       )}
 
-    </div>
+      </div>
+
+      {/* Accounting Statement A4 Print Modal */}
+      {showOwnerStatementModal && (
+        <AccountingStatementDocument
+          activeTab={activeTab}
+          selectedFY={selectedFY}
+          selectedPartyName={selectedPartyName}
+          selectedTruckNo={selectedTruckNo}
+          statusFilter={statusFilter}
+          records={filteredOwnerEntries}
+          onClose={() => setShowOwnerStatementModal(false)}
+        />
+      )}
+    </>
   );
 }
