@@ -209,14 +209,14 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
         </div>
 
         <!-- Truck No & Delivery At -->
-        <div class="grid grid-cols-12 border-b-2 border-slate-900 font-extrabold text-[11px] divide-x-2 divide-slate-900 text-slate-950">
+        <div class="grid grid-cols-12 border-b-2 border-slate-900 font-black text-[11px] divide-x-2 divide-slate-900 text-slate-950">
           <div class="col-span-6 p-1.5 flex items-center gap-2">
             <span>DELIVERY AT :</span>
-            <span class="font-black uppercase text-slate-950">${lrData.deliveryAt || ""}</span>
+            <span class="font-black text-[11px] uppercase text-slate-950">${lrData.deliveryAt || ""}</span>
           </div>
           <div class="col-span-6 p-1.5 flex items-center gap-2">
             <span>TRUCK NO. :</span>
-            <span class="font-sans text-base font-black tracking-wider uppercase text-slate-950">${lrData.truckNo || ""}</span>
+            <span class="font-sans text-[11px] font-black uppercase text-slate-950">${lrData.truckNo || ""}</span>
           </div>
         </div>
 
@@ -226,11 +226,11 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
           <div class="p-2 flex flex-col justify-between">
             <div class="space-y-0.5">
               <div class="font-black text-[11px] underline uppercase text-slate-950">CONSIGNOR'S NAME & ADDRESS</div>
-              <div class="font-black text-xs text-slate-950 uppercase whitespace-pre-line leading-tight">${lrData.consignorName || ""}</div>
-              <div class="text-[10.5px] font-bold text-slate-950 leading-tight uppercase whitespace-pre-line">${lrData.consignorAddress || ""}</div>
+              <div class="font-black text-[11px] text-slate-950 uppercase whitespace-pre-line leading-tight">${lrData.consignorName || ""}</div>
+              <div class="text-[11px] font-black text-slate-950 leading-tight uppercase whitespace-pre-line">${lrData.consignorAddress || ""}</div>
             </div>
-            <div class="font-sans font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
-              CONSIGNOR GSTIN NO. : <span class="font-black text-slate-950">${consignorGstDisplay}</span>
+            <div class="font-sans font-black text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
+              CONSIGNOR GSTIN NO. : <span class="font-black text-[11px] text-slate-950">${consignorGstDisplay}</span>
             </div>
           </div>
 
@@ -238,11 +238,11 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
           <div class="p-2 flex flex-col justify-between">
             <div class="space-y-0.5">
               <div class="font-black text-[11px] underline uppercase text-slate-950">CONSIGNEE'S NAME & ADDRESS</div>
-              <div class="font-black text-sm text-slate-950 uppercase">${lrData.consigneeName || ""}</div>
-              <div class="text-[10.5px] font-bold text-slate-950 leading-tight uppercase whitespace-pre-line">${lrData.consigneeAddress || ""}</div>
+              <div class="font-black text-[11px] text-slate-950 uppercase">${lrData.consigneeName || ""}</div>
+              <div class="text-[11px] font-black text-slate-950 leading-tight uppercase whitespace-pre-line">${lrData.consigneeAddress || ""}</div>
             </div>
-            <div class="font-sans font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
-              CONSIGNEE GSTIN NO. : <span class="font-black text-slate-950">${lrData.consigneeGst || ""}</span>
+            <div class="font-sans font-black text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
+              CONSIGNEE GSTIN NO. : <span class="font-black text-[11px] text-slate-950">${lrData.consigneeGst || ""}</span>
             </div>
           </div>
         </div>
@@ -259,41 +259,41 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
                 <th class="p-1.5 w-36">FREIGHT (${lrData.toPayOrPaid || "TBB"})</th>
               </tr>
             </thead>
-            <tbody class="divide-y border-b-2 border-slate-900 font-extrabold text-slate-950">
+            <tbody class="divide-y border-b-2 border-slate-900 font-black text-slate-950">
               <tr class="divide-x-2 divide-slate-900 text-center min-h-[80px]">
                 <td class="p-2 font-black align-top text-slate-950">
                   <div class="min-h-[34px] flex flex-col justify-start">
-                    <div class="font-black text-sm">${lrData.noOfArticles || ""}</div>
-                    <span class="text-[10.5px] font-extrabold text-slate-950 uppercase">${lrData.bundles || ""}</span>
+                    <div class="font-black text-[11px]">${lrData.noOfArticles || ""}</div>
+                    <span class="text-[11px] font-black text-slate-950 uppercase">${lrData.bundles || ""}</span>
                   </div>
                   ${
                     lrData.noOfArticles2
                       ? `<div class="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
-                          <div class="font-black text-sm">${lrData.noOfArticles2}</div>
-                          <span class="text-[10.5px] font-extrabold text-slate-950 uppercase">${lrData.bundles2 || "BUNDLE"}</span>
+                          <div class="font-black text-[11px]">${lrData.noOfArticles2}</div>
+                          <span class="text-[11px] font-black text-slate-950 uppercase">${lrData.bundles2 || "BUNDLE"}</span>
                         </div>`
                       : ""
                   }
                 </td>
                 <td class="p-2 align-top text-center">
                   <div class="min-h-[34px] flex flex-col justify-start">
-                    <div class="font-black uppercase text-sm text-slate-950">${lrData.descriptionOfGoods || ""}</div>
+                    <div class="font-black uppercase text-[11px] text-slate-950">${lrData.descriptionOfGoods || ""}</div>
                   </div>
                   ${
                     lrData.noOfArticles2
                       ? `<div class="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
-                          <div class="font-black uppercase text-sm text-slate-950">${lrData.descriptionOfGoods2 || "SANITARYWARE"}</div>
+                          <div class="font-black uppercase text-[11px] text-slate-950">${lrData.descriptionOfGoods2 || "SANITARYWARE"}</div>
                         </div>`
                       : ""
                   }
                 </td>
-                <td class="p-2 font-sans font-black align-top text-slate-950">
+                <td class="p-2 font-sans font-black align-top text-[11px] text-slate-950">
                   ${lrData.weightKgs ? `${lrData.weightKgs} K.G.` : ""}
                 </td>
-                <td class="p-2 font-sans font-black align-top text-slate-950">
+                <td class="p-2 font-sans font-black align-top text-[11px] text-slate-950">
                   ${lrData.ratePerTon ? `${lrData.ratePerTon} ${lrData.rateType || ""}` : ""}
                 </td>
-                <td class="p-2 font-sans font-black text-center align-top text-sm text-slate-950">
+                <td class="p-2 font-sans font-black text-center align-top text-[11px] text-slate-950">
                   ${lrData.freightAmount || ""}
                 </td>
               </tr>
@@ -304,37 +304,37 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
         <!-- Bottom Grid: Charges, GST, Invoice, Insurance, Bank details -->
         <div class="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[400px]">
           <!-- Left Column (7 cols) -->
-          <div class="col-span-7 text-[10px] flex flex-col justify-between h-full text-slate-950">
-            <div class="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1 flex items-center gap-2">
+          <div class="col-span-7 text-[11px] flex flex-col justify-between h-full text-slate-950 font-black">
+            <div class="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1 flex items-center gap-2">
               <span>GST PAYABLE BY :</span>
               <span class="font-black uppercase text-slate-950">${lrData.gstPayableBy || "CONSIGNEE"}</span>
             </div>
 
-            <div class="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-              INVOICE NO. : <span class="font-black text-xs text-slate-950">${lrData.billNumbers || ""}</span>
+            <div class="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+              INVOICE NO. : <span class="font-black text-[11px] text-slate-950">${lrData.billNumbers || ""}</span>
             </div>
 
-            <div class="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-              VALUE RS. : <span class="font-black text-xs text-slate-950">${lrData.invoiceValue || ""}</span>
+            <div class="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+              VALUE RS. : <span class="font-black text-[11px] text-slate-950">${lrData.invoiceValue || ""}</span>
             </div>
 
-            <div class="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-              CONSIGNOR E-WAY BILL : <span class="font-black text-xs text-slate-950">${lrData.consignorEwayBill || ""}</span>
+            <div class="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+              CONSIGNOR E-WAY BILL : <span class="font-black text-[11px] text-slate-950">${lrData.consignorEwayBill || ""}</span>
             </div>
 
-            <div class="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-              CONSIGNEE E-WAY BILL : <span class="font-black text-xs text-slate-950">${lrData.consigneeEwayBill || ""}</span>
+            <div class="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+              CONSIGNEE E-WAY BILL : <span class="font-black text-[11px] text-slate-950">${lrData.consigneeEwayBill || ""}</span>
             </div>
 
-            <div class="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-              DRIVER NO. : <span class="font-black text-xs text-slate-950">${lrData.driverMobile || ""}</span>
+            <div class="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+              DRIVER NO. : <span class="font-black text-[11px] text-slate-950">${lrData.driverMobile || ""}</span>
             </div>
 
             <div class="px-2 py-1 space-y-1">
-              <div class="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
+              <div class="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[11px]">
                 WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE.
               </div>
-              <div class="font-black uppercase text-slate-950 bg-slate-200 p-1 border-2 border-slate-900 text-[9.5px]">
+              <div class="font-black uppercase text-slate-950 bg-slate-200 p-1 border-2 border-slate-900 text-[11px]">
                 FULL TRUCK LOAD ACCEPTED ALL OVER INDIA.
               </div>
               ${
@@ -342,7 +342,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
                 lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE." &&
                 lrData.remarks !== "FULL TRUCK LOAD ACCEPTED ALL OVER INDIA." &&
                 lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA."
-                  ? `<div class="font-black text-slate-950 text-[9.5px] uppercase p-1 border border-slate-900 bg-slate-100">
+                  ? `<div class="font-black text-slate-950 text-[11px] uppercase p-1 border border-slate-900 bg-slate-100">
                       REMARKS: <span class="font-black">${lrData.remarks}</span>
                     </div>`
                   : ""
@@ -350,10 +350,10 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
             </div>
 
             <div class="px-2 py-1">
-              <div class="border-2 border-slate-900 p-1.5 rounded text-[9.5px] bg-transparent space-y-0.5 text-slate-950 font-bold">
+              <div class="border-2 border-slate-900 p-1.5 rounded text-[11px] bg-transparent space-y-0.5 text-slate-950 font-black">
                 <div class="font-black uppercase underline text-slate-950">INSURANCE :</div>
-                <div class="font-bold text-slate-950">THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
-                <div class="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-sans font-extrabold text-slate-950">
+                <div class="font-black text-slate-950">THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
+                <div class="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-sans font-black text-slate-950">
                   <span>COMPANY: ________</span>
                   <span>POLICY: ________</span>
                   <span>RISK: ________</span>
@@ -362,11 +362,11 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
             </div>
 
             <div class="p-2">
-              <div class="border-2 border-blue-900 p-1.5 rounded bg-transparent text-[9.5px] text-slate-950">
+              <div class="border-2 border-blue-900 p-1.5 rounded bg-transparent text-[11px] text-slate-950">
                 <div class="font-black text-blue-950 uppercase border-b border-blue-300 pb-0.5 mb-0.5">
                   ICICI BANK LTD (RTGS / NEFT PAYMENT)
                 </div>
-                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 font-bold text-slate-950">
+                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 font-black text-slate-950">
                   <div>NAME : <span class="font-black text-slate-950">WOLEGO TRANSPORT</span></div>
                   <div>ACCOUNT NO. : <span class="font-sans font-black text-slate-950">118405500444</span></div>
                   <div>IFSC CODE : <span class="font-sans font-black text-slate-950">ICIC0001184</span></div>
@@ -377,41 +377,41 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
           </div>
 
           <!-- Right Column (5 cols) -->
-          <div class="col-span-5 bg-transparent flex flex-col justify-between font-sans text-xs h-full text-slate-950">
+          <div class="col-span-5 bg-transparent flex flex-col justify-between font-sans text-[11px] font-black h-full text-slate-950">
             <div>
-              <div class="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-200 text-slate-950">
+              <div class="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-[11px] bg-slate-200 text-slate-950">
                 <span>FREIGHT</span>
                 <span>${lrData.freightAmount || 0}</span>
               </div>
 
-              <div class="flex justify-between font-bold text-slate-950 px-2.5 py-2 border-b border-slate-300">
+              <div class="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
                 <span>Add : S-G.S.T. @ 2.5%</span>
-                <span class="font-extrabold text-slate-950">${lrData.sgstAmount || "0.00"}</span>
+                <span class="font-black text-slate-950">${lrData.sgstAmount || "0.00"}</span>
               </div>
 
-              <div class="flex justify-between font-bold text-slate-950 px-2.5 py-2 border-b border-slate-300">
+              <div class="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
                 <span>Add : C-G.S.T. @ 2.5%</span>
-                <span class="font-extrabold text-slate-950">${lrData.cgstAmount || "0.00"}</span>
+                <span class="font-black text-slate-950">${lrData.cgstAmount || "0.00"}</span>
               </div>
 
-              <div class="flex justify-between font-bold text-slate-950 px-2.5 py-2 border-b-2 border-slate-900">
+              <div class="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b-2 border-slate-900">
                 <span>Add : I-G.S.T. @ 5%</span>
-                <span class="font-extrabold text-slate-950">${lrData.igstAmount || "0.00"}</span>
+                <span class="font-black text-slate-950">${lrData.igstAmount || "0.00"}</span>
               </div>
 
-              <div class="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-200 text-slate-950">
+              <div class="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-[11px] bg-slate-200 text-slate-950">
                 <span>TOTAL WITH GST</span>
                 <span>${lrData.totalWithGst || lrData.freightAmount || 0}</span>
               </div>
 
-              <div class="flex justify-between font-bold text-slate-950 px-2.5 py-2 border-b border-slate-300">
+              <div class="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
                 <span>Other Charges</span>
-                <span class="font-extrabold text-slate-950">${lrData.otherCharges || "0.00"}</span>
+                <span class="font-black text-slate-950">${lrData.otherCharges || "0.00"}</span>
               </div>
 
-              <div class="flex justify-between font-bold text-slate-950 border-b-2 border-slate-900 px-2.5 py-2">
+              <div class="flex justify-between font-black text-slate-950 border-b-2 border-slate-900 px-2.5 py-2">
                 <span>Less : Advance Paid</span>
-                <span class="font-extrabold text-slate-950">${lrData.lessAdvancePaid || "0.00"}</span>
+                <span class="font-black text-slate-950">${lrData.lessAdvancePaid || "0.00"}</span>
               </div>
 
               <div class="flex justify-between font-black text-[11px] border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-slate-200">
