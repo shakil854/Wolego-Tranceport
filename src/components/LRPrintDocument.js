@@ -30,17 +30,19 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     localStorage.removeItem("wolego_digital_signature");
   };
 
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(Boolean(autoAction));
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(autoAction === "pdf" || autoAction === "whatsapp");
 
   useEffect(() => {
     if (!autoAction) return;
+    if (autoAction === "print") {
+      setIsGeneratingPdf(false);
+      handlePrint();
+      if (onClose) onClose();
+      return;
+    }
     setIsGeneratingPdf(true);
     const timer = setTimeout(async () => {
-      if (autoAction === "print") {
-        setIsGeneratingPdf(false);
-        handlePrint();
-        if (onClose) onClose();
-      } else if (autoAction === "pdf") {
+      if (autoAction === "pdf") {
         await handleExportPDF();
         if (onClose) onClose();
       } else if (autoAction === "whatsapp") {
@@ -165,9 +167,9 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
   return (
     <>
-      {/* Loading Modal / Popup for PDF Generation & WhatsApp Opening */}
+      {/* Loading Modal / Popup for PDF Generation & WhatsApp Opening (Hidden during print) */}
       {isGeneratingPdf && (
-        <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white p-4 pointer-events-auto opacity-100">
+        <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white p-4 pointer-events-auto opacity-100 print:hidden">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl flex flex-col items-center gap-4 max-w-xs text-center animate-in fade-in zoom-in duration-200">
             <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
             <div>
