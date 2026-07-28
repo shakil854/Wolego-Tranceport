@@ -86,7 +86,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
 
     .print-document {
       border: 2px solid #0f172a;
-      padding: 8px;
+      padding: 0;
       height: 100%;
       box-sizing: border-box;
       display: flex;
