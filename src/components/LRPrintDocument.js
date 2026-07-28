@@ -429,7 +429,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                     <td className="p-2 font-mono font-black align-top text-slate-950">
                       {lrData.ratePerTon ? `${lrData.ratePerTon} ${lrData.rateType || ""}` : ""}
                     </td>
-                    <td className="p-2 font-mono font-black text-right align-top text-sm text-slate-950">
+                    <td className="p-2 font-mono font-black text-center align-top text-sm text-slate-950">
                       {lrData.freightAmount || ""}
                     </td>
                   </tr>
@@ -478,7 +478,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   <div className="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
                     WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE.
                   </div>
-                  <div className="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
+                  <div className="font-black uppercase text-slate-950 bg-slate-200 p-1 border-2 border-slate-900 text-[9.5px]">
                     FULL TRUCK LOAD ACCEPTED ALL OVER INDIA.
                   </div>
                   {lrData.remarks &&
@@ -523,7 +523,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
               {/* Right Column (5 cols): Freight Breakdown, Net Total & Signatory */}
               <div className="col-span-5 bg-transparent flex flex-col justify-between font-mono text-xs h-full text-slate-950">
                 <div>
-                  <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100/40 text-slate-950">
+                  <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-200 text-slate-950">
                     <span>FREIGHT</span>
                     <span>{lrData.freightAmount || 0}</span>
                   </div>
@@ -543,7 +543,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                     <span className="font-extrabold text-slate-950">{lrData.igstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100/40 text-slate-950">
+                  <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-200 text-slate-950">
                     <span>TOTAL WITH GST</span>
                     <span>{lrData.totalWithGst || lrData.freightAmount}</span>
                   </div>
@@ -558,7 +558,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                     <span className="font-extrabold text-slate-950">{lrData.lessAdvancePaid || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-yellow-100/40">
+                  <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-slate-200">
                     <span>NET TOTAL:</span>
                     <span>₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
                   </div>
