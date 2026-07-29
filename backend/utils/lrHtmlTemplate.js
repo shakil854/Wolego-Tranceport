@@ -69,7 +69,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
     .a4-page {
       width: 210mm;
       height: 297mm;
-      padding: 4mm;
+      padding: 3.5mm;
       margin: 0 auto;
       box-sizing: border-box;
       background: white;
@@ -85,9 +85,10 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
     }
 
     .print-document {
-      border: 2px solid #0f172a;
+      border: 2.5px solid #0f172a;
       padding: 0;
-      height: 100%;
+      width: 203mm;
+      height: 290mm;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;

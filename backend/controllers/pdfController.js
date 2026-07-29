@@ -68,7 +68,7 @@ const getBrowserInstance = async () => {
 };
 
 // Pre-warm browser instance on server start
-getBrowserInstance().catch(() => {});
+getBrowserInstance().catch(() => { });
 
 export const generateLRPdf = async (req, res) => {
   let page = null;
@@ -82,16 +82,28 @@ export const generateLRPdf = async (req, res) => {
     // 1. Generate full HTML in memory
     const htmlContent = generateLRHtml(lrData, signatureImg);
 
-    // 2. Obtain pre-warmed Puppeteer browser instance
-    const browser = await getBrowserInstance();
-    page = await browser.newPage();
+    // 2. Obtain pre-warmed Puppeteer browser instance (with retry on failure)
+    let browser;
+    try {
+      browser = await getBrowserInstance();
+      page = await browser.newPage();
+    } catch (err) {
+      console.warn("Retrying Puppeteer browser launch after error:", err.message);
+      if (browserInstance) {
+        try { await browserInstance.close(); } catch (e) {}
+        browserInstance = null;
+      }
+      browser = await getBrowserInstance();
+      page = await browser.newPage();
+    }
 
-    // Set viewport matching A4 portrait aspect ratio
-    await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 2 });
+    // Set viewport matching exact A4 pixel dimensions (794x1123) with 4x Ultra-HD DPI scale factor
+    await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 4 });
 
-    // Load HTML content instantly without networkidle delay
+    // Load HTML content instantly with domcontentloaded
     await page.setContent(htmlContent, {
       waitUntil: "domcontentloaded",
+      timeout: 10000,
     });
 
     // 3. Generate PDF Buffer in memory (NO DISK SAVE)
@@ -116,6 +128,10 @@ export const generateLRPdf = async (req, res) => {
     res.status(200).send(Buffer.from(pdfBuffer));
   } catch (error) {
     console.error("PDF generation controller error:", error);
+    if (browserInstance) {
+      try { await browserInstance.close(); } catch (e) {}
+      browserInstance = null;
+    }
     res.status(500).json({ error: "Failed to generate PDF", details: error.message });
   } finally {
     // 5. Memory Cleanup: Close page to release RAM immediately

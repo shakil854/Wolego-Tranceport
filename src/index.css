@@ -12,7 +12,7 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 3.5mm;
   }
 
   * {
@@ -41,13 +41,13 @@
   }
 
   .print-container {
-    padding: 4mm !important;
+    padding: 0 !important;
     margin: 0 auto !important;
     box-shadow: none !important;
-    width: 210mm !important;
-    max-width: 210mm !important;
-    height: 297mm !important;
-    max-height: 297mm !important;
+    width: 203mm !important;
+    max-width: 203mm !important;
+    height: 290mm !important;
+    max-height: 290mm !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
     page-break-inside: avoid !important;
@@ -55,7 +55,7 @@
   }
 
   .print-document {
-    border-width: 2px !important;
+    border-width: 2.5px !important;
     border-color: #0f172a !important;
     padding: 0 !important;
     width: 100% !important;
@@ -71,13 +71,13 @@
   }
 
   .range-print-sheet {
-    padding: 4mm !important;
+    padding: 0 !important;
     margin: 0 auto !important;
     box-shadow: none !important;
-    width: 210mm !important;
-    max-width: 210mm !important;
-    height: 297mm !important;
-    max-height: 297mm !important;
+    width: 203mm !important;
+    max-width: 203mm !important;
+    height: 290mm !important;
+    max-height: 290mm !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
     page-break-after: always !important;

@@ -152,7 +152,7 @@ export default function BulkLRPrintPage() {
   };
 
   const renderLRDocument = (lrData) => (
-    <div className="border-2 border-slate-900 bg-white text-slate-900 min-h-[287mm] h-full flex flex-col justify-between print-document relative overflow-hidden text-xs font-sans box-border">
+    <div className="border-2 border-slate-900 bg-white text-slate-900 h-[290mm] min-h-[290mm] w-full flex flex-col justify-between print-document relative overflow-hidden text-xs font-sans box-border">
 
       {/* Background Watermark Logo */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
@@ -816,7 +816,7 @@ export default function BulkLRPrintPage() {
               Close Preview
             </button>
           </div>
-          <div className="w-full max-w-[210mm] bg-white p-[4mm] rounded shadow-2xl box-border">
+          <div className="w-full max-w-[210mm] bg-white p-[3.5mm] rounded shadow-2xl box-border">
             {renderLRDocument(previewLR)}
           </div>
         </div>
