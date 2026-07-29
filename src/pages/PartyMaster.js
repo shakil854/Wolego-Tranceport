@@ -19,8 +19,8 @@ export default function PartyMaster() {
     address3: "",
     city: "",
     district: "",
-    state: "GUJARAT",
-    stateCode: "24",
+    state: "",
+    stateCode: "",
     gstNo: "",
     panNo: "",
     contactName: "",
@@ -42,6 +42,7 @@ export default function PartyMaster() {
 
   // State code mapping helper
   const getStateCode = (stateName) => {
+    if (!stateName || !stateName.trim()) return "";
     const stateMap = {
       GUJARAT: "24",
       TELANGANA: "36",
@@ -54,7 +55,7 @@ export default function PartyMaster() {
       "UTTAR PRADESH": "09",
       "ANDHRA PRADESH": "37",
     };
-    return stateMap[stateName.toUpperCase()] || "24";
+    return stateMap[stateName.toUpperCase()] || "";
   };
 
   // State change handler for Add Form
@@ -178,12 +179,12 @@ export default function PartyMaster() {
                 />
               </div>
 
-              {/* Address Line 1 */}
+              {/* Address Lines */}
               <div>
                 <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
-                  Address Line 1 & Line 2
+                  Address Line 1, Line 2 & Line 3
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
                   <input
                     type="text"
                     value={addFormData.address1}
@@ -196,6 +197,13 @@ export default function PartyMaster() {
                     value={addFormData.address2}
                     onChange={(e) => setAddFormData({ ...addFormData, address2: e.target.value.toUpperCase() })}
                     placeholder="AREA / LANDMARK"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={addFormData.address3}
+                    onChange={(e) => setAddFormData({ ...addFormData, address3: e.target.value.toUpperCase() })}
+                    placeholder="ADDRESS LINE 3"
                     className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
@@ -247,7 +255,7 @@ export default function PartyMaster() {
                     type="text"
                     value={addFormData.stateCode}
                     onChange={(e) => setAddFormData({ ...addFormData, stateCode: e.target.value })}
-                    placeholder="24"
+                    placeholder="CODE"
                     className="w-full bg-white text-slate-900 font-bold text-center px-1 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
@@ -520,7 +528,11 @@ export default function PartyMaster() {
                 <div>
                   <span className="text-xs font-bold text-slate-400 uppercase block">City / State</span>
                   <span className="font-bold text-white">
-                    {viewPartyModal.city || "N/A"} ({viewPartyModal.stateCode || "24"}) - {viewPartyModal.state}
+                    {[
+                      viewPartyModal.city,
+                      viewPartyModal.stateCode ? `(${viewPartyModal.stateCode})` : "",
+                      viewPartyModal.state
+                    ].filter(Boolean).join(" ") || "N/A"}
                   </span>
                 </div>
                 <div>
@@ -651,6 +663,7 @@ export default function PartyMaster() {
                     type="text"
                     value={editFormData.stateCode}
                     onChange={(e) => setEditFormData({ ...editFormData, stateCode: e.target.value })}
+                    placeholder="CODE"
                     className="w-full bg-white text-slate-900 font-bold text-center px-2 py-1.5 text-xs border border-sky-300 rounded"
                   />
                 </div>

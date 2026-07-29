@@ -25,8 +25,8 @@ export default function LREntryForm() {
     address3: "",
     city: "",
     district: "",
-    state: "GUJARAT",
-    stateCode: "24",
+    state: "",
+    stateCode: "",
     gstNo: "",
     panNo: "",
     contactName: "",
@@ -41,6 +41,7 @@ export default function LREntryForm() {
 
   // State code mapping helper
   const getStateCode = (stateName) => {
+    if (!stateName || !stateName.trim()) return "";
     const stateMap = {
       GUJARAT: "24",
       TELANGANA: "36",
@@ -53,7 +54,7 @@ export default function LREntryForm() {
       "UTTAR PRADESH": "09",
       "ANDHRA PRADESH": "37",
     };
-    return stateMap[(stateName || "").toUpperCase()] || "24";
+    return stateMap[stateName.toUpperCase()] || "";
   };
 
   // State change handler for Modal Add Form
@@ -215,8 +216,7 @@ export default function LREntryForm() {
     if (!party) return "";
     const addr1 = party.address1 ? party.address1.trim() : "";
     const addr2 = party.address2 ? party.address2.trim() : "";
-    const addr3Parts = [party.address3, party.city, party.state].filter(Boolean);
-    const addr3 = addr3Parts.join(", ").trim();
+    const addr3 = party.address3 ? party.address3.trim() : "";
 
     return [addr1, addr2, addr3].filter(Boolean).join("\n");
   };
@@ -269,8 +269,8 @@ export default function LREntryForm() {
       const c1 = list[0];
       const c2 = list[1];
 
-      const rawAddr1 = [c1.address1, c1.city].filter(Boolean).join(", ");
-      const rawAddr2 = [c2.address1, c2.city].filter(Boolean).join(", ");
+      const rawAddr1 = [c1.address1, c1.address2, c1.address3].filter(Boolean).join(", ");
+      const rawAddr2 = [c2.address1, c2.address2, c2.address3].filter(Boolean).join(", ");
 
       // Truncate address if longer than 45 chars so it NEVER wraps into 2 lines!
       const addr1 = rawAddr1.length > 45 ? rawAddr1.slice(0, 42) + "..." : rawAddr1;
@@ -384,8 +384,8 @@ export default function LREntryForm() {
       address3: (newPartyForm.address3 || "").trim().toUpperCase(),
       city: (newPartyForm.city || "").trim().toUpperCase(),
       district: (newPartyForm.district || "").trim().toUpperCase(),
-      state: (newPartyForm.state || "GUJARAT").trim().toUpperCase(),
-      stateCode: newPartyForm.stateCode || "24",
+      state: (newPartyForm.state || "").trim().toUpperCase(),
+      stateCode: (newPartyForm.stateCode || "").trim(),
       gstNo: (newPartyForm.gstNo || "").trim().toUpperCase(),
       panNo: (newPartyForm.panNo || "").trim().toUpperCase(),
       contactName: (newPartyForm.contactName || "").trim().toUpperCase(),
@@ -1339,12 +1339,12 @@ export default function LREntryForm() {
                   />
                 </div>
 
-                {/* Address Line 1 & Line 2 */}
+                {/* Address Lines */}
                 <div>
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
-                    ADDRESS LINE 1 & LINE 2
+                    ADDRESS LINE 1, LINE 2 & LINE 3
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
                     <input
                       type="text"
                       value={newPartyForm.address1}
@@ -1357,6 +1357,13 @@ export default function LREntryForm() {
                       value={newPartyForm.address2}
                       onChange={(e) => setNewPartyForm({ ...newPartyForm, address2: e.target.value.toUpperCase() })}
                       placeholder="AREA / LANDMARK"
+                      className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                    />
+                    <input
+                      type="text"
+                      value={newPartyForm.address3}
+                      onChange={(e) => setNewPartyForm({ ...newPartyForm, address3: e.target.value.toUpperCase() })}
+                      placeholder="ADDRESS LINE 3"
                       className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                     />
                   </div>
@@ -1408,7 +1415,7 @@ export default function LREntryForm() {
                       type="text"
                       value={newPartyForm.stateCode}
                       onChange={(e) => setNewPartyForm({ ...newPartyForm, stateCode: e.target.value })}
-                      placeholder="24"
+                      placeholder="CODE"
                       className="w-full bg-white text-slate-900 font-bold text-center px-1 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                     />
                   </div>
