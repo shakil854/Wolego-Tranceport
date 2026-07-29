@@ -410,37 +410,89 @@ export default function LREntryForm() {
     flashMsg(`Party "${createdName}" Added & Selected!`);
   };
 
-  // Fast Data Entry: Move to next input field on Enter press & auto-scroll into view
+  // Fast Data Entry: Keyboard navigation with Enter & Arrow Keys (Up, Down, Left, Right)
   const handleKeyDown = (e) => {
+    const container = document.getElementById("lr-form-container") || e.currentTarget;
+
+    // Helper to get all visible focusable elements in logical form order
+    const getFocusable = () => {
+      return Array.from(
+        container.querySelectorAll(
+          "input:not([disabled]):not([type='hidden']), select:not([disabled]), textarea:not([disabled]), button:not([disabled])"
+        )
+      ).filter((el) => el.tabIndex !== -1 && el.offsetParent !== null);
+    };
+
+    // 1. Handle Enter Key Navigation
     if (e.key === "Enter") {
-      // If pressing Enter on submit button, let form submit naturally
-      if (e.target.tagName === "BUTTON" && e.target.type === "submit") {
+      // If user is on a button, execute its action naturally
+      if (e.target.tagName === "BUTTON") {
         return;
       }
-
-      // Allow multiline entry in textarea if Shift+Enter is pressed
+      // Allow Shift+Enter for multiline text in textareas
       if (e.target.tagName === "TEXTAREA" && e.shiftKey) {
         return;
       }
 
-      // Prevent default form submit action on enter key
       e.preventDefault();
 
-      const form = e.currentTarget;
-      const focusable = Array.from(
-        form.querySelectorAll(
-          "input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button[type='submit']:not([disabled])"
-        )
-      ).filter((el) => el.tabIndex !== -1 && el.offsetParent !== null);
-
+      const focusable = getFocusable();
       const index = focusable.indexOf(e.target);
-      if (index > -1 && index < focusable.length - 1) {
-        const next = focusable[index + 1];
-        next.focus();
-        if (typeof next.select === "function" && next.tagName === "INPUT") {
-          next.select();
+
+      // Check if there is another input field after the current one (excluding buttons)
+      const nextInput = focusable.slice(index + 1).find((el) => el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA");
+
+      if (nextInput) {
+        nextInput.focus();
+        if (typeof nextInput.select === "function" && nextInput.tagName === "INPUT") {
+          nextInput.select();
         }
-        next.scrollIntoView({ behavior: "smooth", block: "center" });
+        nextInput.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        // All form fields completed -> Move focus directly to Save LR button!
+        const saveBtn = document.getElementById("save-lr-btn");
+        if (saveBtn) {
+          saveBtn.focus();
+          saveBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+      return;
+    }
+
+    // 2. Handle Side Arrow Keys (ArrowDown / ArrowRight = Next, ArrowUp / ArrowLeft = Previous)
+    const isDown = e.key === "ArrowDown";
+    const isUp = e.key === "ArrowUp";
+    const isRight = e.key === "ArrowRight" && e.target.tagName !== "TEXTAREA" && e.target.type !== "number";
+    const isLeft = e.key === "ArrowLeft" && e.target.tagName !== "TEXTAREA" && e.target.type !== "number";
+
+    const isNext = isDown || isRight;
+    const isPrev = isUp || isLeft;
+
+    if (isNext || isPrev) {
+      // Allow normal arrow key behavior inside open select options
+      if (e.target.tagName === "SELECT" && (isDown || isUp) && !e.altKey) {
+        return;
+      }
+
+      e.preventDefault();
+
+      const focusable = getFocusable();
+      const index = focusable.indexOf(e.target);
+      let targetIndex = -1;
+
+      if (isNext && index < focusable.length - 1) {
+        targetIndex = index + 1;
+      } else if (isPrev && index > 0) {
+        targetIndex = index - 1;
+      }
+
+      if (targetIndex !== -1 && focusable[targetIndex]) {
+        const targetEl = focusable[targetIndex];
+        targetEl.focus();
+        if (typeof targetEl.select === "function" && targetEl.tagName === "INPUT") {
+          targetEl.select();
+        }
+        targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
   };
@@ -468,8 +520,8 @@ export default function LREntryForm() {
         {/* Main Classic Software Card Frame */}
         <div className="bg-sky-900/90 border-2 border-sky-400 rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm flex-1 flex flex-col min-h-0">
 
-          {/* Header Bar with Action Buttons Inline */}
-          <div className="bg-sky-950 px-3 py-1.5 border-b border-sky-400 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 shrink-0">
+          {/* Header Bar */}
+          <div className="bg-sky-950 px-3 py-1.5 border-b border-sky-400 flex justify-between items-center gap-2 shrink-0">
             <div className="flex items-center gap-2">
               <h1 className="text-xs sm:text-base font-black text-white tracking-wide uppercase font-sans">
                 L/R ENTRY - ADD / EDIT / CHANGE
@@ -479,55 +531,6 @@ export default function LREntryForm() {
                   {statusMsg}
                 </span>
               )}
-            </div>
-
-            {/* Quick Action Buttons in Top Header */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => handleSave()}
-                className="px-2.5 sm:px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded text-[11px] sm:text-xs uppercase shadow flex items-center gap-1 transition-all"
-              >
-                <Save size={13} /> Save LR
-              </button>
-
-              <button
-                type="button"
-                onClick={handleSaveAndPrint}
-                className="px-2.5 sm:px-3 py-1 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded text-[11px] sm:text-xs uppercase shadow flex items-center gap-1 transition-all"
-              >
-                <Printer size={13} /> Save & Print
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const saved = handleSave();
-                  if (saved) setShowPrintModal(true);
-                }}
-                className="px-2 py-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded text-[11px] sm:text-xs uppercase shadow flex items-center gap-1"
-              >
-                <Download size={13} /> PDF
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const saved = handleSave();
-                  if (saved) setShowPrintModal(true);
-                }}
-                className="px-2 py-1 bg-green-600 hover:bg-green-500 text-white font-black rounded text-[11px] sm:text-xs uppercase shadow flex items-center gap-1"
-              >
-                <Share2 size={13} /> WhatsApp
-              </button>
-
-              <button
-                type="button"
-                onClick={handleReset}
-                className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded text-[11px] sm:text-xs uppercase transition-colors flex items-center gap-1"
-              >
-                <RotateCcw size={13} /> Reset
-              </button>
             </div>
           </div>
 
@@ -1039,6 +1042,56 @@ export default function LREntryForm() {
             </div>
 
           </form>
+
+          {/* Bottom Action Buttons Bar (Save LR, Save & Print, PDF, WhatsApp, Reset) */}
+          <div className="bg-sky-950 px-3 py-2 border-t border-sky-400 flex flex-wrap justify-end items-center gap-1.5 sm:gap-2 shrink-0">
+            <button
+              id="save-lr-btn"
+              type="button"
+              onClick={() => handleSave()}
+              className="px-3 sm:px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105 focus:ring-4 focus:ring-amber-300 focus:outline-none"
+            >
+              <Save size={14} /> Save LR
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveAndPrint}
+              className="px-3 sm:px-4 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105"
+            >
+              <Printer size={14} /> Save & Print
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const saved = handleSave();
+                if (saved) setShowPrintModal(true);
+              }}
+              className="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <Download size={14} /> PDF
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const saved = handleSave();
+                if (saved) setShowPrintModal(true);
+              }}
+              className="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <Share2 size={14} /> WhatsApp
+            </button>
+
+            <button
+              type="button"
+              onClick={handleReset}
+              className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded text-xs uppercase transition-all flex items-center gap-1.5 cursor-pointer ml-1"
+            >
+              <RotateCcw size={14} /> Reset
+            </button>
+          </div>
         </div>
 
         {/* LR Saved Successfully Pop-up Modal */}
