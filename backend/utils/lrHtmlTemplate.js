@@ -55,6 +55,9 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       box-sizing: border-box;
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
     }
 
     html, body {
@@ -62,8 +65,9 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
       padding: 0;
       background-color: #ffffff;
       font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-      color: #0f172a;
+      color: #000000;
       -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
     .a4-page {
