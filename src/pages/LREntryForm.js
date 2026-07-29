@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, getNextLRNumber, saveParty } from "../utils/storage";
+import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, getNextLRNumber, saveParty, fetchTrucksFromDB, saveTruck } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
 import SearchablePartySelect from "../components/SearchablePartySelect";
-import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2 } from "lucide-react";
+import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2, Truck } from "lucide-react";
 
 export default function LREntryForm() {
   const location = useLocation();
@@ -38,6 +38,47 @@ export default function LREntryForm() {
   const [showAddPartyModal, setShowAddPartyModal] = useState(false);
   const [addPartyTarget, setAddPartyTarget] = useState("BOTH"); // "CONSIGNOR", "CONSIGNEE", "BOTH"
   const [newPartyForm, setNewPartyForm] = useState(initialBlankPartyForm);
+
+  // Truck Master State & Modal
+  const [trucks, setTrucks] = useState([]);
+  const [showAddTruckModal, setShowAddTruckModal] = useState(false);
+  const [showTruckSearchDropdown, setShowTruckSearchDropdown] = useState(false);
+  const [newTruckForm, setNewTruckForm] = useState({
+    truckNo: "",
+    ownerName: "",
+    mobileNo: "",
+    address: "",
+    bankName: "",
+    accountName: "",
+    accountNo: "",
+    ifscCode: "",
+    branch: "",
+  });
+
+  const handleSaveNewTruckModal = async (e) => {
+    if (e) e.preventDefault();
+    if (!newTruckForm.truckNo || !newTruckForm.truckNo.trim()) {
+      alert("Truck Number is required!");
+      return;
+    }
+    const addedNo = newTruckForm.truckNo.trim().toUpperCase();
+    const updatedTrucks = await saveTruck({ ...newTruckForm, truckNo: addedNo });
+    setTrucks(updatedTrucks || []);
+    setFormData((prev) => ({ ...prev, truckNo: addedNo }));
+    setShowAddTruckModal(false);
+    setNewTruckForm({
+      truckNo: "",
+      ownerName: "",
+      mobileNo: "",
+      address: "",
+      bankName: "",
+      accountName: "",
+      accountNo: "",
+      ifscCode: "",
+      branch: "",
+    });
+    flashMsg(`Truck "${addedNo}" Saved & Selected!`);
+  };
 
   // State code mapping helper
   const getStateCode = (stateName) => {
@@ -148,7 +189,9 @@ export default function LREntryForm() {
     const loadInitData = async () => {
       const loadedParties = await fetchPartiesFromDB();
       const loadedLRs = await fetchLREntriesFromDB();
+      const loadedTrucks = await fetchTrucksFromDB();
       setParties(loadedParties || []);
+      setTrucks(loadedTrucks || []);
 
       if (location.state && location.state.editLR) {
         setFormData(location.state.editLR);
@@ -613,17 +656,85 @@ export default function LREntryForm() {
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-4 md:col-span-2">
-                <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
-                  TRUCK NO.
-                </label>
-                <input
-                  type="text"
-                  value={formData.truckNo}
-                  onChange={(e) => setFormData({ ...formData, truckNo: e.target.value.toUpperCase() })}
-                  placeholder="TRUCK NO."
-                  className="w-full bg-white text-slate-900 font-mono font-black px-1.5 py-0.5 border-2 border-sky-400 rounded uppercase text-xs"
-                />
+              <div className="col-span-6 sm:col-span-4 md:col-span-2 relative">
+                <div className="flex items-center justify-between mb-0.5">
+                  <label className="text-[10px] font-extrabold text-yellow-300 uppercase block">
+                    TRUCK NO.
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewTruckForm({ ...newTruckForm, truckNo: formData.truckNo });
+                      setShowAddTruckModal(true);
+                    }}
+                    className="text-[9px] bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-1 py-0.2 rounded font-black uppercase shadow flex items-center gap-0.5 cursor-pointer"
+                    title="Add New Truck to Master"
+                  >
+                    <Plus size={10} /> + Add
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    list="truck-master-list"
+                    value={formData.truckNo}
+                    onChange={(e) => {
+                      setFormData({ ...formData, truckNo: e.target.value.toUpperCase() });
+                      setShowTruckSearchDropdown(true);
+                    }}
+                    onFocus={() => setShowTruckSearchDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowTruckSearchDropdown(false), 200)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === "Tab" || e.key === "Escape") {
+                        setShowTruckSearchDropdown(false);
+                      }
+                    }}
+                    placeholder="TRUCK NO."
+                    className="w-full bg-white text-slate-900 font-mono font-black px-1.5 py-0.5 border-2 border-sky-400 rounded uppercase text-xs"
+                  />
+                  <datalist id="truck-master-list">
+                    {trucks.map((t, idx) => (
+                      <option key={idx} value={(t.truckNo || "").toUpperCase()}>
+                        {t.ownerName ? `${t.truckNo} - ${t.ownerName}` : t.truckNo}
+                      </option>
+                    ))}
+                  </datalist>
+                  {showTruckSearchDropdown && (
+                    <div className="absolute left-0 right-0 top-full mt-0.5 z-40 bg-slate-900 border-2 border-sky-400 rounded-md shadow-2xl max-h-48 overflow-y-auto">
+                      {trucks
+                        .filter((t) => (t.truckNo || "").toUpperCase().includes((formData.truckNo || "").toUpperCase()))
+                        .map((t, idx) => (
+                          <div
+                            key={idx}
+                            onMouseDown={() => {
+                              setFormData({ ...formData, truckNo: (t.truckNo || "").toUpperCase() });
+                              setShowTruckSearchDropdown(false);
+                            }}
+                            className="px-2 py-1.5 hover:bg-sky-700 cursor-pointer text-xs border-b border-slate-800 flex justify-between items-center"
+                          >
+                            <span className="font-mono font-bold text-amber-300">{(t.truckNo || "").toUpperCase()}</span>
+                            <span className="text-[10px] text-slate-400">{t.ownerName || "No Owner"}</span>
+                          </div>
+                        ))}
+                      {trucks.filter((t) => (t.truckNo || "").toUpperCase().includes((formData.truckNo || "").toUpperCase())).length === 0 && (
+                        <div className="p-2 text-center text-xs text-slate-400">
+                          Manual entry enabled.
+                          <button
+                            type="button"
+                            onMouseDown={() => {
+                              setNewTruckForm({ ...newTruckForm, truckNo: formData.truckNo });
+                              setShowAddTruckModal(true);
+                              setShowTruckSearchDropdown(false);
+                            }}
+                            className="block mx-auto mt-1 px-2 py-0.5 bg-emerald-500 text-slate-950 font-bold rounded text-[10px]"
+                          >
+                            + Save "{formData.truckNo}" to Master
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
             </div>
@@ -1345,6 +1456,188 @@ export default function LREntryForm() {
                     </div>
                   )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add New Truck Modal (Exact Truck Master Matching Fields) */}
+        {showAddTruckModal && (
+          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3">
+            <div className="bg-sky-900/90 border-2 border-yellow-400 rounded-lg max-w-xl w-full shadow-2xl overflow-hidden backdrop-blur-sm flex flex-col max-h-[90vh]">
+              {/* Header */}
+              <div className="bg-sky-950 px-3 py-1.5 border-b border-yellow-400 flex justify-between items-center shrink-0">
+                <h2 className="text-xs sm:text-sm font-black text-blue-100 uppercase tracking-wider flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-yellow-400" /> + ADD NEW TRUCK TO MASTER
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowAddTruckModal(false)}
+                  className="text-slate-300 hover:text-white p-0.5 rounded cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Form Inputs */}
+              <form onSubmit={handleSaveNewTruckModal} className="p-3 space-y-3 text-xs overflow-y-auto">
+                {/* Basic Information Section */}
+                <div className="space-y-2">
+                  <div className="text-[11px] font-extrabold text-amber-300 uppercase tracking-wider border-b border-sky-700/60 pb-0.5 flex items-center gap-1">
+                    <Truck size={13} /> Basic Information
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        Truck No. *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        autoFocus
+                        value={newTruckForm.truckNo}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, truckNo: e.target.value.toUpperCase() })}
+                        placeholder="e.g. GJ28AA2626"
+                        className="w-full bg-white text-slate-900 font-extrabold px-2 py-1 text-xs border border-sky-400 rounded focus:outline-none uppercase"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        Owner Name
+                      </label>
+                      <input
+                        type="text"
+                        value={newTruckForm.ownerName}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, ownerName: e.target.value.toUpperCase() })}
+                        placeholder="OWNER NAME"
+                        className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        Mobile No.
+                      </label>
+                      <input
+                        type="text"
+                        value={newTruckForm.mobileNo}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, mobileNo: e.target.value })}
+                        placeholder="MOBILE NUMBER"
+                        className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        Address
+                      </label>
+                      <input
+                        type="text"
+                        value={newTruckForm.address}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, address: e.target.value.toUpperCase() })}
+                        placeholder="CITY / ADDRESS"
+                        className="w-full bg-white text-slate-900 font-medium px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bank Details Section */}
+                <div className="space-y-2 pt-1 border-t border-sky-700/60">
+                  <div className="text-[11px] font-extrabold text-amber-300 uppercase tracking-wider border-b border-sky-700/60 pb-0.5 flex items-center gap-1">
+                    <Building2 size={13} /> Bank Details
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        Bank Name
+                      </label>
+                      <input
+                        type="text"
+                        value={newTruckForm.bankName}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, bankName: e.target.value.toUpperCase() })}
+                        placeholder="e.g. HDFC BANK"
+                        className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        Account Name
+                      </label>
+                      <input
+                        type="text"
+                        value={newTruckForm.accountName}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, accountName: e.target.value.toUpperCase() })}
+                        placeholder="ACCOUNT HOLDER NAME"
+                        className="w-full bg-white text-slate-900 font-medium px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        Account No.
+                      </label>
+                      <input
+                        type="text"
+                        value={newTruckForm.accountNo}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, accountNo: e.target.value })}
+                        placeholder="ACCOUNT NUMBER"
+                        className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        IFSC Code
+                      </label>
+                      <input
+                        type="text"
+                        value={newTruckForm.ifscCode}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, ifscCode: e.target.value.toUpperCase() })}
+                        placeholder="IFSC CODE"
+                        className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        Branch
+                      </label>
+                      <input
+                        type="text"
+                        value={newTruckForm.branch}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, branch: e.target.value.toUpperCase() })}
+                        placeholder="BRANCH NAME"
+                        className="w-full bg-white text-slate-900 font-medium px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Buttons */}
+                <div className="pt-2 border-t border-sky-700 flex justify-end gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddTruckModal(false)}
+                    className="px-3 py-1 bg-slate-700 text-slate-300 font-bold rounded hover:bg-slate-600 text-xs uppercase cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded text-xs uppercase flex items-center gap-1 shadow cursor-pointer"
+                  >
+                    <Save size={14} /> Save & Select Truck
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
