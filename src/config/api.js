@@ -1,10 +1,13 @@
-// Centralized API Configuration for Development and Production (Hostinger VPS)
+// Centralized API Configuration for Development and Production
 
-export const API_URL =
-  process.env.REACT_APP_API_URL !== undefined
-    ? process.env.REACT_APP_API_URL
-    : process.env.NODE_ENV === "production"
-    ? ""
-    : "http://localhost:8002";
+const getRawUrl = () => {
+  if (process.env.REACT_APP_API_URL && process.env.REACT_APP_API_URL.trim() !== "") {
+    return process.env.REACT_APP_API_URL.trim();
+  }
+  return process.env.NODE_ENV === "production" ? "" : "http://localhost:8002";
+};
 
-export const API_BASE_URL = `${API_URL}/api`;
+const cleanUrl = getRawUrl().replace(/\/+$/, "");
+
+export const API_URL = cleanUrl;
+export const API_BASE_URL = cleanUrl ? `${cleanUrl}/api` : "/api";
