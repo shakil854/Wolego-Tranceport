@@ -7,7 +7,22 @@ const getRawUrl = () => {
   return process.env.NODE_ENV === "production" ? "" : "http://localhost:8002";
 };
 
-const cleanUrl = getRawUrl().replace(/\/+$/, "");
+const raw = getRawUrl().replace(/\/+$/, "");
 
-export const API_URL = cleanUrl;
-export const API_BASE_URL = cleanUrl ? `${cleanUrl}/api` : "/api";
+// Smart parsing: handles if input is "https://domain.com/api" OR "https://domain.com"
+let parsedApiBaseUrl = "";
+let parsedApiUrl = "";
+
+if (!raw) {
+  parsedApiBaseUrl = "/api";
+  parsedApiUrl = "";
+} else if (raw.toLowerCase().endsWith("/api")) {
+  parsedApiBaseUrl = raw;
+  parsedApiUrl = raw.slice(0, -4);
+} else {
+  parsedApiBaseUrl = `${raw}/api`;
+  parsedApiUrl = raw;
+}
+
+export const API_URL = parsedApiUrl;
+export const API_BASE_URL = parsedApiBaseUrl;
