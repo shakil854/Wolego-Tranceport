@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Lock, Phone, KeyRound, ArrowRight } from "lucide-react";
 import logoImg from "../assets/logo.png";
+import { API_BASE_URL } from "../config/api";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -19,7 +20,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8002/api/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

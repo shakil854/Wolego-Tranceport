@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Key, Eye, EyeOff, X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { API_BASE_URL } from "../config/api";
 
 export default function ChangePasswordModal({ isOpen, onClose, user }) {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -44,7 +45,7 @@ export default function ChangePasswordModal({ isOpen, onClose, user }) {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8002/api/auth/change-password", {
+      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
