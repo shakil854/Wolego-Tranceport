@@ -27,12 +27,21 @@ app.use(
   })
 );
 
-// Register API Routes
+// Register API Routes (support both /api/* and /* to prevent Nginx proxy mismatch 404s)
 app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
+
 app.use("/api/parties", partyRoutes);
+app.use("/parties", partyRoutes);
+
 app.use("/api/lr-entries", lrRoutes);
+app.use("/lr-entries", lrRoutes);
+
 app.use("/api/lr", lrRoutes);
+app.use("/lr", lrRoutes);
+
 app.use("/api/trucks", truckRoutes);
+app.use("/trucks", truckRoutes);
 
 app.get("/", (req, res) => {
   res.send("Wolego Transport Billing Server is Running!");

@@ -26,7 +26,17 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type");
+      let data = {};
+      
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        await response.text();
+        if (!response.ok) {
+          throw new Error(`Server Error (${response.status}): Endpoint not found or backend server issue.`);
+        }
+      }
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || "Login failed. Please check your credentials.");
