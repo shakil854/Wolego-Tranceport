@@ -90,7 +90,7 @@ export const generateLRPdf = async (req, res) => {
     } catch (err) {
       console.warn("Retrying Puppeteer browser launch after error:", err.message);
       if (browserInstance) {
-        try { await browserInstance.close(); } catch (e) {}
+        try { await browserInstance.close(); } catch (e) { }
         browserInstance = null;
       }
       browser = await getBrowserInstance();
@@ -100,9 +100,9 @@ export const generateLRPdf = async (req, res) => {
     // Set viewport matching exact A4 pixel dimensions (794x1123) with 4x Ultra-HD DPI scale factor
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 4 });
 
-    // Load HTML content & wait for full CSS rendering
+    // Load HTML content instantly
     await page.setContent(htmlContent, {
-      waitUntil: "networkidle0",
+      waitUntil: "domcontentloaded",
       timeout: 30000,
     });
 
@@ -129,7 +129,7 @@ export const generateLRPdf = async (req, res) => {
   } catch (error) {
     console.error("PDF generation controller error:", error);
     if (browserInstance) {
-      try { await browserInstance.close(); } catch (e) {}
+      try { await browserInstance.close(); } catch (e) { }
       browserInstance = null;
     }
     res.status(500).json({ error: "Failed to generate PDF", details: error.message });
