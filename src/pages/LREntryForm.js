@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, deleteLREntry, getNextLRNumber, saveParty, fetchTrucksFromDB, saveTruck } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
+import PasswordConfirmModal from "../components/PasswordConfirmModal";
 import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2, Truck, Trash2 } from "lucide-react";
 
 export default function LREntryForm() {
@@ -406,13 +407,19 @@ export default function LREntryForm() {
     setFormData({ ...initialForm, lrNumber: nextNo, dateTime: today });
   };
 
-  const handleDeleteCurrentLR = async () => {
+  const [showDeletePasswordModal, setShowDeletePasswordModal] = useState(false);
+
+  const handleDeleteCurrentLR = () => {
     if (!formData.id) return;
-    if (window.confirm(`Are you sure you want to delete LR #${formData.lrNumber}?`)) {
-      await deleteLREntry(formData.id);
-      flashMsg(`LR #${formData.lrNumber} Deleted!`);
-      handleReset();
-    }
+    setShowDeletePasswordModal(true);
+  };
+
+  const confirmDeleteCurrentLR = async () => {
+    setShowDeletePasswordModal(false);
+    if (!formData.id) return;
+    await deleteLREntry(formData.id);
+    flashMsg(`LR #${formData.lrNumber} Deleted Successfully!`);
+    handleReset();
   };
 
   const flashMsg = (text) => {
@@ -1915,6 +1922,15 @@ export default function LREntryForm() {
 
             </div>
           </div>
+        )}
+
+        {/* Delete LR Password Confirmation Modal */}
+        {showDeletePasswordModal && (
+          <PasswordConfirmModal
+            actionTitle={`Enter password to Delete LR #${formData.lrNumber}`}
+            onConfirm={confirmDeleteCurrentLR}
+            onClose={() => setShowDeletePasswordModal(false)}
+          />
         )}
 
       </div>

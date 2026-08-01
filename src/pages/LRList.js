@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { fetchLREntriesFromDB, deleteLREntry, sortLRsByNumber, getFinancialYear, formatDateDisplay } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
+import PasswordConfirmModal from "../components/PasswordConfirmModal";
 import { Search, Eye, Printer, Download, Share2, Edit3, Trash2, Plus, FileText, Calendar } from "lucide-react";
 
 export default function LRList() {
@@ -11,6 +12,7 @@ export default function LRList() {
   const [selectedLR, setSelectedLR] = useState(null);
   const [activeAutoAction, setActiveAutoAction] = useState(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null); // { type: "EDIT" | "DELETE", lr }
 
   const currentFYLabel = getFinancialYear(new Date()).label;
   const [selectedYear, setSelectedYear] = useState(currentFYLabel);
@@ -49,14 +51,25 @@ export default function LRList() {
     setShowPrintModal(true);
   };
 
-  // Direct Edit handler - opens LREntryForm with state
+  // Password-protected Direct Edit handler
   const handleEditLR = (lr) => {
-    navigate("/lr-entry", { state: { editLR: lr } });
+    setPendingAction({ type: "EDIT", lr });
   };
 
-  // Direct Delete handler
-  const handleDeleteLR = async (lr) => {
-    if (window.confirm(`Are you sure you want to delete LR #${lr.lrNumber}?`)) {
+  // Password-protected Direct Delete handler
+  const handleDeleteLR = (lr) => {
+    setPendingAction({ type: "DELETE", lr });
+  };
+
+  // Execute action after password verification
+  const executePendingAction = async () => {
+    if (!pendingAction) return;
+    const { type, lr } = pendingAction;
+    setPendingAction(null);
+
+    if (type === "EDIT") {
+      navigate("/lr-entry", { state: { editLR: lr } });
+    } else if (type === "DELETE") {
       const updatedList = await deleteLREntry(lr.id);
       setLrEntries(updatedList || []);
     }
@@ -287,6 +300,19 @@ export default function LRList() {
             </table>
           </div>
         </div>
+
+        {/* Password Confirmation Security Modal */}
+        {pendingAction && (
+          <PasswordConfirmModal
+            actionTitle={
+              pendingAction.type === "EDIT"
+                ? `Enter password to Edit LR #${pendingAction.lr?.lrNumber}`
+                : `Enter password to Delete LR #${pendingAction.lr?.lrNumber}`
+            }
+            onConfirm={executePendingAction}
+            onClose={() => setPendingAction(null)}
+          />
+        )}
 
       </div>
     </div>

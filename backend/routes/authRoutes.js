@@ -141,4 +141,46 @@ router.post("/change-password", async (req, res) => {
   }
 });
 
+// Verify password endpoint for security-protected actions (Edit/Delete LR)
+router.post("/verify-password", async (req, res) => {
+  try {
+    const { password, id, username } = req.body;
+    if (!password) {
+      return res.status(400).json({ success: false, error: "Password is required." });
+    }
+
+    let user = null;
+    if (id) {
+      user = await User.findByPk(id);
+    }
+    if (!user && username) {
+      user = await User.findOne({ where: { username: String(username).trim() } });
+    }
+    if (!user) {
+      // Find OWNER or ADMIN user in database
+      user = await User.findOne({ where: { role: "OWNER" } });
+    }
+    if (!user) {
+      user = await User.findOne();
+    }
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: "No user account found." });
+    }
+
+    const isMatch = await verifyAndUpgradePassword(user, password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, error: "Incorrect Password! Access Denied." });
+    }
+
+    return res.json({
+      success: true,
+      message: "Password verified successfully!",
+    });
+  } catch (err) {
+    console.error("Verify password error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;
