@@ -100,9 +100,9 @@ export const generateLRPdf = async (req, res) => {
     // Set viewport matching exact A4 pixel dimensions (794x1123) with 4x Ultra-HD DPI scale factor
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 4 });
 
-    // Load HTML content instantly
+    // Load HTML content & wait for full CSS rendering
     await page.setContent(htmlContent, {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle0",
       timeout: 30000,
     });
 
