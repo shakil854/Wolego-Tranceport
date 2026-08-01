@@ -89,7 +89,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
     }
 
     .print-document {
-      border: 2px solid #0f172a;
+      border: 2.5px solid #0f172a;
       padding: 0;
       width: 203mm;
       height: 290mm;
@@ -183,6 +183,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
       max-width: 75%;
       opacity: 0.08;
       object-fit: contain;
+      mix-blend-mode: multiply;
     }
 
     /* Padding & Margins */
@@ -212,10 +213,10 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
 
       <div class="relative z-10 flex-1 flex flex-col justify-between">
         <!-- Header Bar -->
-        <div class="border-b-2 p-1-5">
+        <div class="border-b-2 p-2" style="padding-bottom: 8px;">
 
           <!-- Copy Checkboxes Header -->
-          <div class="flex justify-between items-center text-[10px] font-bold border-b pb-1 mb-1">
+          <div class="flex justify-between items-center text-[10px] font-bold border-b pb-1 mb-1" style="border-color: #cbd5e1;">
             <div class="flex gap-2 uppercase">
               <label class="flex items-center gap-1">
                 <input type="checkbox" checked class="w-3 h-3" /> CONSIGNOR COPY
@@ -270,7 +271,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
             </div>
 
             <!-- Right Side Column -->
-            <div class="col-span-3 text-left text-[9.5px] font-black text-slate-950 border-l pl-2">
+            <div class="col-span-3 text-left text-[9.5px] font-black text-slate-950 border-l pl-2" style="border-color: #cbd5e1;">
               <div>MOBILE NO. +91 99 79 111 555</div>
               <div>MOBILE NO. +91 81 41 111 555</div>
               <div>PAN NO. : DLTPS8567M</div>
@@ -326,7 +327,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
               <div class="font-black text-[11px] uppercase whitespace-pre-line" style="margin-top: 2px;">${lrData.consignorName || ""}</div>
               <div class="text-[11px] font-black uppercase whitespace-pre-line">${lrData.consignorAddress || ""}</div>
             </div>
-            <div class="font-black text-[11px] border-t pt-1 style="margin-top: 4px;">
+            <div class="font-black text-[11px] border-t pt-1" style="border-color: #cbd5e1; margin-top: 4px;">
               CONSIGNOR GSTIN NO. : <span class="font-black">${consignorGstDisplay}</span>
             </div>
           </div>
@@ -338,7 +339,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
               <div class="font-black text-[11px] uppercase" style="margin-top: 2px;">${lrData.consigneeName || ""}</div>
               <div class="text-[11px] font-black uppercase whitespace-pre-line">${lrData.consigneeAddress || ""}</div>
             </div>
-            <div class="font-black text-[11px] border-t pt-1 style="margin-top: 4px;">
+            <div class="font-black text-[11px] border-t pt-1" style="border-color: #cbd5e1; margin-top: 4px;">
               CONSIGNEE GSTIN NO. : <span class="font-black">${lrData.consigneeGst || ""}</span>
             </div>
           </div>
@@ -365,7 +366,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
                   </div>
                   ${
                     lrData.noOfArticles2
-                      ? `<div class="border-t" style="margin-top: 4px; padding-top: 4px; min-height: 34px;">
+                      ? `<div class="border-t" style="border-color: #0f172a; margin-top: 4px; padding-top: 4px; min-height: 34px;">
                           <div class="font-black text-[11px]">${lrData.noOfArticles2}</div>
                           <span class="text-[11px] font-black uppercase">${lrData.bundles2 || "BUNDLE"}</span>
                         </div>`
@@ -378,7 +379,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
                   </div>
                   ${
                     lrData.noOfArticles2
-                      ? `<div class="border-t" style="margin-top: 4px; padding-top: 4px; min-height: 34px;">
+                      ? `<div class="border-t" style="border-color: #0f172a; margin-top: 4px; padding-top: 4px; min-height: 34px;">
                           <div class="font-black uppercase text-[11px]">${lrData.descriptionOfGoods2 || "SANITARYWARE"}</div>
                         </div>`
                       : ""
@@ -399,31 +400,31 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
         </div>
 
         <!-- Bottom Grid: Charges, GST, Invoice, Insurance, Bank details -->
-        <div class="grid-12 divide-x-2 flex-1" style="min-height: 380px;">
+        <div class="grid-12 divide-x-2 flex-1" style="min-height: 400px;">
           <!-- Left Column (7 cols) -->
           <div class="col-span-7 text-[11px] flex flex-col justify-between text-slate-950 font-black">
-            <div class="font-black text-[11px] border-b px-2 py-1 flex items-center gap-2">
+            <div class="font-black text-[11px] border-b-2 px-2 py-1 flex items-center gap-2">
               <span>GST PAYABLE BY :</span>
               <span class="font-black uppercase">${lrData.gstPayableBy || "CONSIGNEE"}</span>
             </div>
 
-            <div class="font-black text-[11px] border-b px-2 py-1">
+            <div class="font-black text-[11px] border-b-2 px-2 py-1">
               INVOICE NO. : <span class="font-black">${lrData.billNumbers || ""}</span>
             </div>
 
-            <div class="font-black text-[11px] border-b px-2 py-1">
+            <div class="font-black text-[11px] border-b-2 px-2 py-1">
               VALUE RS. : <span class="font-black">${lrData.invoiceValue || ""}</span>
             </div>
 
-            <div class="font-black text-[11px] border-b px-2 py-1">
+            <div class="font-black text-[11px] border-b-2 px-2 py-1">
               CONSIGNOR E-WAY BILL : <span class="font-black">${lrData.consignorEwayBill || ""}</span>
             </div>
 
-            <div class="font-black text-[11px] border-b px-2 py-1">
+            <div class="font-black text-[11px] border-b-2 px-2 py-1">
               CONSIGNEE E-WAY BILL : <span class="font-black">${lrData.consigneeEwayBill || ""}</span>
             </div>
 
-            <div class="font-black text-[11px] border-b px-2 py-1">
+            <div class="font-black text-[11px] border-b-2 px-2 py-1">
               DRIVER NO. : <span class="font-black">${lrData.driverMobile || ""}</span>
             </div>
 
@@ -466,37 +467,37 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
           <!-- Right Column (5 cols) -->
           <div class="col-span-5 flex flex-col justify-between text-[11px] font-black h-full text-slate-950">
             <div>
-              <div class="flex justify-between font-black border-b-2 px-2 py-1.5 bg-slate-200">
+              <div class="flex justify-between font-black border-b-2 px-2 py-2 bg-slate-200">
                 <span>FREIGHT</span>
                 <span>${lrData.freightAmount || 0}</span>
               </div>
 
-              <div class="flex justify-between font-black px-2 py-1.5 border-b">
+              <div class="flex justify-between font-black px-2 py-2 border-b" style="border-color: #cbd5e1;">
                 <span>Add : S-G.S.T. @ 2.5%</span>
                 <span class="font-black">${lrData.sgstAmount || "0.00"}</span>
               </div>
 
-              <div class="flex justify-between font-black px-2 py-1.5 border-b">
+              <div class="flex justify-between font-black px-2 py-2 border-b" style="border-color: #cbd5e1;">
                 <span>Add : C-G.S.T. @ 2.5%</span>
                 <span class="font-black">${lrData.cgstAmount || "0.00"}</span>
               </div>
 
-              <div class="flex justify-between font-black px-2 py-1.5 border-b-2">
+              <div class="flex justify-between font-black px-2 py-2 border-b-2">
                 <span>Add : I-G.S.T. @ 5%</span>
                 <span class="font-black">${lrData.igstAmount || "0.00"}</span>
               </div>
 
-              <div class="flex justify-between font-black border-b-2 px-2 py-1.5 bg-slate-200">
+              <div class="flex justify-between font-black border-b-2 px-2 py-2 bg-slate-200">
                 <span>TOTAL WITH GST</span>
                 <span>${lrData.totalWithGst || lrData.freightAmount || 0}</span>
               </div>
 
-              <div class="flex justify-between font-black px-2 py-1.5 border-b">
+              <div class="flex justify-between font-black px-2 py-2 border-b" style="border-color: #cbd5e1;">
                 <span>Other Charges</span>
                 <span class="font-black">${lrData.otherCharges || "0.00"}</span>
               </div>
 
-              <div class="flex justify-between font-black border-b-2 px-2 py-1.5">
+              <div class="flex justify-between font-black border-b-2 px-2 py-2">
                 <span>Less : Advance Paid</span>
                 <span class="font-black">${lrData.lessAdvancePaid || "0.00"}</span>
               </div>
@@ -511,7 +512,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
             <div class="flex items-center justify-center flex-1 w-full p-2 overflow-hidden" style="margin: auto 0;">
               ${
                 logoBase64
-                  ? `<img src="${logoBase64}" alt="Wolego Transport Logo" style="max-width: 220px; max-height: 140px; object-fit: contain; clip-path: inset(0 0 18% 0);" />`
+                  ? `<img src="${logoBase64}" alt="Wolego Transport Logo" style="max-width: 260px; max-height: 200px; object-fit: contain; mix-blend-mode: multiply; opacity: 0.95; clip-path: inset(0 0 18% 0); transform: scale(1.1);" />`
                   : ""
               }
             </div>
@@ -521,7 +522,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
               <div class="font-black uppercase text-[11px]">FOR, WOLEGO TRANSPORT</div>
               ${
                 sigImageSrc
-                  ? `<img src="${sigImageSrc}" alt="Authorised Digital Signature" style="height: 38px; max-width: 140px; object-fit: contain; margin: 4px 0;" />`
+                  ? `<img src="${sigImageSrc}" alt="Authorised Digital Signature" style="height: 40px; max-width: 150px; object-fit: contain; margin: 4px 0; mix-blend-mode: multiply;" />`
                   : `<div style="height: 24px;"></div>`
               }
               <div class="text-[9.5px] uppercase tracking-wider font-extrabold">(AUTHORISED SIGNATORY)</div>
