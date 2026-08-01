@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { fetchLREntriesFromDB, getFinancialYear, formatDateDisplay } from "../utils/storage";
+import { fetchLREntriesFromDB, deleteLREntry, sortLRsByNumber, getFinancialYear, formatDateDisplay } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
-import { Search, Eye, Printer, Download, Share2, Edit3, Plus, FileText, Calendar } from "lucide-react";
+import { Search, Eye, Printer, Download, Share2, Edit3, Trash2, Plus, FileText, Calendar } from "lucide-react";
 
 export default function LRList() {
   const navigate = useNavigate();
@@ -54,6 +54,14 @@ export default function LRList() {
     navigate("/lr-entry", { state: { editLR: lr } });
   };
 
+  // Direct Delete handler
+  const handleDeleteLR = async (lr) => {
+    if (window.confirm(`Are you sure you want to delete LR #${lr.lrNumber}?`)) {
+      const updatedList = await deleteLREntry(lr.id);
+      setLrEntries(updatedList || []);
+    }
+  };
+
   // Dynamic available financial years sorted descending
   const availableYears = Array.from(
     new Set([
@@ -79,6 +87,8 @@ export default function LRList() {
       (lr.toPlace && lr.toPlace.toLowerCase().includes(q))
     );
   });
+
+  const sortedFilteredLRs = sortLRsByNumber(filteredLRs, true);
 
   if (showPrintModal && selectedLR) {
     return (
@@ -174,7 +184,7 @@ export default function LRList() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700 font-medium">
-                {filteredLRs.map((lr) => (
+                {sortedFilteredLRs.map((lr) => (
                   <tr key={lr.id} className="hover:bg-slate-700/50 transition-colors">
                     <td className="p-3 font-mono font-black text-amber-400 text-base">
                       #{lr.lrNumber}
@@ -247,9 +257,18 @@ export default function LRList() {
                         <button
                           onClick={() => handleEditLR(lr)}
                           title="Edit LR Record"
-                          className="px-2.5 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded transition-all flex items-center gap-1 shadow"
+                          className="px-2.5 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded transition-all flex items-center gap-1 shadow cursor-pointer"
                         >
                           <Edit3 size={14} /> Edit
+                        </button>
+
+                        {/* Direct Delete Button */}
+                        <button
+                          onClick={() => handleDeleteLR(lr)}
+                          title="Delete LR Record"
+                          className="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded transition-all flex items-center gap-1 shadow cursor-pointer"
+                        >
+                          <Trash2 size={14} /> Delete
                         </button>
 
                       </div>

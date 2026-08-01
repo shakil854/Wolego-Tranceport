@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, getNextLRNumber, saveParty, fetchTrucksFromDB, saveTruck } from "../utils/storage";
+import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, deleteLREntry, getNextLRNumber, saveParty, fetchTrucksFromDB, saveTruck } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
-import SearchablePartySelect from "../components/SearchablePartySelect";
-import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2, Truck } from "lucide-react";
+import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2, Truck, Trash2 } from "lucide-react";
 
 export default function LREntryForm() {
   const location = useLocation();
@@ -404,6 +403,15 @@ export default function LREntryForm() {
     const today = getTodayDateStr();
     const nextNo = getNextLRNumber(today);
     setFormData({ ...initialForm, lrNumber: nextNo, dateTime: today });
+  };
+
+  const handleDeleteCurrentLR = async () => {
+    if (!formData.id) return;
+    if (window.confirm(`Are you sure you want to delete LR #${formData.lrNumber}?`)) {
+      await deleteLREntry(formData.id);
+      flashMsg(`LR #${formData.lrNumber} Deleted!`);
+      handleReset();
+    }
   };
 
   const flashMsg = (text) => {
@@ -1194,6 +1202,16 @@ export default function LREntryForm() {
             >
               <Share2 size={14} /> WhatsApp
             </button>
+
+            {formData.id && (
+              <button
+                type="button"
+                onClick={handleDeleteCurrentLR}
+                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-black rounded text-xs uppercase transition-all flex items-center gap-1.5 cursor-pointer ml-1"
+              >
+                <Trash2 size={14} /> Delete LR
+              </button>
+            )}
 
             <button
               type="button"

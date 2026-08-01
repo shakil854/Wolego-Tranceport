@@ -19,13 +19,30 @@ export const fetchPartiesFromDB = async () => {
   return partiesCache;
 };
 
+// Helper to sort LRs numerically by LR Number
+export const sortLRsByNumber = (lrs, ascending = true) => {
+  if (!lrs || !Array.isArray(lrs)) return [];
+  return [...lrs].sort((a, b) => {
+    const numA = parseInt(a.lrNumber, 10);
+    const numB = parseInt(b.lrNumber, 10);
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return ascending ? numA - numB : numB - numA;
+    }
+    const strA = String(a.lrNumber || "");
+    const strB = String(b.lrNumber || "");
+    return ascending
+      ? strA.localeCompare(strB, undefined, { numeric: true, sensitivity: "base" })
+      : strB.localeCompare(strA, undefined, { numeric: true, sensitivity: "base" });
+  });
+};
+
 // Fetch all LRs directly from MySQL Database API
 export const fetchLREntriesFromDB = async () => {
   try {
     const res = await fetch(`${API_BASE_URL}/lr-entries`);
     if (res.ok) {
       const data = await res.json();
-      lrCache = data || [];
+      lrCache = sortLRsByNumber(data || []);
       return lrCache;
     }
   } catch (err) {
