@@ -100,10 +100,10 @@ export const generateLRPdf = async (req, res) => {
     // Set viewport matching exact A4 pixel dimensions (794x1123) with 4x Ultra-HD DPI scale factor
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 4 });
 
-    // Load HTML content instantly with domcontentloaded
+    // Load HTML content instantly
     await page.setContent(htmlContent, {
       waitUntil: "domcontentloaded",
-      timeout: 10000,
+      timeout: 30000,
     });
 
     // 3. Generate PDF Buffer in memory (NO DISK SAVE)
