@@ -217,7 +217,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     }
   };
 
-  // Dynamic PDF Generator + WhatsApp Share Function (Shares PDF File & Opens WhatsApp)
+  // Dynamic PDF Generator + WhatsApp Share Function (Shares PDF File & Opens WhatsApp with Pre-filled Message)
   const handleWhatsApp = async () => {
     setIsGeneratingPdf(true);
     try {
@@ -227,19 +227,31 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
       setIsGeneratingPdf(false);
 
+      const messageText = `*WOLEGO TRANSPORT*\n` +
+        `🚚 *LR NO:* ${lrData?.lrNumber || ""}\n` +
+        `📅 *DATE:* ${formatDateDisplay(lrData?.dateTime)}\n` +
+        `🚛 *TRUCK NO:* ${lrData?.truckNo || ""}\n` +
+        `📍 *FROM:* ${lrData?.fromPlace || ""} ➔ *TO:* ${lrData?.toPlace || ""}\n` +
+        `🏢 *CONSIGNOR:* ${lrData?.consignorName || ""}\n` +
+        `🏬 *CONSIGNEE:* ${lrData?.consigneeName || ""}\n` +
+        `💰 *NET FREIGHT:* ₹${lrData?.netTotalAmount || lrData?.freightAmount || 0}\n\n` +
+        `📄 *LR Bilty PDF File:* ${filename}`;
+
       // Mobile Web Share API (native share dialog with WhatsApp app & attached PDF)
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         await navigator.share({
           files: [pdfFile],
           title: `LR-${lrData?.lrNumber || ""}`,
+          text: messageText,
         });
       } else if (navigator.share) {
         await navigator.share({
           files: [pdfFile],
           title: `LR-${lrData?.lrNumber || ""}`,
+          text: messageText,
         });
       } else {
-        // Desktop Fallback: Download PDF file & Open WhatsApp Web
+        // Desktop Fallback: Download PDF file & Open WhatsApp Web contact selection with pre-filled message
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -249,12 +261,14 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        window.open("https://api.whatsapp.com/send", "_blank");
+        const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(messageText)}`;
+        window.open(waUrl, "_blank");
       }
     } catch (err) {
       console.error("WhatsApp PDF sharing error:", err);
       setIsGeneratingPdf(false);
-      window.open("https://api.whatsapp.com/send", "_blank");
+      const messageText = `*WOLEGO TRANSPORT*\n🚚 *LR NO:* ${lrData?.lrNumber || ""}\n🚛 *TRUCK NO:* ${lrData?.truckNo || ""}`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(messageText)}`, "_blank");
     }
   };
 
