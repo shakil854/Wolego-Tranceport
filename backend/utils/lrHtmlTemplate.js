@@ -29,13 +29,19 @@ const formatDateDisplay = (dateVal) => {
   return new Date(dateVal).toLocaleDateString("en-IN");
 };
 
-export const generateLRHtml = (lrData = {}, signatureImg = null) => {
+export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies = null) => {
   const consignorGstDisplay =
     lrData.consignorName && (lrData.consignorName.includes("(1)") || lrData.consignorName.includes("\n"))
       ? "AS PER BILL"
       : lrData.consignorGst || "";
 
   const sigImageSrc = signatureImg || lrData.signatureImg || null;
+
+  const isCopyChecked = (type) => {
+    if (!selectedCopies) return type === "CONSIGNEE" || type === "CONSIGNOR";
+    if (Array.isArray(selectedCopies)) return selectedCopies.includes(type);
+    return selectedCopies === type;
+  };
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -126,16 +132,16 @@ export const generateLRHtml = (lrData = {}, signatureImg = null) => {
           <div class="flex flex-wrap justify-between items-center text-[10px] font-bold border-b border-slate-300 pb-1 mb-1">
             <div class="flex space-x-4 uppercase">
               <label class="flex items-center gap-1 cursor-pointer">
-                <input type="checkbox" checked class="w-3 h-3 accent-slate-900" /> CONSIGNOR COPY
+                <input type="checkbox" ${isCopyChecked("CONSIGNOR") ? "checked" : ""} class="w-3 h-3 accent-slate-900" /> CONSIGNOR COPY
               </label>
               <label class="flex items-center gap-1 cursor-pointer">
-                <input type="checkbox" class="w-3 h-3 accent-slate-900" /> CONSIGNEE COPY
+                <input type="checkbox" ${isCopyChecked("CONSIGNEE") ? "checked" : ""} class="w-3 h-3 accent-slate-900" /> CONSIGNEE COPY
               </label>
               <label class="flex items-center gap-1 cursor-pointer">
-                <input type="checkbox" class="w-3 h-3 accent-slate-900" /> TRUCK COPY
+                <input type="checkbox" ${isCopyChecked("TRUCK") ? "checked" : ""} class="w-3 h-3 accent-slate-900" /> TRUCK COPY
               </label>
               <label class="flex items-center gap-1 cursor-pointer">
-                <input type="checkbox" class="w-3 h-3 accent-slate-900" /> OFFICE COPY
+                <input type="checkbox" ${isCopyChecked("OFFICE") ? "checked" : ""} class="w-3 h-3 accent-slate-900" /> OFFICE COPY
               </label>
             </div>
           </div>

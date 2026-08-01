@@ -16,6 +16,7 @@ export default function LREntryForm() {
   const [partySearchQuery, setPartySearchQuery] = useState("");
   const [activeLR, setActiveLR] = useState(null);
   const [statusMsg, setStatusMsg] = useState("");
+  const [selectedCopyForPrint, setSelectedCopyForPrint] = useState("CONSIGNOR");
 
   const initialBlankPartyForm = {
     partyName: "",
@@ -555,6 +556,7 @@ export default function LREntryForm() {
     return (
       <LRPrintDocument
         lrData={activeLR}
+        initialCopyType={selectedCopyForPrint}
         autoAction={activeAutoAction}
         onClose={() => {
           setShowPrintModal(false);
@@ -1238,6 +1240,41 @@ export default function LREntryForm() {
                 <p className="text-xs text-slate-300 mt-1">
                   Lorry Receipt record has been saved safely into database.
                 </p>
+              </div>
+
+              {/* Copy Selection Option */}
+              <div className="bg-slate-900/90 p-2.5 rounded-xl border border-amber-400/40 text-left space-y-1.5">
+                <label className="text-[10px] font-black text-yellow-300 uppercase tracking-wide block">
+                  Select Copy to Tick (किस कॉपी पर टिक लगाना है):
+                </label>
+                <div className="grid grid-cols-2 gap-1.5 text-xs font-bold">
+                  {[
+                    { id: "CONSIGNEE", label: "CONSIGNEE COPY" },
+                    { id: "CONSIGNOR", label: "CONSIGNOR COPY" },
+                    { id: "TRUCK", label: "TRUCK COPY" },
+                    { id: "OFFICE", label: "OFFICE COPY" },
+                  ].map((c) => (
+                    <label
+                      key={c.id}
+                      onClick={() => setSelectedCopyForPrint(c.id)}
+                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border cursor-pointer transition-all ${
+                        selectedCopyForPrint === c.id
+                          ? "bg-amber-400 text-slate-950 border-amber-400 font-black shadow"
+                          : "bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="printCopyType"
+                        value={c.id}
+                        checked={selectedCopyForPrint === c.id}
+                        onChange={() => setSelectedCopyForPrint(c.id)}
+                        className="accent-slate-900"
+                      />
+                      <span className="text-[10px] uppercase font-bold">{c.label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-2">

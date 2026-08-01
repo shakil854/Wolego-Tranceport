@@ -5,10 +5,31 @@ import html2canvas from "html2canvas";
 import logoImg from "../assets/logo.png";
 import { API_URL, API_BASE_URL } from "../config/api";
 
-export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, autoAction }) {
+export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, autoAction, initialCopyType = "CONSIGNOR" }) {
   const printRef = useRef(null);
   const termsRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const [selectedCopies, setSelectedCopies] = useState(() => {
+    if (Array.isArray(initialCopyType)) return initialCopyType;
+    return initialCopyType ? [initialCopyType] : ["CONSIGNOR"];
+  });
+
+  useEffect(() => {
+    if (initialCopyType) {
+      setSelectedCopies(Array.isArray(initialCopyType) ? initialCopyType : [initialCopyType]);
+    }
+  }, [initialCopyType]);
+
+  const toggleCopy = (type) => {
+    setSelectedCopies((prev) => {
+      if (prev.includes(type)) {
+        return prev.length > 1 ? prev.filter((c) => c !== type) : prev;
+      } else {
+        return [...prev, type];
+      }
+    });
+  };
 
   const [signatureImg, setSignatureImg] = useState(() => {
     return localStorage.getItem("wolego_digital_signature") || null;
@@ -106,6 +127,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
           body: JSON.stringify({
             lrData,
             signatureImg,
+            selectedCopies,
           }),
         });
 
@@ -360,17 +382,37 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                 {/* Copy Checkboxes Header */}
                 <div className="flex flex-wrap justify-between items-center text-[10px] font-bold border-b border-slate-300 pb-1 mb-1">
                   <div className="flex space-x-4 uppercase">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input type="checkbox" defaultChecked className="w-3 h-3 accent-slate-900" /> CONSIGNOR COPY
+                    <label className="flex items-center gap-1 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={selectedCopies.includes("CONSIGNOR")}
+                        onChange={() => toggleCopy("CONSIGNOR")}
+                        className="w-3.5 h-3.5 accent-slate-900 cursor-pointer"
+                      /> CONSIGNOR COPY
                     </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input type="checkbox" className="w-3 h-3 accent-slate-900" /> CONSIGNEE COPY
+                    <label className="flex items-center gap-1 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={selectedCopies.includes("CONSIGNEE")}
+                        onChange={() => toggleCopy("CONSIGNEE")}
+                        className="w-3.5 h-3.5 accent-slate-900 cursor-pointer"
+                      /> CONSIGNEE COPY
                     </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input type="checkbox" className="w-3 h-3 accent-slate-900" /> TRUCK COPY
+                    <label className="flex items-center gap-1 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={selectedCopies.includes("TRUCK")}
+                        onChange={() => toggleCopy("TRUCK")}
+                        className="w-3.5 h-3.5 accent-slate-900 cursor-pointer"
+                      /> TRUCK COPY
                     </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input type="checkbox" className="w-3 h-3 accent-slate-900" /> OFFICE COPY
+                    <label className="flex items-center gap-1 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={selectedCopies.includes("OFFICE")}
+                        onChange={() => toggleCopy("OFFICE")}
+                        className="w-3.5 h-3.5 accent-slate-900 cursor-pointer"
+                      /> OFFICE COPY
                     </label>
                   </div>
                 </div>

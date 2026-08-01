@@ -73,14 +73,14 @@ getBrowserInstance().catch(() => { });
 export const generateLRPdf = async (req, res) => {
   let page = null;
   try {
-    const { lrData, signatureImg } = req.body || {};
+    const { lrData, signatureImg, selectedCopies, selectedCopyType } = req.body || {};
 
     if (!lrData) {
       return res.status(400).json({ error: "LR data is required." });
     }
 
     // 1. Generate full HTML in memory
-    const htmlContent = generateLRHtml(lrData, signatureImg);
+    const htmlContent = generateLRHtml(lrData, signatureImg, selectedCopies || selectedCopyType);
 
     // 2. Obtain pre-warmed Puppeteer browser instance (with retry on failure)
     let browser;
