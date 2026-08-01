@@ -22,6 +22,12 @@ export default function FreightReceipt() {
   const [remarks, setRemarks] = useState("");
 
   const printRef = useRef(null);
+  const inputLrNoRef = useRef(null);
+  const inputTruckNoRef = useRef(null);
+  const inputWeightRef = useRef(null);
+  const inputRateRef = useRef(null);
+  const inputChequeRef = useRef(null);
+  const inputRemarksRef = useRef(null);
 
   useEffect(() => {
     const loadLRs = async () => {
@@ -286,10 +292,8 @@ export default function FreightReceipt() {
           </h1>
         </div>
 
-        {/* Financial Year Selector & Action Buttons */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-
-          {/* Financial Year Filter Dropdown */}
+        {/* Financial Year Selector */}
+        <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 bg-slate-900/90 border border-amber-500/40 px-2.5 py-1 rounded-lg">
             <Calendar className="w-4 h-4 text-amber-400" />
             <label className="text-[11px] font-bold text-amber-300 uppercase">F.Y.:</label>
@@ -306,27 +310,6 @@ export default function FreightReceipt() {
               ))}
             </select>
           </div>
-
-          <button
-            onClick={handlePrint}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow flex items-center gap-1.5 transition-all transform hover:scale-105"
-          >
-            <Printer size={15} /> Print Receipt
-          </button>
-
-          <button
-            onClick={handleExportPDF}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow flex items-center gap-1.5 transition-all transform hover:scale-105"
-          >
-            <Download size={15} /> Export PDF
-          </button>
-
-          <button
-            onClick={handleWhatsApp}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 hover:bg-green-500 text-white font-black rounded-lg text-xs uppercase shadow flex items-center gap-1.5 transition-all transform hover:scale-105 cursor-pointer"
-          >
-            <Share2 size={15} /> WhatsApp
-          </button>
         </div>
       </div>
 
@@ -399,9 +382,16 @@ export default function FreightReceipt() {
                 LR Number
               </label>
               <input
+                ref={inputLrNoRef}
                 type="text"
                 value={selectedLrNo}
                 onChange={(e) => handleLrNumberChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    inputTruckNoRef.current?.focus();
+                  }
+                }}
                 placeholder="ENTER LR NO."
                 className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-amber-400 text-xs focus:outline-none focus:border-amber-400"
               />
@@ -412,9 +402,16 @@ export default function FreightReceipt() {
                 Truck No.
               </label>
               <input
+                ref={inputTruckNoRef}
                 type="text"
                 value={truckNo}
                 onChange={(e) => setTruckNo(e.target.value.toUpperCase())}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    inputWeightRef.current?.focus();
+                  }
+                }}
                 placeholder="ENTER TRUCK NO."
                 className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-white uppercase text-xs focus:outline-none focus:border-amber-400"
               />
@@ -427,9 +424,16 @@ export default function FreightReceipt() {
                 Total Weight (KGs)
               </label>
               <input
+                ref={inputWeightRef}
                 type="number"
                 value={weightKgs}
                 onChange={(e) => setWeightKgs(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    inputRateRef.current?.focus();
+                  }
+                }}
                 placeholder="WEIGHT IN KGS"
                 className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-white text-xs focus:outline-none focus:border-amber-400"
               />
@@ -440,9 +444,20 @@ export default function FreightReceipt() {
                 Rate Per M.T.
               </label>
               <input
+                ref={inputRateRef}
                 type="number"
                 value={ratePerMt}
                 onChange={(e) => setRatePerMt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (receiptType === "CHEQUE") {
+                      inputChequeRef.current?.focus();
+                    } else {
+                      inputRemarksRef.current?.focus();
+                    }
+                  }
+                }}
                 placeholder="RATE RS."
                 className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-emerald-400 text-xs focus:outline-none focus:border-amber-400"
               />
@@ -465,9 +480,16 @@ export default function FreightReceipt() {
                   Paid By Cheque
                 </label>
                 <input
+                  ref={inputChequeRef}
                   type="number"
                   value={paidByCheque}
                   onChange={(e) => setPaidByCheque(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      inputRemarksRef.current?.focus();
+                    }
+                  }}
                   placeholder="CHEQUE AMOUNT"
                   className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-sky-400 text-xs focus:outline-none focus:border-amber-400"
                 />
@@ -509,13 +531,47 @@ export default function FreightReceipt() {
               Remarks
             </label>
             <input
+              ref={inputRemarksRef}
               type="text"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              placeholder="ENTER REMARKS (IF ANY)"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handlePrint();
+                }
+              }}
+              placeholder="ENTER REMARKS (IF ANY) - PRESS ENTER TO PRINT"
               className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded text-white text-xs focus:outline-none focus:border-amber-400"
             />
           </div>
+        </div>
+
+        {/* Action Buttons Row at Bottom of Form Card */}
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 pt-3 border-t border-slate-700">
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs uppercase shadow-lg flex items-center gap-1.5 transition-all transform hover:scale-105 cursor-pointer"
+          >
+            <Printer size={16} /> Print Receipt
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportPDF}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs uppercase shadow-lg flex items-center gap-1.5 transition-all transform hover:scale-105 cursor-pointer"
+          >
+            <Download size={16} /> Export PDF
+          </button>
+
+          <button
+            type="button"
+            onClick={handleWhatsApp}
+            className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white font-black rounded-xl text-xs uppercase shadow-lg flex items-center gap-1.5 transition-all transform hover:scale-105 cursor-pointer"
+          >
+            <Share2 size={16} /> WhatsApp
+          </button>
         </div>
 
       </div>
