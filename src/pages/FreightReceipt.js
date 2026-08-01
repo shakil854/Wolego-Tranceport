@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { fetchLREntriesFromDB, getFinancialYear } from "../utils/storage";
-import { Receipt, Printer, Download, Search, CheckCircle2, DollarSign, Calendar } from "lucide-react";
+import { Receipt, Printer, Download, Share2, Search, CheckCircle2, DollarSign, Calendar } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 export default function FreightReceipt() {
   const [lrEntries, setLrEntries] = useState([]);
   const [receiptType, setReceiptType] = useState("CHEQUE"); // "CHEQUE" or "CASH"
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Financial Year Selection State
   const currentFYLabel = getFinancialYear(new Date()).label;
@@ -101,18 +102,27 @@ export default function FreightReceipt() {
   const numericPaidCheque = parseFloat(paidByCheque) || 0;
   const calculatedCashPaid = Math.max(0, calculatedTotalFreight - numericPaidCheque);
 
-  // Browser Print
-  const handlePrint = () => {
-    window.print();
-  };
+  // Helper to generate crisp, high-res A4 PDF matching Print preview
+  const generateFreightReceiptPdf = async () => {
+    if (!printRef.current) return null;
+    const element = printRef.current;
 
-  // PDF Export
-  const handleExportPDF = async () => {
-    if (!printRef.current) return;
+    // Temporarily make element visible behind screen for html2canvas capture
+    const origOpacity = element.style.opacity;
+    const origPosition = element.style.position;
+    const origLeft = element.style.left;
+    const origTop = element.style.top;
+    const origZIndex = element.style.zIndex;
+
+    element.style.opacity = "1";
+    element.style.position = "fixed";
+    element.style.left = "0";
+    element.style.top = "0";
+    element.style.zIndex = "-9999";
+
     try {
-      const element = printRef.current;
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 2.5,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
@@ -120,22 +130,153 @@ export default function FreightReceipt() {
 
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+      const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
 
-      // Center image on A4 page
+      const margin = 10;
+      const printWidth = pdfWidth - margin * 2; // 190mm
       const imgProps = pdf.getImageProperties(imgData);
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const imgHeight = (imgProps.height * printWidth) / imgProps.width;
 
-      pdf.addImage(imgData, "PNG", 0, 10, pdfWidth, pdfHeight);
+      // Fill pure white A4 background
+      pdf.setFillColor(255, 255, 255);
+      pdf.rect(0, 0, pdfWidth, pdfHeight, "F");
+
+      // Place centered receipt image at top of A4 page (matches Print)
+      pdf.addImage(imgData, "PNG", margin, 15, printWidth, imgHeight);
+
+      return pdf;
+    } finally {
+      element.style.opacity = origOpacity;
+      element.style.position = origPosition;
+      element.style.left = origLeft;
+      element.style.top = origTop;
+      element.style.zIndex = origZIndex;
+    }
+  };
+
+  // Browser Print
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // PDF Export
+  const handleExportPDF = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const pdf = await generateFreightReceiptPdf();
+      if (!pdf) return;
       pdf.save(`Freight_Receipt_${selectedLrNo || "Draft"}_${receiptType}.pdf`);
     } catch (err) {
       console.error("PDF export error:", err);
       window.print();
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  // Direct WhatsApp PDF Sharing
+  const handleWhatsApp = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const pdf = await generateFreightReceiptPdf();
+      if (!pdf) return;
+
+      const filename = `Freight_Receipt_${selectedLrNo || "Draft"}_${receiptType}.pdf`;
+      const pdfBlob = pdf.output("blob");
+      const pdfFile = new File([pdfBlob], filename, { type: "application/pdf" });
+
+      setIsGeneratingPdf(false);
+
+      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        await navigator.share({
+          files: [pdfFile],
+          title: filename,
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          files: [pdfFile],
+          title: filename,
+        });
+      } else {
+        // Desktop Fallback: Download PDF file & Open WhatsApp Web
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        window.open("https://api.whatsapp.com/send", "_blank");
+      }
+    } catch (err) {
+      console.error("WhatsApp share error:", err);
+      setIsGeneratingPdf(false);
+      window.open("https://api.whatsapp.com/send", "_blank");
     }
   };
 
   return (
-    <div className="min-h-[calc(100vh-68px)] bg-slate-900 p-2 sm:p-4 text-slate-100 flex flex-col overflow-y-auto font-sans">
+    <div className="freight-receipt-page min-h-[calc(100vh-68px)] bg-slate-900 p-2 sm:p-4 text-slate-100 flex flex-col overflow-y-auto font-sans relative">
+
+      {/* Print Media CSS Overrides (Fixes black background, L-border, & ensures single half-page A4 print) */}
+      <style>{`
+        @media print {
+          html, body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+          .freight-receipt-page {
+            background: #ffffff !important;
+            min-height: 0 !important;
+            height: auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+          }
+          .print\\:hidden {
+            display: none !important;
+          }
+          .freight-print-wrapper {
+            position: static !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 185mm !important;
+            margin: 0 auto !important;
+            padding: 5px !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            box-shadow: none !important;
+            border: none !important;
+          }
+          @page {
+            size: A4 portrait;
+            margin: 8mm;
+          }
+        }
+      `}</style>
+
+      {/* Loading Modal / Overlay for WhatsApp PDF Generation */}
+      {isGeneratingPdf && (
+        <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white p-4 print:hidden">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl flex flex-col items-center gap-4 max-w-xs text-center animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <div>
+              <h3 className="font-extrabold text-lg text-white">Generating PDF...</h3>
+              <p className="text-xs text-slate-400 mt-1">Preparing Freight Receipt PDF for WhatsApp sharing.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Top Header Bar */}
       <div className="max-w-4xl w-full mx-auto bg-slate-800 px-3 sm:px-4 py-2.5 rounded-xl border border-slate-700 shadow-lg flex flex-wrap justify-between items-center gap-2 shrink-0 print:hidden mb-3">
@@ -172,11 +313,19 @@ export default function FreightReceipt() {
           >
             <Printer size={15} /> Print Receipt
           </button>
+
           <button
             onClick={handleExportPDF}
             className="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow flex items-center gap-1.5 transition-all transform hover:scale-105"
           >
             <Download size={15} /> Export PDF
+          </button>
+
+          <button
+            onClick={handleWhatsApp}
+            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 hover:bg-green-500 text-white font-black rounded-lg text-xs uppercase shadow flex items-center gap-1.5 transition-all transform hover:scale-105 cursor-pointer"
+          >
+            <Share2 size={15} /> WhatsApp
           </button>
         </div>
       </div>
@@ -375,48 +524,59 @@ export default function FreightReceipt() {
       <div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none print:static print:opacity-100 print:pointer-events-auto">
         <div
           ref={printRef}
-          className="print-container bg-white text-black p-6 sm:p-10 rounded-xl shadow-2xl border-2 border-slate-300 max-w-2xl mx-auto font-sans"
+          className="freight-print-wrapper bg-white text-black p-4 max-w-[185mm] w-full mx-auto font-sans border-0 shadow-none rounded-none"
+          style={{ width: "185mm", backgroundColor: "#ffffff", color: "#000000" }}
         >
-          {/* Main Form Table Matching Screenshots */}
+          {/* Header Banner */}
+          <div className="text-center mb-3 pb-2 border-b-2 border-black">
+            <h2 className="text-xl sm:text-2xl font-black text-black uppercase font-serif tracking-wider">
+              WOLEGO TRANSPORT
+            </h2>
+            <div className="text-xs font-black text-blue-900 uppercase tracking-widest mt-0.5">
+              FREIGHT RECEIPT
+            </div>
+          </div>
+
+          {/* Main Form Table Matching Screenshots Exactly */}
           <table className="w-full border-collapse border-2 border-black text-sm">
             <tbody>
               {/* TRUCK NO */}
-              <tr className="border-b-2 border-black">
-                <td className="w-1/2 p-3 font-extrabold uppercase bg-gray-100 border-r-2 border-black">
+              <tr>
+                <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TRUCK NO.
                 </td>
-                <td className="w-1/2 p-3 font-mono font-black text-base uppercase text-center">
-                  {truckNo || ""}
+                <td className="w-1/2 p-2.5 font-mono font-extrabold text-base uppercase text-center border-b-2 border-black text-black">
+                  {truckNo || "-"}
                 </td>
               </tr>
 
               {/* TOTAL WEIGHT IN KGS */}
-              <tr className="border-b-2 border-black">
-                <td className="w-1/2 p-3 font-extrabold uppercase bg-gray-100 border-r-2 border-black">
+              <tr>
+                <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TOTAL WEIGHT IN KGS
                 </td>
-                <td className="w-1/2 p-3 font-mono font-black text-base text-center">
-                  {weightKgs ? numericWeight.toLocaleString("en-IN") : ""}
+                <td className="w-1/2 p-2.5 font-mono font-extrabold text-base text-center border-b-2 border-black text-black">
+                  {weightKgs ? numericWeight.toLocaleString("en-IN") : "-"}
                 </td>
               </tr>
 
               {/* RATE PER M.T. */}
-              <tr className="border-b-2 border-black">
-                <td className="w-1/2 p-3 font-extrabold uppercase bg-gray-100 border-r-2 border-black">
+              <tr>
+                <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   RATE PER M.T.
                 </td>
-                <td className="w-1/2 p-3 font-mono font-black text-base text-center">
-                  {ratePerMt ? numericRate.toLocaleString("en-IN") : ""}
+                <td className="w-1/2 p-2.5 font-mono font-extrabold text-base text-center border-b-2 border-black text-black">
+                  {ratePerMt ? numericRate.toLocaleString("en-IN") : "-"}
                 </td>
               </tr>
 
               {/* TOTAL FREIGHT */}
-              <tr className="border-b-2 border-black">
-                <td className="w-1/2 p-3 font-extrabold uppercase bg-gray-100 border-r-2 border-black">
+              <tr>
+                <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TOTAL FREIGHT
                 </td>
-                <td className="w-1/2 p-3 font-mono font-black text-lg text-center">
-                  {calculatedTotalFreight > 0 ? calculatedTotalFreight.toLocaleString("en-IN") : ""}
+                <td className="w-1/2 p-2.5 font-mono font-extrabold text-lg text-center border-b-2 border-black text-black">
+                  {calculatedTotalFreight > 0 ? `₹ ${calculatedTotalFreight.toLocaleString("en-IN")}` : "-"}
                 </td>
               </tr>
 
@@ -424,44 +584,44 @@ export default function FreightReceipt() {
               {receiptType === "CHEQUE" ? (
                 <>
                   {/* PAID BY CHEQUE */}
-                  <tr className="border-b-2 border-black">
-                    <td className="w-1/2 p-3 font-extrabold uppercase bg-gray-100 border-r-2 border-black">
+                  <tr>
+                    <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       PAID BY CHEQUE
                     </td>
-                    <td className="w-1/2 p-3 font-mono font-black text-base text-center">
-                      {paidByCheque ? numericPaidCheque.toLocaleString("en-IN") : ""}
+                    <td className="w-1/2 p-2.5 font-mono font-extrabold text-base text-center border-b-2 border-black text-black">
+                      {paidByCheque ? `₹ ${numericPaidCheque.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
 
                   {/* CASH PAID */}
-                  <tr className="border-b-2 border-black">
-                    <td className="w-1/2 p-3 font-extrabold uppercase bg-gray-100 border-r-2 border-black">
+                  <tr>
+                    <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       CASH PAID
                     </td>
-                    <td className="w-1/2 p-3 font-mono font-black text-base text-center">
-                      {calculatedTotalFreight > 0 ? calculatedCashPaid.toLocaleString("en-IN") : ""}
+                    <td className="w-1/2 p-2.5 font-mono font-extrabold text-base text-center border-b-2 border-black text-black">
+                      {calculatedTotalFreight > 0 ? `₹ ${calculatedCashPaid.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
                 </>
               ) : (
                 /* CASH ONLY SPECIFIC ROW */
-                <tr className="border-b-2 border-black">
-                  <td className="w-1/2 p-3 font-extrabold uppercase bg-gray-100 border-r-2 border-black">
+                <tr>
+                  <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                     CASH PAID
                   </td>
-                  <td className="w-1/2 p-3 font-mono font-black text-base text-center">
-                    {calculatedTotalFreight > 0 ? calculatedTotalFreight.toLocaleString("en-IN") : ""}
+                  <td className="w-1/2 p-2.5 font-mono font-extrabold text-base text-center border-b-2 border-black text-black">
+                    {calculatedTotalFreight > 0 ? `₹ ${calculatedTotalFreight.toLocaleString("en-IN")}` : "-"}
                   </td>
                 </tr>
               )}
 
-              {/* REMARKS */}
+              {/* REMARKS - BOTH LABEL & VALUE ARE IN RED TEXT AS REQUESTED */}
               <tr>
-                <td className="w-1/2 p-3 font-extrabold uppercase bg-gray-100 border-r-2 border-black">
+                <td className="w-1/2 p-2.5 font-extrabold text-sm uppercase bg-gray-100 border-r-2 border-black text-red-600">
                   REMARKS
                 </td>
-                <td className="w-1/2 p-3 font-bold text-sm text-center">
-                  {remarks || ""}
+                <td className="w-1/2 p-2.5 font-extrabold text-sm text-center text-red-600 uppercase">
+                  {remarks || "-"}
                 </td>
               </tr>
             </tbody>
