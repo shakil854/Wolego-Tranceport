@@ -4,7 +4,10 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("wolego_user");
+    // Clear legacy persistent localStorage entry
+    localStorage.removeItem("wolego_user");
+
+    const saved = sessionStorage.getItem("wolego_user");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -17,11 +20,13 @@ export function AuthProvider({ children }) {
 
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem("wolego_user", JSON.stringify(userData));
+    sessionStorage.setItem("wolego_user", JSON.stringify(userData));
+    localStorage.removeItem("wolego_user");
   };
 
   const logout = () => {
     setUser(null);
+    sessionStorage.removeItem("wolego_user");
     localStorage.removeItem("wolego_user");
   };
 
