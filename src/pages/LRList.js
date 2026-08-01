@@ -88,7 +88,7 @@ export default function LRList() {
     );
   });
 
-  const sortedFilteredLRs = sortLRsByNumber(filteredLRs, true);
+  const sortedFilteredLRs = sortLRsByNumber(filteredLRs, false);
 
   if (showPrintModal && selectedLR) {
     return (

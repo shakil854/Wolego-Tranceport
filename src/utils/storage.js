@@ -19,8 +19,8 @@ export const fetchPartiesFromDB = async () => {
   return partiesCache;
 };
 
-// Helper to sort LRs numerically by LR Number
-export const sortLRsByNumber = (lrs, ascending = true) => {
+// Helper to sort LRs numerically by LR Number (Default: DESCENDING e.g. 6, 5, 4, 3, 2, 1)
+export const sortLRsByNumber = (lrs, ascending = false) => {
   if (!lrs || !Array.isArray(lrs)) return [];
   return [...lrs].sort((a, b) => {
     const numA = parseInt(a.lrNumber, 10);
@@ -42,7 +42,7 @@ export const fetchLREntriesFromDB = async () => {
     const res = await fetch(`${API_BASE_URL}/lr-entries`);
     if (res.ok) {
       const data = await res.json();
-      lrCache = sortLRsByNumber(data || []);
+      lrCache = sortLRsByNumber(data || [], false);
       return lrCache;
     }
   } catch (err) {

@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/generate-pdf", generateLRPdf);
 
 
-// Get all LRs (Sorted numerically by LR Number)
+// Get all LRs (Sorted numerically by LR Number DESCENDING e.g. 6, 5, 4, 3, 2, 1)
 router.get("/", async (req, res) => {
   try {
     const lrs = await LREntry.findAll();
@@ -16,9 +16,9 @@ router.get("/", async (req, res) => {
       const numA = parseInt(a.lrNumber, 10);
       const numB = parseInt(b.lrNumber, 10);
       if (!isNaN(numA) && !isNaN(numB)) {
-        return numA - numB;
+        return numB - numA;
       }
-      return String(a.lrNumber || "").localeCompare(String(b.lrNumber || ""), undefined, { numeric: true, sensitivity: "base" });
+      return String(b.lrNumber || "").localeCompare(String(a.lrNumber || ""), undefined, { numeric: true, sensitivity: "base" });
     });
     res.json(lrs);
   } catch (err) {
