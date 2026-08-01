@@ -3,6 +3,7 @@ import { Printer, Download, Share2, ArrowLeft, FileSignature, X } from "lucide-r
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import logoImg from "../assets/logo.png";
+import { API_URL } from "../config/api";
 
 export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, autoAction }) {
   const printRef = useRef(null);
@@ -86,7 +87,6 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
   // Helper to fetch in-memory Puppeteer-generated A4 PDF Blob from backend
   const fetchLRPdfBlob = async () => {
-    const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8002";
     const response = await fetch(`${API_URL}/api/lr/generate-pdf`, {
       method: "POST",
       headers: {

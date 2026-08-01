@@ -1,6 +1,4 @@
-// MySQL REST API Persistence Engine for Wolego Transport
-
-const API_BASE_URL = "http://localhost:8002/api";
+import { API_BASE_URL } from "../config/api";
 
 let partiesCache = [];
 let lrCache = [];
