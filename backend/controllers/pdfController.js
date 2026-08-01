@@ -6,20 +6,10 @@ import { generateLRHtml } from "../utils/lrHtmlTemplate.js";
 let browserInstance = null;
 
 const findChromeExecutable = () => {
-  if (process.env.PUPPETEER_EXECUTABLE_PATH && fs.existsSync(process.env.PUPPETEER_EXECUTABLE_PATH)) {
-    return process.env.PUPPETEER_EXECUTABLE_PATH;
-  }
-
-  const userProfile = process.env.USERPROFILE || "";
+  const userProfile = process.env.USERPROFILE || "C:\\Users\\shakil";
   const localAppData = process.env.LOCALAPPDATA || "";
 
   const possiblePaths = [
-    // Linux standard paths (Ubuntu / Debian VPS)
-    "/usr/bin/chromium-browser",
-    "/usr/bin/chromium",
-    "/usr/bin/google-chrome-stable",
-    "/usr/bin/google-chrome",
-    // Windows paths
     path.join(userProfile, ".cache", "puppeteer", "chrome", "win64-151.0.7922.47", "chrome-win64", "chrome.exe"),
     "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
     "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
@@ -32,21 +22,19 @@ const findChromeExecutable = () => {
     }
   }
 
-  if (userProfile) {
-    try {
-      const cacheDir = path.join(userProfile, ".cache", "puppeteer", "chrome");
-      if (fs.existsSync(cacheDir)) {
-        const dirs = fs.readdirSync(cacheDir);
-        for (const d of dirs) {
-          const exePath = path.join(cacheDir, d, "chrome-win64", "chrome.exe");
-          if (fs.existsSync(exePath)) {
-            return exePath;
-          }
+  try {
+    const cacheDir = path.join(userProfile, ".cache", "puppeteer", "chrome");
+    if (fs.existsSync(cacheDir)) {
+      const dirs = fs.readdirSync(cacheDir);
+      for (const d of dirs) {
+        const exePath = path.join(cacheDir, d, "chrome-win64", "chrome.exe");
+        if (fs.existsSync(exePath)) {
+          return exePath;
         }
       }
-    } catch (e) {
-      // Ignore scan errors
     }
+  } catch (e) {
+    // Ignore scan errors
   }
 
   return null;

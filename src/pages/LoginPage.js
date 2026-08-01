@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Lock, Phone, KeyRound, ArrowRight } from "lucide-react";
 import logoImg from "../assets/logo.png";
-import { API_BASE_URL } from "../config/api";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -20,23 +19,13 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch("http://localhost:8002/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
-      const contentType = response.headers.get("content-type");
-      let data = {};
-      
-      if (contentType && contentType.includes("application/json")) {
-        data = await response.json();
-      } else {
-        await response.text();
-        if (!response.ok) {
-          throw new Error(`Server Error (${response.status}): Endpoint not found or backend server issue.`);
-        }
-      }
+      const data = await response.json();
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || "Login failed. Please check your credentials.");

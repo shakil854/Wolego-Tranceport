@@ -30,13 +30,19 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     localStorage.removeItem("wolego_digital_signature");
   };
 
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(autoAction === "pdf" || autoAction === "whatsapp");
+
   useEffect(() => {
     if (!autoAction) return;
+    if (autoAction === "print") {
+      setIsGeneratingPdf(false);
+      handlePrint();
+      if (onClose) onClose();
+      return;
+    }
+    setIsGeneratingPdf(true);
     const timer = setTimeout(async () => {
-      if (autoAction === "print") {
-        window.print();
-        if (onClose) onClose();
-      } else if (autoAction === "pdf") {
+      if (autoAction === "pdf") {
         await handleExportPDF();
         if (onClose) onClose();
       } else if (autoAction === "whatsapp") {
@@ -78,162 +84,103 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     return `LR_${lrNo}_WolegoTransport.pdf`;
   };
 
-  // High-Quality Multi-Page PDF Export (Page 1: LR, Page 2: Terms and Conditions)
+  // Helper to fetch in-memory Puppeteer-generated A4 PDF Blob from backend
+  const fetchLRPdfBlob = async () => {
+    const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8002";
+    const response = await fetch(`${API_URL}/api/lr/generate-pdf`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        lrData,
+        signatureImg,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`PDF generation server error: ${response.statusText}`);
+    }
+
+    return await response.blob();
+  };
+
+  // High-Quality Multi-Page PDF Export via Puppeteer Backend (Page 1: LR, Page 2: Terms and Conditions)
   const handleExportPDF = async () => {
-    if (!printRef.current) return;
+    setIsGeneratingPdf(true);
     try {
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      const el1 = printRef.current;
-      const el2 = termsRef.current;
-
-      const prevOp1 = el1.style.opacity;
-      const prevVis1 = el1.style.visibility;
-      el1.style.opacity = "1";
-      el1.style.visibility = "visible";
-
-      let prevOp2, prevVis2;
-      if (el2) {
-        prevOp2 = el2.style.opacity;
-        prevVis2 = el2.style.visibility;
-        el2.style.opacity = "1";
-        el2.style.visibility = "visible";
-      }
-
-      try {
-        // Render Page 1 (LR Document)
-        const canvas1 = await html2canvas(el1, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          logging: false,
-          backgroundColor: "#ffffff"
-        });
-
-        const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
-        pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-
-        // Render Page 2 (Terms and Conditions)
-        if (el2) {
-          try {
-            const canvas2 = await html2canvas(el2, {
-              scale: 2,
-              useCORS: true,
-              allowTaint: true,
-              logging: false,
-              backgroundColor: "#ffffff"
-            });
-            const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
-            pdf.addPage();
-            pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-          } catch (tErr) {
-            console.error("Terms & Conditions page canvas error:", tErr);
-          }
-        }
-
-        pdf.save(getLRPdfFilename(lrData));
-      } finally {
-        el1.style.opacity = prevOp1;
-        el1.style.visibility = prevVis1;
-        if (el2) {
-          el2.style.opacity = prevOp2;
-          el2.style.visibility = prevVis2;
-        }
-      }
+      const blob = await fetchLRPdfBlob();
+      const filename = getLRPdfFilename(lrData);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error("PDF export failed:", err);
       window.print();
+    } finally {
+      setIsGeneratingPdf(false);
     }
   };
 
-  // Dynamic PDF Generator + WhatsApp Share Function (Shares ONLY 2-Page PDF File)
+  // Dynamic PDF Generator + WhatsApp Share Function (Shares Puppeteer-generated 2-Page PDF File)
   const handleWhatsApp = async () => {
-    if (!printRef.current) return;
+    setIsGeneratingPdf(true);
     try {
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      const el1 = printRef.current;
-      const el2 = termsRef.current;
-
-      const prevOp1 = el1.style.opacity;
-      const prevVis1 = el1.style.visibility;
-      el1.style.opacity = "1";
-      el1.style.visibility = "visible";
-
-      let prevOp2, prevVis2;
-      if (el2) {
-        prevOp2 = el2.style.opacity;
-        prevVis2 = el2.style.visibility;
-        el2.style.opacity = "1";
-        el2.style.visibility = "visible";
-      }
-
-      try {
-        // 1. Render Page 1 (LR Document)
-        const canvas1 = await html2canvas(el1, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          logging: false,
-          backgroundColor: "#ffffff"
-        });
-        const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
-        pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-
-        // 2. Render Page 2 (Terms and Conditions)
-        if (el2) {
-          try {
-            const canvas2 = await html2canvas(el2, {
-              scale: 2,
-              useCORS: true,
-              allowTaint: true,
-              logging: false,
-              backgroundColor: "#ffffff"
-            });
-            const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
-            pdf.addPage();
-            pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-          } catch (tErr) {
-            console.error("Terms page canvas error:", tErr);
-          }
-        }
-      } finally {
-        el1.style.opacity = prevOp1;
-        el1.style.visibility = prevVis1;
-        if (el2) {
-          el2.style.opacity = prevOp2;
-          el2.style.visibility = prevVis2;
-        }
-      }
-
+      const blob = await fetchLRPdfBlob();
       const filename = getLRPdfFilename(lrData);
-      const pdfBlob = pdf.output("blob");
-      const pdfFile = new File([pdfBlob], filename, { type: "application/pdf" });
+      const pdfFile = new File([blob], filename, { type: "application/pdf" });
 
-      // 3. Share ONLY the PDF file without any text message
+      setIsGeneratingPdf(false);
+
+      // Share ONLY the PDF file via native Share Sheet (WhatsApp, etc.)
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         await navigator.share({
-          files: [pdfFile]
+          files: [pdfFile],
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          files: [pdfFile],
         });
       } else {
-        // Desktop Fallback: Download PDF & Open WhatsApp Web
-        pdf.save(filename);
-        window.open(`https://api.whatsapp.com/send`, "_blank");
+        // Desktop Fallback when Web Share is unsupported: Download PDF file directly
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
       }
     } catch (err) {
       console.error("WhatsApp PDF sharing error:", err);
-      window.open(`https://api.whatsapp.com/send`, "_blank");
+      setIsGeneratingPdf(false);
     }
   };
 
   const isAuto = Boolean(autoAction);
 
   return (
-    <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "min-h-screen bg-slate-900 py-4 px-2 sm:px-4 text-slate-900 print:p-0 print:m-0 print:bg-white"}>
+    <>
+      {/* Loading Modal / Popup for PDF Generation & WhatsApp Opening (Hidden during print) */}
+      {isGeneratingPdf && (
+        <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white p-4 pointer-events-auto opacity-100 print:hidden">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl flex flex-col items-center gap-4 max-w-xs text-center animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <div>
+              <h3 className="font-extrabold text-lg text-white">Generating PDF...</h3>
+              <p className="text-xs text-slate-400 mt-1">Please wait while we prepare your document for WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "min-h-screen bg-slate-900 py-4 px-2 sm:px-4 text-slate-900 print:p-0 print:m-0 print:bg-white"}>
 
       {/* Top Action Toolbar (Hidden during Print) */}
       <div className="max-w-4xl mx-auto mb-4 bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 flex flex-wrap justify-between items-center gap-2 print:hidden">
@@ -297,9 +244,9 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         </div>
       </div>
 
-      {/* Standard Printable Full A4 Page Document */}
-      <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-0 print:shadow-none font-sans text-xs">
-        <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document relative overflow-hidden">
+      {/* Standard Printable Full A4 Page Document with Equal 3.5mm Margins */}
+      <div className="w-full max-w-[210mm] mx-auto bg-white p-[3.5mm] shadow-2xl rounded-sm print-container print:p-0 print:m-0 print:w-[203mm] print:h-[290mm] print:max-w-none print:shadow-none font-sans text-xs box-border">
+        <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 h-[290mm] min-h-[290mm] w-full flex flex-col justify-between print-document relative overflow-hidden box-border">
 
           {/* Background Watermark Logo (Shown during both PDF Export & LR Print) */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
@@ -392,36 +339,36 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
             </div>
 
             {/* LR Header Grid (LR NO, DATE, FROM, TO) */}
-            <div className="grid grid-cols-12 border-b-2 border-slate-900 font-extrabold text-[11px] divide-x-2 divide-slate-900 text-slate-950">
+            <div className="grid grid-cols-12 border-b-2 border-slate-900 font-black text-[11px] divide-x-2 divide-slate-900 text-slate-950">
               <div className="col-span-3 p-1.5 bg-slate-100 flex items-center justify-center gap-2">
                 <span>L.R. NO. :</span>
-                <span className="text-lg font-black text-rose-700 font-mono">{lrData.lrNumber}</span>
+                <span className="text-base font-black text-rose-700 font-mono">{lrData.lrNumber}</span>
               </div>
               <div className="col-span-3 p-1.5 flex items-center gap-2">
                 <span>DATE :</span>
-                <span className="font-extrabold">{formatDateDisplay(lrData.dateTime)}</span>
+                <span className="font-black text-[11px]">{formatDateDisplay(lrData.dateTime)}</span>
               </div>
               <div className="col-span-3 p-1.5 flex items-center gap-2">
                 <span>FROM :</span>
-                <span className="uppercase font-black text-slate-950">{lrData.fromPlace || ""}</span>
+                <span className="uppercase font-black text-[11px] text-slate-950">{lrData.fromPlace || ""}</span>
               </div>
               <div className="col-span-3 p-1.5 flex items-center gap-2">
                 <span>TO :</span>
-                <span className="uppercase font-black text-slate-950">{lrData.toPlace || ""}</span>
+                <span className="uppercase font-black text-[11px] text-slate-950">{lrData.toPlace || ""}</span>
               </div>
             </div>
 
             {/* Truck No & Delivery At */}
-            <div className="grid grid-cols-12 border-b-2 border-slate-900 font-extrabold text-[11px] divide-x-2 divide-slate-900 text-slate-950">
+            <div className="grid grid-cols-12 border-b-2 border-slate-900 font-black text-[11px] divide-x-2 divide-slate-900 text-slate-950">
               <div className="col-span-6 p-1.5 flex items-center gap-2">
                 <span>DELIVERY AT :</span>
-                <span className="font-black uppercase text-slate-950">
+                <span className="font-black text-[11px] uppercase text-slate-950">
                   {lrData.deliveryAt || ""}
                 </span>
               </div>
               <div className="col-span-6 p-1.5 flex items-center gap-2">
                 <span>TRUCK NO. :</span>
-                <span className="font-mono text-base font-black tracking-wider uppercase text-slate-950">
+                <span className="font-sans text-[11px] font-black uppercase text-slate-950">
                   {lrData.truckNo}
                 </span>
               </div>
@@ -436,13 +383,13 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   <div className="font-black text-[11px] underline uppercase text-slate-950">
                     CONSIGNOR'S NAME & ADDRESS
                   </div>
-                  <div className="font-black text-xs text-slate-950 uppercase whitespace-pre-line leading-tight">{lrData.consignorName}</div>
-                  <div className="text-[10.5px] font-bold text-slate-950 leading-tight uppercase whitespace-pre-line">
+                  <div className="font-black text-[11px] text-slate-950 uppercase whitespace-pre-line leading-tight">{lrData.consignorName}</div>
+                  <div className="text-[11px] font-black text-slate-950 leading-tight uppercase whitespace-pre-line">
                     {lrData.consignorAddress}
                   </div>
                 </div>
-                <div className="font-mono font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
-                  CONSIGNOR GSTIN NO. : <span className="font-black text-slate-950">
+                <div className="font-sans font-black text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
+                  CONSIGNOR GSTIN NO. : <span className="font-black text-[11px] text-slate-950">
                     {(lrData.consignorName && (lrData.consignorName.includes("(1)") || lrData.consignorName.includes("\n")))
                       ? "AS PER BILL"
                       : (lrData.consignorGst || "")}
@@ -456,13 +403,13 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   <div className="font-black text-[11px] underline uppercase text-slate-950">
                     CONSIGNEE'S NAME & ADDRESS
                   </div>
-                  <div className="font-black text-sm text-slate-950 uppercase">{lrData.consigneeName}</div>
-                  <div className="text-[10.5px] font-bold text-slate-950 leading-tight uppercase whitespace-pre-line">
+                  <div className="font-black text-[11px] text-slate-950 uppercase">{lrData.consigneeName}</div>
+                  <div className="text-[11px] font-black text-slate-950 leading-tight uppercase whitespace-pre-line">
                     {lrData.consigneeAddress}
                   </div>
                 </div>
-                <div className="font-mono font-extrabold text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
-                  CONSIGNEE GSTIN NO. : <span className="font-black text-slate-950">{lrData.consigneeGst || ""}</span>
+                <div className="font-sans font-black text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
+                  CONSIGNEE GSTIN NO. : <span className="font-black text-[11px] text-slate-950">{lrData.consigneeGst || ""}</span>
                 </div>
               </div>
 
@@ -480,37 +427,37 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                     <th className="p-1.5 w-36">FREIGHT ({lrData.toPayOrPaid || "TBB"})</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y border-b-2 border-slate-900 font-extrabold text-slate-950">
+                <tbody className="divide-y border-b-2 border-slate-900 font-black text-slate-950">
                   <tr className="divide-x-2 divide-slate-900 text-center min-h-[80px]">
                     <td className="p-2 font-black align-top text-slate-950">
                       <div className="min-h-[34px] flex flex-col justify-start">
-                        <div className="font-black text-sm">{lrData.noOfArticles}</div>
-                        <span className="text-[10.5px] font-extrabold text-slate-950 uppercase">{lrData.bundles || ""}</span>
+                        <div className="font-black text-[11px]">{lrData.noOfArticles}</div>
+                        <span className="text-[11px] font-black text-slate-950 uppercase">{lrData.bundles || ""}</span>
                       </div>
                       {lrData.noOfArticles2 && (
                         <div className="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
-                          <div className="font-black text-sm">{lrData.noOfArticles2}</div>
-                          <span className="text-[10.5px] font-extrabold text-slate-950 uppercase">{lrData.bundles2 || "BUNDLE"}</span>
+                          <div className="font-black text-[11px]">{lrData.noOfArticles2}</div>
+                          <span className="text-[11px] font-black text-slate-950 uppercase">{lrData.bundles2 || "BUNDLE"}</span>
                         </div>
                       )}
                     </td>
                     <td className="p-2 align-top text-center">
                       <div className="min-h-[34px] flex flex-col justify-start">
-                        <div className="font-black uppercase text-sm text-slate-950">{lrData.descriptionOfGoods}</div>
+                        <div className="font-black uppercase text-[11px] text-slate-950">{lrData.descriptionOfGoods}</div>
                       </div>
                       {lrData.noOfArticles2 && (
                         <div className="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
-                          <div className="font-black uppercase text-sm text-slate-950">{lrData.descriptionOfGoods2 || "SANITARYWARE"}</div>
+                          <div className="font-black uppercase text-[11px] text-slate-950">{lrData.descriptionOfGoods2 || "SANITARYWARE"}</div>
                         </div>
                       )}
                     </td>
-                    <td className="p-2 font-mono font-black align-top text-slate-950">
+                    <td className="p-2 font-sans font-black align-top text-[11px] text-slate-950">
                       {lrData.weightKgs ? `${lrData.weightKgs} K.G.` : ""}
                     </td>
-                    <td className="p-2 font-mono font-black align-top text-slate-950">
+                    <td className="p-2 font-sans font-black align-top text-[11px] text-slate-950">
                       {lrData.ratePerTon ? `${lrData.ratePerTon} ${lrData.rateType || ""}` : ""}
                     </td>
-                    <td className="p-2 font-mono font-black text-right align-top text-sm text-slate-950">
+                    <td className="p-2 font-sans font-black text-center align-top text-[11px] text-slate-950">
                       {lrData.freightAmount || ""}
                     </td>
                   </tr>
@@ -522,51 +469,51 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
             <div className="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[400px]">
 
               {/* Left Column (7 cols): Full-width rows stretching edge-to-edge to main grid lines */}
-              <div className="col-span-7 text-[10px] flex flex-col justify-between h-full text-slate-950">
+              <div className="col-span-7 text-[11px] flex flex-col justify-between h-full text-slate-950 font-black">
                 {/* 1. GST Payable By */}
-                <div className="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1 flex items-center gap-2">
+                <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1 flex items-center gap-2">
                   <span>GST PAYABLE BY :</span>
                   <span className="font-black uppercase text-slate-950">{lrData.gstPayableBy || "CONSIGNEE"}</span>
                 </div>
 
                 {/* 2. Invoice No */}
-                <div className="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-                  INVOICE NO. : <span className="font-black text-xs text-slate-950">{lrData.billNumbers || ""}</span>
+                <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+                  INVOICE NO. : <span className="font-black text-[11px] text-slate-950">{lrData.billNumbers || ""}</span>
                 </div>
 
                 {/* 3. Value Rs */}
-                <div className="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-                  VALUE RS. : <span className="font-black text-xs text-slate-950">{lrData.invoiceValue || ""}</span>
+                <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+                  VALUE RS. : <span className="font-black text-[11px] text-slate-950">{lrData.invoiceValue || ""}</span>
                 </div>
 
                 {/* 4. Consignor E-Way Bill */}
-                <div className="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-                  CONSIGNOR E-WAY BILL : <span className="font-black text-xs text-slate-950">{lrData.consignorEwayBill || ""}</span>
+                <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+                  CONSIGNOR E-WAY BILL : <span className="font-black text-[11px] text-slate-950">{lrData.consignorEwayBill || ""}</span>
                 </div>
 
                 {/* 5. Consignee E-Way Bill */}
-                <div className="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-                  CONSIGNEE E-WAY BILL : <span className="font-black text-xs text-slate-950">{lrData.consigneeEwayBill || ""}</span>
+                <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+                  CONSIGNEE E-WAY BILL : <span className="font-black text-[11px] text-slate-950">{lrData.consigneeEwayBill || ""}</span>
                 </div>
 
                 {/* 6. Driver Mobile No */}
-                <div className="font-black text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-                  DRIVER NO. : <span className="font-black text-xs text-slate-950">{lrData.driverMobile || ""}</span>
+                <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+                  DRIVER NO. : <span className="font-black text-[11px] text-slate-950">{lrData.driverMobile || ""}</span>
                 </div>
 
                 {/* 6. Remarks / Disclaimer */}
                 <div className="px-2 py-1 space-y-1">
-                  <div className="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
+                  <div className="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[11px]">
                     WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE.
                   </div>
-                  <div className="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[9.5px]">
+                  <div className="font-black uppercase text-slate-950 bg-slate-200 p-1 border-2 border-slate-900 text-[11px]">
                     FULL TRUCK LOAD ACCEPTED ALL OVER INDIA.
                   </div>
                   {lrData.remarks &&
                     lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE." &&
                     lrData.remarks !== "FULL TRUCK LOAD ACCEPTED ALL OVER INDIA." &&
                     lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA." && (
-                      <div className="font-black text-slate-950 text-[9.5px] uppercase p-1 border border-slate-900 bg-slate-100">
+                      <div className="font-black text-slate-950 text-[11px] uppercase p-1 border border-slate-900 bg-slate-100">
                         REMARKS: <span className="font-black">{lrData.remarks}</span>
                       </div>
                     )}
@@ -574,10 +521,10 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
                 {/* 7. Insurance Declaration Box */}
                 <div className="px-2 py-1">
-                  <div className="border-2 border-slate-900 p-1.5 rounded text-[9.5px] bg-transparent space-y-0.5 text-slate-950 font-bold">
+                  <div className="border-2 border-slate-900 p-1.5 rounded text-[11px] bg-transparent space-y-0.5 text-slate-950 font-black">
                     <div className="font-black uppercase underline text-slate-950">INSURANCE :</div>
-                    <div className="font-bold text-slate-950">THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
-                    <div className="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-mono font-extrabold text-slate-950">
+                    <div className="font-black text-slate-950">THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
+                    <div className="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-sans font-black text-slate-950">
                       <span>COMPANY: ________</span>
                       <span>POLICY: ________</span>
                       <span>RISK: ________</span>
@@ -587,14 +534,14 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
                 {/* 8. ICICI Bank Payment Details */}
                 <div className="p-2">
-                  <div className="border-2 border-blue-900 p-1.5 rounded bg-transparent text-[9.5px] text-slate-950">
+                  <div className="border-2 border-blue-900 p-1.5 rounded bg-transparent text-[11px] text-slate-950">
                     <div className="font-black text-blue-950 uppercase border-b border-blue-300 pb-0.5 mb-0.5">
                       ICICI BANK LTD (RTGS / NEFT PAYMENT)
                     </div>
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 font-bold text-slate-950">
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 font-black text-slate-950">
                       <div>NAME : <span className="font-black text-slate-950">WOLEGO TRANSPORT</span></div>
-                      <div>ACCOUNT NO. : <span className="font-mono font-black text-slate-950">118405500444</span></div>
-                      <div>IFSC CODE : <span className="font-mono font-black text-slate-950">ICIC0001184</span></div>
+                      <div>ACCOUNT NO. : <span className="font-sans font-black text-slate-950">118405500444</span></div>
+                      <div>IFSC CODE : <span className="font-sans font-black text-slate-950">ICIC0001184</span></div>
                       <div>BRANCH : <span className="font-black text-slate-950">WANKANER</span></div>
                     </div>
                   </div>
@@ -602,47 +549,57 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
               </div>
 
               {/* Right Column (5 cols): Freight Breakdown, Net Total & Signatory */}
-              <div className="col-span-5 bg-transparent flex flex-col justify-between font-mono text-xs h-full text-slate-950">
+              <div className="col-span-5 bg-transparent flex flex-col justify-between font-sans text-[11px] font-black h-full text-slate-950">
                 <div>
-                  <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100/40 text-slate-950">
+                  <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-[11px] bg-slate-200 text-slate-950">
                     <span>FREIGHT</span>
                     <span>{lrData.freightAmount || 0}</span>
                   </div>
 
-                  <div className="flex justify-between font-bold text-slate-950 px-2.5 py-2 border-b border-slate-300">
+                  <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
                     <span>Add : S-G.S.T. @ 2.5%</span>
-                    <span className="font-extrabold text-slate-950">{lrData.sgstAmount || "0.00"}</span>
+                    <span className="font-black text-slate-950">{lrData.sgstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-bold text-slate-950 px-2.5 py-2 border-b border-slate-300">
+                  <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
                     <span>Add : C-G.S.T. @ 2.5%</span>
-                    <span className="font-extrabold text-slate-950">{lrData.cgstAmount || "0.00"}</span>
+                    <span className="font-black text-slate-950">{lrData.cgstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-bold text-slate-950 px-2.5 py-2 border-b-2 border-slate-900">
+                  <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b-2 border-slate-900">
                     <span>Add : I-G.S.T. @ 5%</span>
-                    <span className="font-extrabold text-slate-950">{lrData.igstAmount || "0.00"}</span>
+                    <span className="font-black text-slate-950">{lrData.igstAmount || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-xs bg-slate-100/40 text-slate-950">
+                  <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-[11px] bg-slate-200 text-slate-950">
                     <span>TOTAL WITH GST</span>
                     <span>{lrData.totalWithGst || lrData.freightAmount}</span>
                   </div>
 
-                  <div className="flex justify-between font-bold text-slate-950 px-2.5 py-2 border-b border-slate-300">
+                  <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
                     <span>Other Charges</span>
-                    <span className="font-extrabold text-slate-950">{lrData.otherCharges || "0.00"}</span>
+                    <span className="font-black text-slate-950">{lrData.otherCharges || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-bold text-slate-950 border-b-2 border-slate-900 px-2.5 py-2">
+                  <div className="flex justify-between font-black text-slate-950 border-b-2 border-slate-900 px-2.5 py-2">
                     <span>Less : Advance Paid</span>
-                    <span className="font-extrabold text-slate-950">{lrData.lessAdvancePaid || "0.00"}</span>
+                    <span className="font-black text-slate-950">{lrData.lessAdvancePaid || "0.00"}</span>
                   </div>
 
-                  <div className="flex justify-between font-black text-sm border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-yellow-100/40">
+                  <div className="flex justify-between font-black text-[11px] border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-slate-200">
                     <span>NET TOTAL:</span>
                     <span>₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
                   </div>
+                </div>
+
+                {/* Logo Centered Between NET TOTAL and Signatory Block (Bottom tagline clipped out) */}
+                <div className="my-auto pt-3.5 pb-1 flex items-center justify-center flex-1 w-full px-2 overflow-hidden">
+                  <img
+                    src={logoImg}
+                    alt="Wolego Transport Logo"
+                    className="w-full max-w-[260px] h-auto max-h-[200px] object-contain mix-blend-multiply opacity-95"
+                    style={{ clipPath: "inset(0 0 18% 0)", transform: "scale(1.1)" }}
+                  />
                 </div>
 
                 {/* Signatory Block Inside Grid */}
@@ -758,5 +715,6 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getFinancialYear } from "../utils/storage";
-import { API_BASE_URL } from "../config/api";
 import PartyPortalStatementDocument from "../components/PartyPortalStatementDocument";
 import AccountingStatementDocument from "../components/AccountingStatementDocument";
 import {
@@ -74,8 +73,8 @@ export default function AccountingPage() {
     setLoading(true);
     try {
       const [lrRes, partyRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/lr-entries`),
-        fetch(`${API_BASE_URL}/parties`),
+        fetch("http://localhost:8002/api/lr-entries"),
+        fetch("http://localhost:8002/api/parties"),
       ]);
 
       const lrData = await lrRes.json();
@@ -168,7 +167,7 @@ export default function AccountingPage() {
         payload.truckChequeNo = chequeNo ? chequeNo.trim() : "";
       }
 
-      const res = await fetch(`${API_BASE_URL}/lr-entries/${lrId}/payment-status`, {
+      const res = await fetch(`http://localhost:8002/api/lr-entries/${lrId}/payment-status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

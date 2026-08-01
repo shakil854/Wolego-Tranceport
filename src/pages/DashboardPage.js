@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { API_BASE_URL } from "../config/api";
 import {
   LayoutDashboard,
   CreditCard,
@@ -34,8 +33,8 @@ export default function DashboardPage() {
     setLoading(true);
     try {
       const [lrRes, partyRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/lr-entries`),
-        fetch(`${API_BASE_URL}/parties`),
+        fetch("http://localhost:8002/api/lr-entries"),
+        fetch("http://localhost:8002/api/parties"),
       ]);
 
       const lrData = await lrRes.json();
