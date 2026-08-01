@@ -61,7 +61,7 @@ const Authenticated = ({ children }) => {
                         >
                             <Menu size={24} />
                         </button>
-                        <span className="ml-4 text-xl font-semibold">Wolego Tranceport</span>
+                        <span className="ml-4 text-xl font-semibold">Wolego Transport</span>
                     </div>
                     <div className="relative">
                         <div
