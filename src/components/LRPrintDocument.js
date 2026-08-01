@@ -185,13 +185,13 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     }
   };
 
-  // Safe PDF Fetcher (Backend Puppeteer with Client Canvas Fallback)
+  // 100% Exact On-Screen DOM Print-Matching PDF Generator (Page 1: LR, Page 2: Terms and Conditions)
   const getOrGenerateLRPdfBlob = async () => {
     try {
-      return await fetchLRPdfBlob();
-    } catch (err) {
-      console.warn("Backend PDF API unreachable, generating client-side A4 PDF:", err.message);
       return await generateClientPDFBlob();
+    } catch (err) {
+      console.warn("Client canvas error, falling back to backend Puppeteer PDF:", err.message);
+      return await fetchLRPdfBlob();
     }
   };
 
