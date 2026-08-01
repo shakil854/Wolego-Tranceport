@@ -3,7 +3,7 @@ import { Printer, Download, Share2, ArrowLeft, FileSignature, X } from "lucide-r
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import logoImg from "../assets/logo.png";
-import { API_URL } from "../config/api";
+import { API_URL, API_BASE_URL } from "../config/api";
 
 export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, autoAction }) {
   const printRef = useRef(null);
@@ -87,29 +87,119 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
   // Helper to fetch in-memory Puppeteer-generated A4 PDF Blob from backend
   const fetchLRPdfBlob = async () => {
-    const response = await fetch(`${API_URL}/api/lr/generate-pdf`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        lrData,
-        signatureImg,
-      }),
-    });
+    const urlsToTry = Array.from(new Set([
+      `${API_URL}/api/lr/generate-pdf`,
+      `${API_BASE_URL}/lr/generate-pdf`,
+      "http://localhost:5000/api/lr/generate-pdf",
+      "http://localhost:8002/api/lr/generate-pdf",
+      "/api/lr/generate-pdf",
+    ]));
 
-    if (!response.ok) {
-      throw new Error(`PDF generation server error: ${response.statusText}`);
+    let lastError = null;
+    for (const url of urlsToTry) {
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            lrData,
+            signatureImg,
+          }),
+        });
+
+        if (response.ok) {
+          return await response.blob();
+        }
+      } catch (err) {
+        lastError = err;
+      }
     }
 
-    return await response.blob();
+    throw lastError || new Error("Failed to connect to PDF generation server.");
   };
 
-  // High-Quality Multi-Page PDF Export via Puppeteer Backend (Page 1: LR, Page 2: Terms and Conditions)
+  // Client-side Canvas PDF Fallback Generator (Page 1: LR, Page 2: Terms and Conditions)
+  const generateClientPDFBlob = async () => {
+    if (!printRef.current) throw new Error("Document print element not found");
+
+    const el1 = printRef.current;
+    const el2 = termsRef.current;
+
+    const prevOpacity1 = el1.style.opacity;
+    const prevVisibility1 = el1.style.visibility;
+    el1.style.opacity = "1";
+    el1.style.visibility = "visible";
+
+    let prevOpacity2, prevVisibility2;
+    if (el2) {
+      prevOpacity2 = el2.style.opacity;
+      prevVisibility2 = el2.style.visibility;
+      el2.style.opacity = "1";
+      el2.style.visibility = "visible";
+    }
+
+    try {
+      const canvasOptions = {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      };
+
+      const canvas1 = await html2canvas(el1, canvasOptions);
+      const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+        compress: true,
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+
+      if (el2) {
+        try {
+          const canvas2 = await html2canvas(el2, canvasOptions);
+          const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
+          pdf.addPage();
+          pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+        } catch (e2) {
+          console.warn("Terms page canvas error:", e2);
+        }
+      }
+
+      return pdf.output("blob");
+    } finally {
+      el1.style.opacity = prevOpacity1;
+      el1.style.visibility = prevVisibility1;
+      if (el2) {
+        el2.style.opacity = prevOpacity2;
+        el2.style.visibility = prevVisibility2;
+      }
+    }
+  };
+
+  // Safe PDF Fetcher (Backend Puppeteer with Client Canvas Fallback)
+  const getOrGenerateLRPdfBlob = async () => {
+    try {
+      return await fetchLRPdfBlob();
+    } catch (err) {
+      console.warn("Backend PDF API unreachable, generating client-side A4 PDF:", err.message);
+      return await generateClientPDFBlob();
+    }
+  };
+
+  // High-Quality Multi-Page PDF Export (Direct File Download - Never calls window.print)
   const handleExportPDF = async () => {
     setIsGeneratingPdf(true);
     try {
-      const blob = await fetchLRPdfBlob();
+      const blob = await getOrGenerateLRPdfBlob();
       const filename = getLRPdfFilename(lrData);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -121,33 +211,35 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("PDF export failed:", err);
-      window.print();
+      alert("Failed to export PDF file. Please try again.");
     } finally {
       setIsGeneratingPdf(false);
     }
   };
 
-  // Dynamic PDF Generator + WhatsApp Share Function (Shares Puppeteer-generated 2-Page PDF File)
+  // Dynamic PDF Generator + WhatsApp Share Function (Shares PDF File & Opens WhatsApp)
   const handleWhatsApp = async () => {
     setIsGeneratingPdf(true);
     try {
-      const blob = await fetchLRPdfBlob();
+      const blob = await getOrGenerateLRPdfBlob();
       const filename = getLRPdfFilename(lrData);
       const pdfFile = new File([blob], filename, { type: "application/pdf" });
 
       setIsGeneratingPdf(false);
 
-      // Share ONLY the PDF file via native Share Sheet (WhatsApp, etc.)
+      // Mobile Web Share API (native share dialog with WhatsApp app & attached PDF)
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         await navigator.share({
           files: [pdfFile],
+          title: `LR-${lrData?.lrNumber || ""}`,
         });
       } else if (navigator.share) {
         await navigator.share({
           files: [pdfFile],
+          title: `LR-${lrData?.lrNumber || ""}`,
         });
       } else {
-        // Desktop Fallback when Web Share is unsupported: Download PDF file directly
+        // Desktop Fallback: Download PDF file & Open WhatsApp Web
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -156,10 +248,13 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+
+        window.open("https://api.whatsapp.com/send", "_blank");
       }
     } catch (err) {
       console.error("WhatsApp PDF sharing error:", err);
       setIsGeneratingPdf(false);
+      window.open("https://api.whatsapp.com/send", "_blank");
     }
   };
 
