@@ -287,7 +287,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-blue-400" />
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
-                Total LRs Created
+                Total LR Created
               </span>
             </div>
             <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
@@ -296,7 +296,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="text-lg sm:text-xl font-extrabold text-blue-400 font-mono tracking-tight my-0.5">
-            {loading ? "..." : `${totalLrs} LRs`}
+            {loading ? "..." : `${totalLrs} LR`}
           </div>
 
           <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium pt-1 border-t border-slate-700/60">
