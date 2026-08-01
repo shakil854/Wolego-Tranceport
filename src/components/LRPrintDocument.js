@@ -86,44 +86,69 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      // Render Page 1 (LR Document)
-      const canvas1 = await html2canvas(printRef.current, {
-        scale: 2, // High DPI
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: "#ffffff"
-      });
+      const el1 = printRef.current;
+      const el2 = termsRef.current;
 
-      const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
-      pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+      const prevOp1 = el1.style.opacity;
+      const prevVis1 = el1.style.visibility;
+      el1.style.opacity = "1";
+      el1.style.visibility = "visible";
 
-      // Render Page 2 (Terms and Conditions)
-      if (termsRef.current) {
-        try {
-          const canvas2 = await html2canvas(termsRef.current, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: "#ffffff"
-          });
-          const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
-          pdf.addPage();
-          pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-        } catch (tErr) {
-          console.error("Terms & Conditions page canvas error:", tErr);
-        }
+      let prevOp2, prevVis2;
+      if (el2) {
+        prevOp2 = el2.style.opacity;
+        prevVis2 = el2.style.visibility;
+        el2.style.opacity = "1";
+        el2.style.visibility = "visible";
       }
 
-      pdf.save(getLRPdfFilename(lrData));
+      try {
+        // Render Page 1 (LR Document)
+        const canvas1 = await html2canvas(el1, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: "#ffffff"
+        });
+
+        const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
+        pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+
+        // Render Page 2 (Terms and Conditions)
+        if (el2) {
+          try {
+            const canvas2 = await html2canvas(el2, {
+              scale: 2,
+              useCORS: true,
+              allowTaint: true,
+              logging: false,
+              backgroundColor: "#ffffff"
+            });
+            const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
+            pdf.addPage();
+            pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+          } catch (tErr) {
+            console.error("Terms & Conditions page canvas error:", tErr);
+          }
+        }
+
+        pdf.save(getLRPdfFilename(lrData));
+      } finally {
+        el1.style.opacity = prevOp1;
+        el1.style.visibility = prevVis1;
+        if (el2) {
+          el2.style.opacity = prevOp2;
+          el2.style.visibility = prevVis2;
+        }
+      }
     } catch (err) {
       console.error("PDF export failed:", err);
       window.print();
     }
   };
 
-  // Dynamic PDF Generator + WhatsApp Share Function (Shares ONLY 2-Page PDF File with ZERO text)
+  // Dynamic PDF Generator + WhatsApp Share Function (Shares ONLY 2-Page PDF File)
   const handleWhatsApp = async () => {
     if (!printRef.current) return;
     try {
@@ -131,32 +156,57 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      // 1. Render Page 1 (LR Document)
-      const canvas1 = await html2canvas(printRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: "#ffffff"
-      });
-      const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
-      pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+      const el1 = printRef.current;
+      const el2 = termsRef.current;
 
-      // 2. Render Page 2 (Terms and Conditions)
-      if (termsRef.current) {
-        try {
-          const canvas2 = await html2canvas(termsRef.current, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: "#ffffff"
-          });
-          const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
-          pdf.addPage();
-          pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-        } catch (tErr) {
-          console.error("Terms page canvas error:", tErr);
+      const prevOp1 = el1.style.opacity;
+      const prevVis1 = el1.style.visibility;
+      el1.style.opacity = "1";
+      el1.style.visibility = "visible";
+
+      let prevOp2, prevVis2;
+      if (el2) {
+        prevOp2 = el2.style.opacity;
+        prevVis2 = el2.style.visibility;
+        el2.style.opacity = "1";
+        el2.style.visibility = "visible";
+      }
+
+      try {
+        // 1. Render Page 1 (LR Document)
+        const canvas1 = await html2canvas(el1, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: "#ffffff"
+        });
+        const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
+        pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+
+        // 2. Render Page 2 (Terms and Conditions)
+        if (el2) {
+          try {
+            const canvas2 = await html2canvas(el2, {
+              scale: 2,
+              useCORS: true,
+              allowTaint: true,
+              logging: false,
+              backgroundColor: "#ffffff"
+            });
+            const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
+            pdf.addPage();
+            pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+          } catch (tErr) {
+            console.error("Terms page canvas error:", tErr);
+          }
+        }
+      } finally {
+        el1.style.opacity = prevOp1;
+        el1.style.visibility = prevVis1;
+        if (el2) {
+          el2.style.opacity = prevOp2;
+          el2.style.visibility = prevVis2;
         }
       }
 
@@ -170,20 +220,12 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
           files: [pdfFile]
         });
       } else {
-        // Desktop Fallback: Download PDF & Open WhatsApp Web clean without text
+        // Desktop Fallback: Download PDF & Open WhatsApp Web
         pdf.save(filename);
         window.open(`https://api.whatsapp.com/send`, "_blank");
       }
     } catch (err) {
       console.error("WhatsApp PDF sharing error:", err);
-      try {
-        const pdf = new jsPDF("p", "mm", "a4");
-        const canvas1 = await html2canvas(printRef.current, { scale: 1.5, logging: false });
-        pdf.addImage(canvas1.toDataURL("image/jpeg", 0.85), "JPEG", 0, 0, 210, 297, undefined, "FAST");
-        pdf.save(getLRPdfFilename(lrData));
-      } catch (e) {
-        console.error("Fallback PDF save failed:", e);
-      }
       window.open(`https://api.whatsapp.com/send`, "_blank");
     }
   };

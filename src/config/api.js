@@ -4,7 +4,7 @@ const getRawUrl = () => {
   if (process.env.REACT_APP_API_URL && process.env.REACT_APP_API_URL.trim() !== "") {
     return process.env.REACT_APP_API_URL.trim();
   }
-  return process.env.NODE_ENV === "production" ? "" : "http://localhost:8002";
+  return "https://wolegotransport.com/api";
 };
 
 const raw = getRawUrl().replace(/\/+$/, "");
