@@ -205,6 +205,15 @@ export default function DashboardPage() {
       textColor: "text-rose-400",
       borderColor: "border-rose-500/30 hover:border-rose-400",
     },
+    {
+      title: "Truck Coming Alert",
+      path: "/truck-coming",
+      icon: Truck,
+      badge: "Due Return",
+      color: "from-amber-600 to-orange-700",
+      textColor: "text-amber-400",
+      borderColor: "border-amber-500/30 hover:border-amber-400",
+    },
   ];
 
   return (

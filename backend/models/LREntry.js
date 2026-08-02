@@ -67,6 +67,14 @@ const LREntry = sequelize.define("LREntry", {
   consigneeEwayBill: DataTypes.STRING,
   remarks: DataTypes.TEXT,
   debitAmountTo: DataTypes.STRING,
+  tripDays: {
+    type: DataTypes.INTEGER,
+    defaultValue: 5,
+  },
+  truckComingDismissed: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
 
   // Accounting & Payment Tracking
   partyPaymentStatus: {

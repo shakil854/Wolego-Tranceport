@@ -182,6 +182,7 @@ export default function LREntryForm() {
     consigneeEwayBill: "",
     remarks: "",
     debitAmountTo: "CONSIGNEE",
+    tripDays: 5,
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -1083,6 +1084,20 @@ export default function LREntryForm() {
                     placeholder="DRIVER MOBILE NO."
                     className="w-full bg-white text-slate-900 font-mono font-bold px-1.5 py-0.5 border rounded text-[11px]"
                   />
+                </div>
+
+                <div className="flex items-center justify-between gap-1 pt-1 border-t border-sky-800/80">
+                  <label className="text-[10px] font-bold text-yellow-300">TRIP DAYS (EXPECTED):</label>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      value={formData.tripDays !== undefined ? formData.tripDays : 5}
+                      onChange={(e) => setFormData({ ...formData, tripDays: parseInt(e.target.value, 10) || 5 })}
+                      className="w-14 bg-white text-slate-900 font-mono font-bold text-center px-1.5 py-0.5 border rounded text-[11px]"
+                    />
+                    <span className="text-[10px] font-bold text-sky-200">DAYS</span>
+                  </div>
                 </div>
               </div>
 

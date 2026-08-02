@@ -86,4 +86,20 @@ router.put("/:id/payment-status", async (req, res) => {
   }
 });
 
+// Dismiss Truck Coming Alert for an LR
+router.put("/:id/dismiss-truck-coming", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const lr = await LREntry.findByPk(id);
+    if (!lr) {
+      return res.status(404).json({ error: "LR Entry not found." });
+    }
+    lr.truckComingDismissed = true;
+    await lr.save();
+    res.json({ success: true, lr });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

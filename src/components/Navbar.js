@@ -67,6 +67,7 @@ export default function Navbar() {
     { name: "Letter Pad", path: "/letter-pad", icon: FileText },
     { name: "Truck Debit", path: "/truck-payments", icon: Truck },
     { name: "Payment Alerts", path: "/payment-alerts", icon: Bell },
+    { name: "Truck Coming", path: "/truck-coming", icon: Truck },
   ];
 
   const isActive = (path) => {

@@ -164,6 +164,21 @@ export const deleteLREntry = async (id) => {
   return lrCache;
 };
 
+// Dismiss Truck Coming Alert for an LR
+export const dismissTruckComing = async (lrId) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/lr-entries/${lrId}/dismiss-truck-coming`, {
+      method: "PUT",
+    });
+    if (res.ok) {
+      return await fetchLREntriesFromDB();
+    }
+  } catch (err) {
+    console.error("Dismiss Truck Coming API Error:", err);
+  }
+  return lrCache;
+};
+
 // Safe Local Date Parser (Prevents UTC timezone rollback e.g. 2027-04-01 turning into 2027-03-31)
 export const parseLocalDate = (dateInput) => {
   if (!dateInput) return new Date();
