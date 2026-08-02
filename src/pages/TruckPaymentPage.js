@@ -15,12 +15,14 @@ import {
   AlertCircle,
   Sparkles,
 } from "lucide-react";
+import PasswordConfirmModal from "../components/PasswordConfirmModal";
 
 export default function TruckPaymentPage() {
   const [records, setRecords] = useState([]);
   const [trucksList, setTrucksList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
 
   // Form State
   const todayStr = new Date().toISOString().split("T")[0];
@@ -130,7 +132,21 @@ export default function TruckPaymentPage() {
     }
   };
 
-  // Toggle or Set Status to PAID (Action column right click / checkmark)
+  // Execute action after password verification
+  const executePendingAction = async () => {
+    if (!pendingAction) return;
+
+    const { type, id, currentStatus } = pendingAction;
+    setPendingAction(null);
+
+    if (type === "TOGGLE_STATUS") {
+      await handleSetPaid(id, currentStatus);
+    } else if (type === "DELETE") {
+      await handleDelete(id);
+    }
+  };
+
+  // Toggle or Set Status to PAID
   const handleSetPaid = async (id, currentStatus) => {
     const newStatus = currentStatus === "PAID" ? "PENDING" : "PAID";
     try {
@@ -161,8 +177,6 @@ export default function TruckPaymentPage() {
 
   // Delete Record
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this truck entry?")) return;
-
     try {
       const res = await fetch(`${API_BASE_URL}/truck-payments/${id}`, {
         method: "DELETE",
@@ -514,7 +528,14 @@ export default function TruckPaymentPage() {
                         <div className="flex items-center justify-center gap-2">
                           {/* Green Right Click / Checkmark Action Button */}
                           <button
-                            onClick={() => handleSetPaid(item.id, item.status)}
+                            onClick={() =>
+                              setPendingAction({
+                                type: "TOGGLE_STATUS",
+                                id: item.id,
+                                currentStatus: item.status,
+                                truckNo: item.truckNo,
+                              })
+                            }
                             title={isPaid ? "Mark as Pending" : "Mark as Paid"}
                             className={`p-1.5 rounded-lg font-bold text-xs transition cursor-pointer flex items-center gap-1 ${
                               isPaid
@@ -528,9 +549,15 @@ export default function TruckPaymentPage() {
 
                           {/* Delete Action Button */}
                           <button
-                            onClick={() => handleDelete(item.id)}
+                            onClick={() =>
+                              setPendingAction({
+                                type: "DELETE",
+                                id: item.id,
+                                truckNo: item.truckNo,
+                              })
+                            }
                             title="Delete record"
-                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -544,6 +571,19 @@ export default function TruckPaymentPage() {
           </table>
         </div>
       </div>
+
+      {/* Security Password Confirmation Modal */}
+      {pendingAction && (
+        <PasswordConfirmModal
+          actionTitle={
+            pendingAction.type === "DELETE"
+              ? `Password required to DELETE entry for Truck #${pendingAction.truckNo}`
+              : `Password required to change status to ${pendingAction.currentStatus === "PAID" ? "PENDING" : "PAID"} for Truck #${pendingAction.truckNo}`
+          }
+          onConfirm={executePendingAction}
+          onClose={() => setPendingAction(null)}
+        />
+      )}
 
     </div>
   );
