@@ -32,9 +32,10 @@ export function AuthProvider({ children }) {
 
   const isOwner = user?.role === "OWNER";
   const isParty = user?.role === "PARTY";
+  const isTruck = user?.role === "TRUCK";
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isOwner, isParty }}>
+    <AuthContext.Provider value={{ user, login, logout, isOwner, isParty, isTruck }}>
       {children}
     </AuthContext.Provider>
   );

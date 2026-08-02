@@ -36,8 +36,10 @@ export default function LoginPage() {
 
       if (data.user.role === "PARTY") {
         navigate("/accounting");
+      } else if (data.user.role === "TRUCK") {
+        navigate("/truck-accounting");
       } else {
-        navigate("/lr-entry");
+        navigate("/dashboard");
       }
     } catch (err) {
       setError(err.message);

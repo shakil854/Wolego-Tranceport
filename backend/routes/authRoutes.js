@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import Party from "../models/Party.js";
+import Truck from "../models/Truck.js";
 
 const router = express.Router();
 
@@ -61,6 +62,27 @@ router.post("/login", async (req, res) => {
           role: "PARTY",
           partyId: matchedParty.id,
           partyName: matchedParty.partyName,
+          mobileNo: cleanUsername,
+        });
+      }
+    }
+
+    // Fallback: If user is not found in User table, check if it matches a Truck's mobileNo
+    if (!user) {
+      const trucks = await Truck.findAll();
+      const matchedTruck = trucks.find((t) => {
+        if (!t.mobileNo) return false;
+        const nums = String(t.mobileNo).split(/[,/ ]+/);
+        return nums.some((num) => num.trim() === cleanUsername);
+      });
+
+      if (matchedTruck) {
+        const hashedPassword = await bcrypt.hash("12345", 10);
+        user = await User.create({
+          id: "USER-TRUCK-" + cleanUsername,
+          username: cleanUsername,
+          password: hashedPassword,
+          role: "TRUCK",
           mobileNo: cleanUsername,
         });
       }

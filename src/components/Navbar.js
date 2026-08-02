@@ -28,7 +28,7 @@ import logoImg from "../assets/logo.png";
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, isOwner, isParty } = useAuth();
+  const { user, logout, isOwner, isParty, isTruck } = useAuth();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -48,7 +48,12 @@ export default function Navbar() {
     { name: "My Accounting", path: "/accounting", icon: Calculator },
   ];
 
-  const primaryItems = isParty ? partyPrimaryItems : ownerPrimaryItems;
+  // Primary Navigation Items for Truck Owner
+  const truckPrimaryItems = [
+    { name: "My Truck Accounting", path: "/truck-accounting", icon: Truck },
+  ];
+
+  const primaryItems = isTruck ? truckPrimaryItems : isParty ? partyPrimaryItems : ownerPrimaryItems;
 
   // Dropdown Items (Owner only)
   const dropdownItems = [
@@ -112,7 +117,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14 sm:h-16">
 
           {/* Logo / Brand */}
-          <Link to={isParty ? "/accounting" : "/"} className="flex items-center space-x-2 shrink-0 group">
+          <Link to={isParty ? "/accounting" : isTruck ? "/truck-accounting" : "/"} className="flex items-center space-x-2 shrink-0 group">
             <div className="bg-white p-1 rounded-lg shadow-md transform group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
               <img src={logoImg} alt="Wolego Transport Logo" className="h-7 sm:h-8 w-auto object-contain" />
             </div>
@@ -200,7 +205,7 @@ export default function Navbar() {
                     <User className="w-4 h-4 text-amber-400" />
                     <div className="text-xs">
                       <div className="font-extrabold text-amber-400 leading-none">
-                        {isOwner ? "OWNER" : user.partyName || user.username}
+                        {isOwner ? "OWNER" : isTruck ? "TRUCK OWNER" : user.partyName || user.username}
                       </div>
                       <div className="text-[10px] text-slate-400 font-mono leading-tight">
                         {user.username}

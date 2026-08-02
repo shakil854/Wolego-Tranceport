@@ -16,6 +16,7 @@ import DailyReport from "./pages/DailyReport";
 import LetterPadPage from "./pages/LetterPadPage";
 import TruckPaymentPage from "./pages/TruckPaymentPage";
 import PaymentAlertsPage from "./pages/PaymentAlertsPage";
+import TruckAccountingPage from "./pages/TruckAccountingPage";
 
 import DashboardPage from "./pages/DashboardPage";
 
@@ -26,8 +27,9 @@ function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/login" replace />;
   }
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // If party tries to access owner pages, redirect to accounting
-    return <Navigate to="/accounting" replace />;
+    if (user.role === "TRUCK") return <Navigate to="/truck-accounting" replace />;
+    if (user.role === "PARTY") return <Navigate to="/accounting" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   return children;
 }
@@ -35,16 +37,22 @@ function ProtectedRoute({ children, allowedRoles }) {
 function AppRoutes() {
   const { user } = useAuth();
 
+  const getHomeRedirect = (role) => {
+    if (role === "TRUCK") return "/truck-accounting";
+    if (role === "PARTY") return "/accounting";
+    return "/dashboard";
+  };
+
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to={user.role === "PARTY" ? "/accounting" : "/dashboard"} replace /> : <LoginPage />} />
+      <Route path="/login" element={user ? <Navigate to={getHomeRedirect(user.role)} replace /> : <LoginPage />} />
 
       {/* Main Home Route */}
       <Route
         path="/"
         element={
           <ProtectedRoute>
-            {user?.role === "PARTY" ? <Navigate to="/accounting" replace /> : <Navigate to="/dashboard" replace />}
+            <Navigate to={getHomeRedirect(user?.role)} replace />
           </ProtectedRoute>
         }
       />
@@ -59,11 +67,21 @@ function AppRoutes() {
         }
       />
 
-      {/* Accounting Page (Accessible by both Owner and Party) */}
+      {/* Truck Accounting Page (Accessible by Owner and Truck role) */}
+      <Route
+        path="/truck-accounting"
+        element={
+          <ProtectedRoute allowedRoles={["OWNER", "TRUCK"]}>
+            <TruckAccountingPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Accounting Page (Accessible by Owner and Party) */}
       <Route
         path="/accounting"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["OWNER", "PARTY"]}>
             <AccountingPage />
           </ProtectedRoute>
         }
