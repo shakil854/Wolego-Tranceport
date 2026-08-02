@@ -186,6 +186,15 @@ export default function DashboardPage() {
       textColor: "text-amber-400",
       borderColor: "border-amber-500/30 hover:border-amber-400",
     },
+    {
+      title: "Truck Debit",
+      path: "/truck-payments",
+      icon: Truck,
+      badge: "Debit Entry",
+      color: "from-emerald-600 to-teal-700",
+      textColor: "text-emerald-400",
+      borderColor: "border-emerald-500/30 hover:border-emerald-400",
+    },
   ];
 
   return (

@@ -59,6 +59,7 @@ export default function Navbar() {
     { name: "Party Master", path: "/party-master", icon: Users },
     { name: "Truck Master", path: "/truck-master", icon: Truck },
     { name: "Letter Pad", path: "/letter-pad", icon: FileText },
+    { name: "Truck Debit", path: "/truck-payments", icon: Truck },
   ];
 
   const isActive = (path) => {

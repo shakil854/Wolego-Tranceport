@@ -8,6 +8,7 @@ import partyRoutes from "./routes/partyRoutes.js";
 import lrRoutes from "./routes/lrRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import truckRoutes from "./routes/truckRoutes.js";
+import truckPaymentRoutes from "./routes/truckPaymentRoutes.js";
 
 dotenv.config();
 
@@ -42,6 +43,9 @@ app.use("/lr", lrRoutes);
 
 app.use("/api/trucks", truckRoutes);
 app.use("/trucks", truckRoutes);
+
+app.use("/api/truck-payments", truckPaymentRoutes);
+app.use("/truck-payments", truckPaymentRoutes);
 
 app.get("/", (req, res) => {
   res.send("Wolego Transport Billing Server is Running!");
