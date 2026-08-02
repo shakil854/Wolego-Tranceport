@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { fetchLREntriesFromDB, getFinancialYear } from "../utils/storage";
-import { Receipt, Printer, Download, Share2, Search, CheckCircle2, DollarSign, Calendar } from "lucide-react";
+import { Printer, Download, Share2, CheckCircle2, DollarSign, Calendar } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import logoImg from "../assets/logo.png";
 
 export default function FreightReceipt() {
   const [lrEntries, setLrEntries] = useState([]);
@@ -258,11 +259,12 @@ export default function FreightReceipt() {
             width: 100% !important;
             max-width: 185mm !important;
             margin: 0 auto !important;
-            padding: 5px !important;
+            padding: 0 !important;
             background: #ffffff !important;
             color: #000000 !important;
             box-shadow: none !important;
-            border: none !important;
+            border: 2px solid #000000 !important;
+            box-sizing: border-box !important;
           }
           @page {
             size: A4 portrait;
@@ -580,103 +582,133 @@ export default function FreightReceipt() {
       <div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none print:static print:opacity-100 print:pointer-events-auto">
         <div
           ref={printRef}
-          className="freight-print-wrapper bg-white text-black p-4 max-w-[185mm] w-full mx-auto font-sans border-0 shadow-none rounded-none"
+          className="freight-print-wrapper bg-white text-black max-w-[185mm] w-full mx-auto font-sans border-2 border-black shadow-none rounded-none box-border p-0"
           style={{ width: "185mm", backgroundColor: "#ffffff", color: "#000000" }}
         >
-          {/* Header Banner */}
-          <div className="text-center mb-3 pb-2 border-b-2 border-black">
-            <h2 className="text-xl sm:text-2xl font-black text-black uppercase font-serif tracking-wider">
-              WOLEGO TRANSPORT
-            </h2>
-            <div className="text-xs font-black text-blue-900 uppercase tracking-widest mt-0.5">
-              FREIGHT RECEIPT
+          {/* 1. Top Jurisdiction Bar (Wall to wall with 2px bottom border) */}
+          <div className="text-center font-extrabold uppercase tracking-wide text-[10px] sm:text-[10.5px] py-1 border-b-2 border-black text-black bg-white whitespace-nowrap">
+            <u>SUBJECT TO WANKANER JURISDICTION</u>
+          </div>
+
+          {/* 2. 3-Column Company Header Row (Wall to wall with 2px black dividers) */}
+          <div className="grid grid-cols-12 items-center border-b-2 border-black bg-white text-black py-1.5 px-0">
+            {/* Left Logo Column (Col 2 with 2px black right border) */}
+            <div className="col-span-2 flex flex-col items-center justify-center border-r-2 border-black pr-1 h-full">
+              <img
+                src={logoImg}
+                alt="Wolego Transport Logo"
+                className="h-20 sm:h-24 w-auto max-w-full object-contain mix-blend-multiply"
+              />
+            </div>
+
+            {/* Center Title & Details Column (Col 7 - Clean Natural Spacing) */}
+            <div className="col-span-7 border-r-2 border-black text-center flex flex-col items-center justify-center space-y-1 py-1 px-1">
+              <h1 className="text-xl sm:text-2xl font-black text-[#009a44] font-serif tracking-wider uppercase leading-tight whitespace-nowrap">
+                WOLEGO TRANSPORT
+              </h1>
+              <p className="text-[11px] sm:text-xs font-black italic text-[#800000] font-serif tracking-wide leading-tight whitespace-nowrap">
+                EVERYTHING IS FAST
+              </p>
+              <div className="whitespace-nowrap flex justify-center items-center">
+                <div className="bg-[#1e3a8a] text-white font-black text-[9px] sm:text-[10px] px-3 py-1 rounded-xs uppercase tracking-wider inline-flex items-center justify-center text-center leading-normal">
+                  TRANSPORT CONTRACTOR AND COMMISSION AGENT
+                </div>
+              </div>
+              <div className="text-[8.5px] sm:text-[9.5px] font-black text-[#800000] leading-snug text-center uppercase whitespace-nowrap">
+                <div>SURVEY NUMBER NA 178P8, 27 NATIONAL HIGHWAY,</div>
+                <div>CHANDRAPUR, WANKANER-363621 DISTRICT-MORBI ( GUJRAT )</div>
+              </div>
+            </div>
+
+            {/* Right Contact Details Column (Col 3) */}
+            <div className="col-span-3 pl-2 space-y-0.5 text-[8.5px] sm:text-[9.5px] font-black text-black text-left flex flex-col justify-center h-full whitespace-nowrap">
+              <div>MOBILE NO. +91 99 79 111 555</div>
+              <div>MOBILE NO. +91 81 41 111 555</div>
+              <div>PAN NO. : DLTPS8567M</div>
+              <div>GSTIN NO. : 24DLTPS8567M1ZT</div>
             </div>
           </div>
 
-          {/* Main Form Table Matching Screenshots Exactly */}
-          <table className="w-full border-collapse border-2 border-black text-sm">
+          {/* 3. Freight Receipt Title Banner (Wall to wall with 2px bottom border) */}
+          <div className="bg-slate-900 text-white font-black text-xs sm:text-sm py-1 text-center uppercase tracking-widest border-b-2 border-black">
+            FREIGHT RECEIPT
+          </div>
+
+          {/* 4. Main Form Table Matching Half-Page Printable Specifications */}
+          <table className="w-full border-collapse text-xs sm:text-sm">
             <tbody>
-              {/* TRUCK NO */}
               <tr>
-                <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TRUCK NO.
                 </td>
-                <td className="w-1/2 p-2.5 font-mono font-extrabold text-base uppercase text-center border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base uppercase text-center border-b-2 border-black text-black">
                   {truckNo || "-"}
                 </td>
               </tr>
 
-              {/* TOTAL WEIGHT IN KGS */}
               <tr>
-                <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TOTAL WEIGHT IN KGS
                 </td>
-                <td className="w-1/2 p-2.5 font-mono font-extrabold text-base text-center border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base text-center border-b-2 border-black text-black">
                   {weightKgs ? numericWeight.toLocaleString("en-IN") : "-"}
                 </td>
               </tr>
 
-              {/* RATE PER M.T. */}
               <tr>
-                <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   RATE PER M.T.
                 </td>
-                <td className="w-1/2 p-2.5 font-mono font-extrabold text-base text-center border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base text-center border-b-2 border-black text-black">
                   {ratePerMt ? numericRate.toLocaleString("en-IN") : "-"}
                 </td>
               </tr>
 
-              {/* TOTAL FREIGHT */}
               <tr>
-                <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TOTAL FREIGHT
                 </td>
-                <td className="w-1/2 p-2.5 font-mono font-extrabold text-lg text-center border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-mono font-extrabold text-base sm:text-lg text-center border-b-2 border-black text-black">
                   {calculatedTotalFreight > 0 ? `₹ ${calculatedTotalFreight.toLocaleString("en-IN")}` : "-"}
                 </td>
               </tr>
 
-              {/* CHEQUE SPECIFIC ROWS */}
               {receiptType === "CHEQUE" ? (
                 <>
-                  {/* PAID BY CHEQUE */}
                   <tr>
-                    <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       PAID BY CHEQUE
                     </td>
-                    <td className="w-1/2 p-2.5 font-mono font-extrabold text-base text-center border-b-2 border-black text-black">
+                    <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base text-center border-b-2 border-black text-black">
                       {paidByCheque ? `₹ ${numericPaidCheque.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
 
-                  {/* CASH PAID */}
                   <tr>
-                    <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       CASH PAID
                     </td>
-                    <td className="w-1/2 p-2.5 font-mono font-extrabold text-base text-center border-b-2 border-black text-black">
+                    <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base text-center border-b-2 border-black text-black">
                       {calculatedTotalFreight > 0 ? `₹ ${calculatedCashPaid.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
                 </>
               ) : (
-                /* CASH ONLY SPECIFIC ROW */
                 <tr>
-                  <td className="w-1/2 p-2.5 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                  <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                     CASH PAID
                   </td>
-                  <td className="w-1/2 p-2.5 font-mono font-extrabold text-base text-center border-b-2 border-black text-black">
+                  <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base text-center border-b-2 border-black text-black">
                     {calculatedTotalFreight > 0 ? `₹ ${calculatedTotalFreight.toLocaleString("en-IN")}` : "-"}
                   </td>
                 </tr>
               )}
 
-              {/* REMARKS - BOTH LABEL & VALUE ARE IN RED TEXT AS REQUESTED */}
               <tr>
-                <td className="w-1/2 p-2.5 font-extrabold text-sm uppercase bg-gray-100 border-r-2 border-black text-red-600">
+                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase bg-gray-100 border-r-2 border-black text-red-600">
                   REMARKS
                 </td>
-                <td className="w-1/2 p-2.5 font-extrabold text-sm text-center text-red-600 uppercase">
+                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm text-center text-red-600 uppercase">
                   {remarks || "-"}
                 </td>
               </tr>
