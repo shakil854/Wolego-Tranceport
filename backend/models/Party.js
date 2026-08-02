@@ -25,6 +25,10 @@ const Party = sequelize.define("Party", {
     type: DataTypes.ENUM("CONSIGNEE", "CONSIGNOR", "BOTH"),
     defaultValue: "CONSIGNEE",
   },
+  paymentDays: {
+    type: DataTypes.INTEGER,
+    defaultValue: 30,
+  },
 });
 
 export default Party;

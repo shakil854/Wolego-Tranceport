@@ -15,6 +15,7 @@ import TruckMaster from "./pages/TruckMaster";
 import DailyReport from "./pages/DailyReport";
 import LetterPadPage from "./pages/LetterPadPage";
 import TruckPaymentPage from "./pages/TruckPaymentPage";
+import PaymentAlertsPage from "./pages/PaymentAlertsPage";
 
 import DashboardPage from "./pages/DashboardPage";
 
@@ -156,6 +157,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["OWNER"]}>
             <TruckPaymentPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/payment-alerts"
+        element={
+          <ProtectedRoute allowedRoles={["OWNER"]}>
+            <PaymentAlertsPage />
           </ProtectedRoute>
         }
       />

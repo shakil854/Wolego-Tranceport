@@ -19,6 +19,7 @@ import {
   PlusCircle,
   RefreshCw,
   Zap,
+  Bell,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -194,6 +195,15 @@ export default function DashboardPage() {
       color: "from-emerald-600 to-teal-700",
       textColor: "text-emerald-400",
       borderColor: "border-emerald-500/30 hover:border-emerald-400",
+    },
+    {
+      title: "Payment Alerts",
+      path: "/payment-alerts",
+      icon: Bell,
+      badge: "Overdue Alerts",
+      color: "from-rose-600 to-red-700",
+      textColor: "text-rose-400",
+      borderColor: "border-rose-500/30 hover:border-rose-400",
     },
   ];
 

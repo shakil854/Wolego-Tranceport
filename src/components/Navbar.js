@@ -21,6 +21,7 @@ import {
   User,
   Key,
   LayoutDashboard,
+  Bell,
 } from "lucide-react";
 import logoImg from "../assets/logo.png";
 
@@ -60,6 +61,7 @@ export default function Navbar() {
     { name: "Truck Master", path: "/truck-master", icon: Truck },
     { name: "Letter Pad", path: "/letter-pad", icon: FileText },
     { name: "Truck Debit", path: "/truck-payments", icon: Truck },
+    { name: "Payment Alerts", path: "/payment-alerts", icon: Bell },
   ];
 
   const isActive = (path) => {

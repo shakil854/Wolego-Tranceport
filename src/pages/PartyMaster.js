@@ -26,6 +26,7 @@ export default function PartyMaster() {
     contactName: "",
     mobileNos: "",
     selectType: "CONSIGNEE", // CONSIGNEE / CONSIGNOR / BOTH
+    paymentDays: 30, // Default 30 days payment timeline
   };
 
   const [addFormData, setAddFormData] = useState(initialBlankForm);
@@ -317,20 +318,35 @@ export default function PartyMaster() {
                 </div>
               </div>
 
-              {/* Select Type (CONSIGNEE / CONSIGNOR / BOTH) */}
-              <div>
-                <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
-                  Party Category
-                </label>
-                <select
-                  value={addFormData.selectType}
-                  onChange={(e) => setAddFormData({ ...addFormData, selectType: e.target.value })}
-                  className="w-full bg-yellow-300 text-slate-950 font-extrabold px-2 py-1 text-xs border-2 border-yellow-500 rounded focus:outline-none uppercase cursor-pointer"
-                >
-                  <option value="CONSIGNEE">CONSIGNEE (माल प्राप्तकर्ता)</option>
-                  <option value="CONSIGNOR">CONSIGNOR (माल भेजने वाला)</option>
-                  <option value="BOTH">BOTH (दोनों)</option>
-                </select>
+              {/* Select Type & Payment Timeline Days */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                <div>
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                    Party Category
+                  </label>
+                  <select
+                    value={addFormData.selectType}
+                    onChange={(e) => setAddFormData({ ...addFormData, selectType: e.target.value })}
+                    className="w-full bg-yellow-300 text-slate-950 font-extrabold px-2 py-1 text-xs border-2 border-yellow-500 rounded focus:outline-none uppercase cursor-pointer"
+                  >
+                    <option value="CONSIGNEE">CONSIGNEE (माल प्राप्तकर्ता)</option>
+                    <option value="CONSIGNOR">CONSIGNOR (माल भेजने वाला)</option>
+                    <option value="BOTH">BOTH (दोनों)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                    Payment Timeline (Days)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={addFormData.paymentDays !== undefined ? addFormData.paymentDays : 30}
+                    onChange={(e) => setAddFormData({ ...addFormData, paymentDays: Number(e.target.value) || 0 })}
+                    placeholder="e.g. 30"
+                    className="w-full bg-white text-slate-900 font-extrabold px-2 py-1 text-xs border-2 border-yellow-400 rounded focus:outline-none"
+                  />
+                </div>
               </div>
 
               {/* Save Button */}
@@ -713,18 +729,31 @@ export default function PartyMaster() {
                 </div>
               </div>
 
-              {/* Select Type */}
-              <div>
-                <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Party Category</label>
-                <select
-                  value={editFormData.selectType}
-                  onChange={(e) => setEditFormData({ ...editFormData, selectType: e.target.value })}
-                  className="w-full bg-yellow-300 text-slate-950 font-extrabold px-3 py-2 text-xs border-2 border-yellow-500 rounded uppercase cursor-pointer"
-                >
-                  <option value="CONSIGNEE">CONSIGNEE (माल प्राप्तकर्ता)</option>
-                  <option value="CONSIGNOR">CONSIGNOR (माल भेजने वाला)</option>
-                  <option value="BOTH">BOTH (दोनों)</option>
-                </select>
+              {/* Select Type & Payment Timeline Days */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Party Category</label>
+                  <select
+                    value={editFormData.selectType}
+                    onChange={(e) => setEditFormData({ ...editFormData, selectType: e.target.value })}
+                    className="w-full bg-yellow-300 text-slate-950 font-extrabold px-3 py-2 text-xs border-2 border-yellow-500 rounded uppercase cursor-pointer"
+                  >
+                    <option value="CONSIGNEE">CONSIGNEE (माल प्राप्तकर्ता)</option>
+                    <option value="CONSIGNOR">CONSIGNOR (माल भेजने वाला)</option>
+                    <option value="BOTH">BOTH (दोनों)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Payment Timeline (Days)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editFormData.paymentDays !== undefined ? editFormData.paymentDays : 30}
+                    onChange={(e) => setEditFormData({ ...editFormData, paymentDays: Number(e.target.value) || 0 })}
+                    placeholder="30"
+                    className="w-full bg-white text-slate-900 font-extrabold px-3 py-2 text-xs border-2 border-yellow-400 rounded focus:outline-none"
+                  />
+                </div>
               </div>
 
               {/* Modal Action Buttons */}
