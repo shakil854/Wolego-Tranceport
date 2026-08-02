@@ -222,27 +222,27 @@ export default function TruckPaymentPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-4 font-sans text-slate-100">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 space-y-3 font-sans text-slate-100">
       
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-16 right-4 z-50 bg-emerald-600 text-white px-4 py-2 rounded-xl shadow-xl font-bold text-sm flex items-center gap-2 animate-bounce">
-          <CheckCircle size={18} />
+        <div className="fixed top-16 right-4 z-50 bg-emerald-600 text-white px-3.5 py-1.5 rounded-lg shadow-xl font-bold text-xs flex items-center gap-2 animate-bounce">
+          <CheckCircle size={16} />
           <span>{toastMsg}</span>
         </div>
       )}
 
       {/* Page Title & Header */}
-      <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-4 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl shrink-0">
-            <Truck className="w-6 h-6" />
+      <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 bg-amber-500/20 text-amber-400 rounded-lg shrink-0">
+            <Truck className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-lg sm:text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-base sm:text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
               Truck Debit
             </h1>
-            <p className="text-xs text-slate-400">
+            <p className="text-[11px] text-slate-400">
               Create truck debit entries, auto-capture date, and manage paid status.
             </p>
           </div>
@@ -251,7 +251,7 @@ export default function TruckPaymentPage() {
         <button
           onClick={fetchData}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-bold transition cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-bold transition cursor-pointer disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${loading ? "animate-spin" : ""}`} />
           <span>Refresh</span>
@@ -259,50 +259,50 @@ export default function TruckPaymentPage() {
       </div>
 
       {/* Summary Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
         {/* 1. Total Entries */}
-        <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 shadow-md flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-2.5 shadow-md flex flex-col justify-between">
+          <div className="flex items-center justify-between text-slate-400 text-[11px] font-semibold">
             <span>Total Entries</span>
-            <FileText className="w-4 h-4 text-blue-400" />
+            <FileText className="w-3.5 h-3.5 text-blue-400" />
           </div>
-          <div className="text-lg sm:text-2xl font-extrabold text-blue-400 font-mono my-1">
+          <div className="text-base sm:text-xl font-extrabold text-blue-400 font-mono my-0.5">
             {records.length}
           </div>
           <div className="text-[10px] text-slate-400">Recorded Log Entries</div>
         </div>
 
         {/* 2. Total Amount */}
-        <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 shadow-md flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+        <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-2.5 shadow-md flex flex-col justify-between">
+          <div className="flex items-center justify-between text-slate-400 text-[11px] font-semibold">
             <span>Total Amount</span>
-            <DollarSign className="w-4 h-4 text-cyan-400" />
+            <DollarSign className="w-3.5 h-3.5 text-cyan-400" />
           </div>
-          <div className="text-lg sm:text-2xl font-extrabold text-cyan-400 font-mono my-1">
+          <div className="text-base sm:text-xl font-extrabold text-cyan-400 font-mono my-0.5">
             {formatCurrency(totalAmount)}
           </div>
           <div className="text-[10px] text-slate-400">All Truck Entries</div>
         </div>
 
         {/* 3. Pending Amount */}
-        <div className="bg-slate-800/90 border border-amber-500/40 rounded-xl p-3 shadow-md flex flex-col justify-between">
-          <div className="flex items-center justify-between text-amber-400 text-xs font-semibold">
+        <div className="bg-slate-800/90 border border-amber-500/40 rounded-xl p-2.5 shadow-md flex flex-col justify-between">
+          <div className="flex items-center justify-between text-amber-400 text-[11px] font-semibold">
             <span>Pending Amount</span>
-            <Clock className="w-4 h-4 text-amber-400" />
+            <Clock className="w-3.5 h-3.5 text-amber-400" />
           </div>
-          <div className="text-lg sm:text-2xl font-extrabold text-amber-400 font-mono my-1">
+          <div className="text-base sm:text-xl font-extrabold text-amber-400 font-mono my-0.5">
             {formatCurrency(pendingAmount)}
           </div>
           <div className="text-[10px] text-slate-400">Unpaid Entries</div>
         </div>
 
         {/* 4. Paid Amount */}
-        <div className="bg-slate-800/90 border border-emerald-500/40 rounded-xl p-3 shadow-md flex flex-col justify-between">
-          <div className="flex items-center justify-between text-emerald-400 text-xs font-semibold">
+        <div className="bg-slate-800/90 border border-emerald-500/40 rounded-xl p-2.5 shadow-md flex flex-col justify-between">
+          <div className="flex items-center justify-between text-emerald-400 text-[11px] font-semibold">
             <span>Paid Amount</span>
-            <CheckCircle className="w-4 h-4 text-emerald-400" />
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
           </div>
-          <div className="text-lg sm:text-2xl font-extrabold text-emerald-400 font-mono my-1">
+          <div className="text-base sm:text-xl font-extrabold text-emerald-400 font-mono my-0.5">
             {formatCurrency(paidAmount)}
           </div>
           <div className="text-[10px] text-slate-400">Completed Payments</div>
@@ -310,18 +310,18 @@ export default function TruckPaymentPage() {
       </div>
 
       {/* New Entry Form */}
-      <div className="bg-slate-800/90 border border-amber-500/40 rounded-xl p-4 shadow-xl">
-        <div className="flex items-center gap-2 border-b border-slate-700/80 pb-3 mb-4">
-          <PlusCircle className="w-5 h-5 text-amber-400" />
-          <h2 className="text-base font-bold text-white tracking-wide">
+      <div className="bg-slate-800/90 border border-amber-500/40 rounded-xl p-3 sm:p-3.5 shadow-xl">
+        <div className="flex items-center gap-1.5 border-b border-slate-700/80 pb-2 mb-3">
+          <PlusCircle className="w-4 h-4 text-amber-400" />
+          <h2 className="text-xs font-bold text-white uppercase tracking-wider">
             Create New Truck Debit
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 items-end">
           {/* Field 1: Truck No */}
-          <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1">
+          <div className="lg:col-span-3">
+            <label className="block text-[11px] font-bold text-slate-300 mb-0.5">
               Truck No <span className="text-amber-400">*</span>
             </label>
             <div className="relative">
@@ -333,7 +333,7 @@ export default function TruckPaymentPage() {
                 onChange={handleChange}
                 placeholder="e.g. GJ36T1234"
                 required
-                className="w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 font-mono font-bold focus:outline-none uppercase"
+                className="w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-mono font-bold focus:outline-none uppercase"
               />
               <datalist id="trucks-list-options">
                 {trucksList.map((t) => (
@@ -344,8 +344,8 @@ export default function TruckPaymentPage() {
           </div>
 
           {/* Field 2: Amount */}
-          <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1">
+          <div className="lg:col-span-3">
+            <label className="block text-[11px] font-bold text-slate-300 mb-0.5">
               Amount (₹) <span className="text-amber-400">*</span>
             </label>
             <input
@@ -356,13 +356,13 @@ export default function TruckPaymentPage() {
               placeholder="e.g. 5000"
               min="1"
               required
-              className="w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 font-mono font-bold focus:outline-none"
+              className="w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-mono font-bold focus:outline-none"
             />
           </div>
 
           {/* Field 3: Remark */}
-          <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1">
+          <div className="lg:col-span-3">
+            <label className="block text-[11px] font-bold text-slate-300 mb-0.5">
               Remark / Note
             </label>
             <input
@@ -371,14 +371,14 @@ export default function TruckPaymentPage() {
               value={formData.remark}
               onChange={handleChange}
               placeholder="e.g. Advance cash / Diesel"
-              className="w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none"
+              className="w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none"
             />
           </div>
 
-          {/* Hidden Auto Date (or Date Selector) & Submit Button */}
-          <div className="flex gap-2">
-            <div className="w-1/3">
-              <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+          {/* Field 4: Date & Submit Button */}
+          <div className="lg:col-span-3 flex gap-2">
+            <div className="w-5/12">
+              <label className="block text-[10px] font-semibold text-slate-400 mb-0.5">
                 Date (Auto)
               </label>
               <input
@@ -386,16 +386,16 @@ export default function TruckPaymentPage() {
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-slate-300 focus:outline-none font-mono"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1.5 text-xs text-slate-300 focus:outline-none font-mono"
               />
             </div>
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-2/3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-2 px-4 rounded-lg text-sm transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="w-7/12 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-1.5 px-3 rounded-lg text-xs transition shadow-md flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-3.5 h-3.5" />
               <span>{submitting ? "Saving..." : "Add Entry"}</span>
             </button>
           </div>
@@ -403,7 +403,7 @@ export default function TruckPaymentPage() {
       </div>
 
       {/* Entries Table & Controls Header */}
-      <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-4 shadow-xl space-y-3">
+      <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 shadow-xl space-y-3">
         <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 border-b border-slate-700/80 pb-3">
           
           {/* Status Filter Tabs */}
