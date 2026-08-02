@@ -41,7 +41,7 @@ export default function TruckAccountingPage() {
       let lList = [];
       let pList = [];
 
-      if (trucksRes.ok) tList = await trucksRes.ok ? await trucksRes.json() : [];
+      if (trucksRes.ok) tList = await trucksRes.json();
       if (lrRes.ok) lList = await lrRes.json();
       if (paymentsRes.ok) pList = await paymentsRes.json();
 
@@ -72,20 +72,30 @@ export default function TruckAccountingPage() {
 
   const myTruckNosSet = new Set(myTrucks.map((t) => (t.truckNo || "").toUpperCase().trim()));
 
-  // Filter LR entries for my trucks
+  // Filter LR entries strictly for my trucks
   const filteredLRs = lrEntries.filter((lr) => {
     const tNo = (lr.truckNo || "").toUpperCase().trim();
-    if (isOwner && selectedTruckNo === "ALL") return true;
+    if (!isOwner) {
+      if (!myTruckNosSet.has(tNo)) return false;
+      if (selectedTruckNo !== "ALL") return tNo === selectedTruckNo.toUpperCase().trim();
+      return true;
+    }
+    // Owner view
     if (selectedTruckNo !== "ALL") return tNo === selectedTruckNo.toUpperCase().trim();
-    return myTruckNosSet.has(tNo);
+    return true;
   });
 
-  // Filter Truck Payment entries for my trucks
+  // Filter Truck Payment entries strictly for my trucks
   const filteredPayments = truckPayments.filter((p) => {
     const tNo = (p.truckNo || "").toUpperCase().trim();
-    if (isOwner && selectedTruckNo === "ALL") return true;
+    if (!isOwner) {
+      if (!myTruckNosSet.has(tNo)) return false;
+      if (selectedTruckNo !== "ALL") return tNo === selectedTruckNo.toUpperCase().trim();
+      return true;
+    }
+    // Owner view
     if (selectedTruckNo !== "ALL") return tNo === selectedTruckNo.toUpperCase().trim();
-    return myTruckNosSet.has(tNo);
+    return true;
   });
 
   // Combine trips & cash entries into a single accounting ledger timeline
@@ -94,11 +104,12 @@ export default function TruckAccountingPage() {
       const amt = Number(lr.netTotalAmount) || Number(lr.freightAmount) || 0;
       const paidAmt = Number(lr.truckPaidAmount) || 0;
       const isPaid = lr.truckPaymentStatus === "PAID" || paidAmt >= amt;
+      const routeStr = lr.fromPlace && lr.toPlace ? ` (${lr.fromPlace} -> ${lr.toPlace})` : "";
       return {
         id: `LR-${lr.id}`,
         date: lr.dateTime || lr.createdAt?.split("T")[0] || "-",
         truckNo: (lr.truckNo || "-").toUpperCase(),
-        detail: `Trip LR #${lr.lrNumber || lr.id} (${lr.fromPlace || ""} -> ${lr.toPlace || ""})`,
+        detail: `Trip Freight${routeStr}`,
         category: "TRIP",
         amount: amt,
         paidAmount: paidAmt,
@@ -113,7 +124,7 @@ export default function TruckAccountingPage() {
         id: `TP-${p.id}`,
         date: p.date || p.createdAt?.split("T")[0] || "-",
         truckNo: (p.truckNo || "-").toUpperCase(),
-        detail: p.remark ? `Truck Debit / Payment: ${p.remark}` : "Truck Debit / Cash Payment",
+        detail: p.remark ? `Payment: ${p.remark}` : "Payment / Cash Advance",
         category: "PAYMENT",
         amount: amt,
         paidAmount: isPaid ? amt : 0,
