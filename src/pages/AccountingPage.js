@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { getFinancialYear } from "../utils/storage";
 import PartyPortalStatementDocument from "../components/PartyPortalStatementDocument";
 import AccountingStatementDocument from "../components/AccountingStatementDocument";
+import LRPrintDocument from "../components/LRPrintDocument";
 import { API_BASE_URL } from "../config/api";
 import {
   FileSpreadsheet,
@@ -42,6 +43,10 @@ export default function AccountingPage() {
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [showOwnerStatementModal, setShowOwnerStatementModal] = useState(false);
   const [activeAutoAction, setActiveAutoAction] = useState(null);
+
+  // Individual LR PDF view/download state for Party Portal
+  const [selectedLrForDoc, setSelectedLrForDoc] = useState(null);
+  const [lrDocAutoAction, setLrDocAutoAction] = useState(null);
 
   // Sync tab with URL search parameter (?tab=TRUCK or ?tab=PARTY)
   useEffect(() => {
@@ -395,6 +400,19 @@ export default function AccountingPage() {
     );
   }
 
+  if (selectedLrForDoc) {
+    return (
+      <LRPrintDocument
+        lrData={selectedLrForDoc}
+        autoAction={lrDocAutoAction}
+        onClose={() => {
+          setSelectedLrForDoc(null);
+          setLrDocAutoAction(null);
+        }}
+      />
+    );
+  }
+
   // ----------------------------------------------------
   // 1. PARTY ROLE VIEW (COMPACT PARTY PORTAL)
   // ----------------------------------------------------
@@ -571,12 +589,13 @@ export default function AccountingPage() {
                   <th className="py-2.5 px-3 font-bold">Goods Description</th>
                   <th className="py-2.5 px-3 font-bold text-right">Net Total (₹)</th>
                   <th className="py-2.5 px-3 font-bold text-center">Payment Status</th>
+                  <th className="py-2.5 px-3 font-bold text-center">Download LR</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/60 font-medium">
                 {partyLrEntries.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
+                    <td colSpan={8} className="py-8 text-center text-slate-400 font-medium">
                       No LR records found.
                     </td>
                   </tr>
@@ -622,6 +641,19 @@ export default function AccountingPage() {
                               <span>PENDING</span>
                             </span>
                           )}
+                        </td>
+                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                          <button
+                            onClick={() => {
+                              setSelectedLrForDoc(lr);
+                              setLrDocAutoAction("pdf");
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[11px] font-black transition cursor-pointer shadow"
+                            title="Download LR PDF"
+                          >
+                            <Download className="w-3 h-3" />
+                            <span>Download LR</span>
+                          </button>
                         </td>
                       </tr>
                     );
