@@ -25,6 +25,7 @@ export default function PartyMaster() {
     panNo: "",
     contactName: "",
     mobileNos: "",
+    secondaryMobile: "", // Secondary Mobile No. (Master Record only, no portal login)
     selectType: "CONSIGNEE", // CONSIGNEE / CONSIGNOR / BOTH
     paymentDays: 30, // Default 30 days payment timeline
   };
@@ -290,8 +291,8 @@ export default function PartyMaster() {
                 </div>
               </div>
 
-              {/* Contact Name & Mobile Nos */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {/* Contact Name, Primary Mobile & Secondary Mobile */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
                 <div>
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     Contact Person
@@ -306,13 +307,25 @@ export default function PartyMaster() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
-                    Mobile Numbers
+                    Primary Mobile (Portal Login)
                   </label>
                   <input
                     type="text"
                     value={addFormData.mobileNos}
                     onChange={(e) => setAddFormData({ ...addFormData, mobileNos: e.target.value })}
-                    placeholder="MOBILE NO."
+                    placeholder="LOGIN MOBILE NO."
+                    className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                    Secondary Mobile (Master Only)
+                  </label>
+                  <input
+                    type="text"
+                    value={addFormData.secondaryMobile}
+                    onChange={(e) => setAddFormData({ ...addFormData, secondaryMobile: e.target.value })}
+                    placeholder="2ND MOBILE (NO LOGIN)"
                     className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
@@ -421,9 +434,15 @@ export default function PartyMaster() {
                         </span>
                       </td>
 
-                      {/* Party Name */}
-                      <td className="p-2.5 font-bold text-white max-w-[140px] truncate">
-                        {p.partyName}
+                      {/* Party Name & Mobiles */}
+                      <td className="p-2.5 max-w-[160px]">
+                        <div className="font-bold text-white truncate">{p.partyName}</div>
+                        {p.mobileNos && (
+                          <div className="text-[10px] text-amber-400 font-mono">📱 {p.mobileNos}</div>
+                        )}
+                        {p.secondaryMobile && (
+                          <div className="text-[9.5px] text-slate-400 font-mono">📞 2nd: {p.secondaryMobile}</div>
+                        )}
                       </td>
 
                       {/* City */}
@@ -554,7 +573,10 @@ export default function PartyMaster() {
                 <div>
                   <span className="text-xs font-bold text-slate-400 uppercase block">Contact & Mobile</span>
                   <span className="font-bold text-white block">{viewPartyModal.contactName || "N/A"}</span>
-                  <span className="font-mono text-amber-400 text-xs">{viewPartyModal.mobileNos || "N/A"}</span>
+                  <div className="font-mono text-amber-400 text-xs font-bold">Primary (Login): {viewPartyModal.mobileNos || "N/A"}</div>
+                  {viewPartyModal.secondaryMobile && (
+                    <div className="font-mono text-slate-300 text-xs">2nd (Master): {viewPartyModal.secondaryMobile}</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -707,8 +729,8 @@ export default function PartyMaster() {
                 </div>
               </div>
 
-              {/* Contact & Mobile */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {/* Contact, Primary Mobile & Secondary Mobile */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
                   <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Contact Person</label>
                   <input
@@ -719,11 +741,21 @@ export default function PartyMaster() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Mobile Numbers</label>
+                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Primary Mobile (Login)</label>
                   <input
                     type="text"
                     value={editFormData.mobileNos}
                     onChange={(e) => setEditFormData({ ...editFormData, mobileNos: e.target.value })}
+                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Secondary Mobile (Master Only)</label>
+                  <input
+                    type="text"
+                    value={editFormData.secondaryMobile || ""}
+                    onChange={(e) => setEditFormData({ ...editFormData, secondaryMobile: e.target.value })}
+                    placeholder="2ND MOBILE"
                     className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded"
                   />
                 </div>

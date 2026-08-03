@@ -21,6 +21,7 @@ const Party = sequelize.define("Party", {
   panNo: DataTypes.STRING,
   contactName: DataTypes.STRING,
   mobileNos: DataTypes.STRING,
+  secondaryMobile: DataTypes.STRING, // Secondary mobile number (Master record only, no login account)
   selectType: {
     type: DataTypes.ENUM("CONSIGNEE", "CONSIGNOR", "BOTH"),
     defaultValue: "CONSIGNEE",
