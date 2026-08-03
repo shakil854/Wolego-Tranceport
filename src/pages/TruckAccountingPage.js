@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE_URL } from "../config/api";
+import TruckPortalStatementDocument from "../components/TruckPortalStatementDocument";
 import {
   Truck,
   DollarSign,
@@ -14,6 +15,8 @@ import {
   CreditCard,
   Building2,
   ChevronDown,
+  Download,
+  Printer,
 } from "lucide-react";
 
 export default function TruckAccountingPage() {
@@ -27,6 +30,10 @@ export default function TruckAccountingPage() {
   // Selected Truck Filter ("ALL" or specific truckNo)
   const [selectedTruckNo, setSelectedTruckNo] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Statement PDF & Print Modal state
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [activeAutoAction, setActiveAutoAction] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -105,6 +112,7 @@ export default function TruckAccountingPage() {
       const paidAmt = Number(lr.truckPaidAmount) || 0;
       const isPaid = lr.truckPaymentStatus === "PAID" || paidAmt >= amt;
       const routeStr = lr.fromPlace && lr.toPlace ? ` (${lr.fromPlace} -> ${lr.toPlace})` : "";
+      const paidDateVal = isPaid ? (lr.truckPaidDate || lr.dateTime || lr.createdAt?.split("T")[0] || "-") : "-";
       return {
         id: `LR-${lr.id}`,
         date: lr.dateTime || lr.createdAt?.split("T")[0] || "-",
@@ -114,12 +122,14 @@ export default function TruckAccountingPage() {
         amount: amt,
         paidAmount: paidAmt,
         status: isPaid ? "PAID" : "UNPAID",
+        paidDate: paidDateVal,
         rawDate: new Date(lr.createdAt || Date.now()),
       };
     }),
     ...filteredPayments.map((p) => {
       const amt = Number(p.amount) || 0;
       const isPaid = p.status === "PAID";
+      const paidDateVal = isPaid ? (p.date || p.createdAt?.split("T")[0] || "-") : "-";
       return {
         id: `TP-${p.id}`,
         date: p.date || p.createdAt?.split("T")[0] || "-",
@@ -129,6 +139,7 @@ export default function TruckAccountingPage() {
         amount: amt,
         paidAmount: isPaid ? amt : 0,
         status: isPaid ? "PAID" : "PENDING",
+        paidDate: paidDateVal,
         rawDate: new Date(p.createdAt || Date.now()),
       };
     }),
@@ -141,7 +152,8 @@ export default function TruckAccountingPage() {
     return (
       item.truckNo.toLowerCase().includes(term) ||
       item.detail.toLowerCase().includes(term) ||
-      item.date.toLowerCase().includes(term)
+      item.date.toLowerCase().includes(term) ||
+      item.paidDate.toLowerCase().includes(term)
     );
   });
 
@@ -158,6 +170,48 @@ export default function TruckAccountingPage() {
       maximumFractionDigits: 0,
     }).format(Number(val) || 0);
   };
+
+  // Date Formatter
+  const formatDateDisplay = (dateVal) => {
+    if (!dateVal || dateVal === "-") return "-";
+    try {
+      if (typeof dateVal === "string" && dateVal.includes("-")) {
+        const cleanDate = dateVal.split("T")[0];
+        const parts = cleanDate.split("-");
+        if (parts.length === 3) {
+          const [y, m, d] = parts;
+          return `${d.padStart(2, "0")}/${m.padStart(2, "0")}/${y}`;
+        }
+      }
+      const d = new Date(dateVal);
+      if (isNaN(d.getTime())) return dateVal;
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch {
+      return dateVal;
+    }
+  };
+
+  if (showPrintModal) {
+    return (
+      <TruckPortalStatementDocument
+        userMobile={userMobile}
+        selectedTruckNo={selectedTruckNo}
+        selectedFY="ALL"
+        totalBilled={totalBilled}
+        totalPaid={totalPaid}
+        balancePayable={balancePayable}
+        records={finalLedger}
+        autoAction={activeAutoAction}
+        onClose={() => {
+          setShowPrintModal(false);
+          setActiveAutoAction(null);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-4 font-sans text-slate-100">
@@ -181,7 +235,7 @@ export default function TruckAccountingPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {/* Multi-Truck Selector Dropdown */}
           {myTrucks.length > 0 && (
             <div className="relative flex-1 sm:flex-initial">
@@ -199,6 +253,28 @@ export default function TruckAccountingPage() {
               </select>
             </div>
           )}
+
+          <button
+            onClick={() => {
+              setActiveAutoAction("pdf");
+              setShowPrintModal(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg text-xs font-black transition cursor-pointer shadow shrink-0"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export Statement PDF</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveAutoAction("print");
+              setShowPrintModal(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-black transition cursor-pointer shadow shrink-0"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print A4</span>
+          </button>
 
           <button
             onClick={fetchData}
@@ -273,15 +349,16 @@ export default function TruckAccountingPage() {
           </div>
         </div>
 
-        {/* Minimal Clean Table (Only Date, Truck No, Amount, Remark/Detail, Status) */}
+        {/* Minimal Clean Table */}
         <div className="overflow-x-auto rounded-xl border border-slate-700/80">
           <table className="w-full text-left text-xs text-slate-200">
             <thead className="bg-slate-900 text-slate-400 uppercase text-[10.5px] font-bold border-b border-slate-700">
               <tr>
-                <th className="py-2.5 px-4">Date</th>
+                <th className="py-2.5 px-4">Txn Date</th>
                 <th className="py-2.5 px-4">Truck No</th>
                 <th className="py-2.5 px-4">Trip Details / Remark</th>
                 <th className="py-2.5 px-4 text-right">Amount (₹)</th>
+                <th className="py-2.5 px-4 text-center">Paid Date</th>
                 <th className="py-2.5 px-4 text-center">Status</th>
               </tr>
             </thead>
@@ -289,14 +366,14 @@ export default function TruckAccountingPage() {
             <tbody className="divide-y divide-slate-700/60 bg-slate-800/40">
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="py-8 text-center text-slate-400 font-medium">
+                  <td colSpan="6" className="py-8 text-center text-slate-400 font-medium">
                     <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-amber-400" />
                     Loading accounting details...
                   </td>
                 </tr>
               ) : finalLedger.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="py-8 text-center text-slate-400 font-medium">
+                  <td colSpan="6" className="py-8 text-center text-slate-400 font-medium">
                     <AlertCircle className="w-5 h-5 mx-auto mb-1 text-slate-500" />
                     No trips or payment records found.
                   </td>
@@ -310,7 +387,7 @@ export default function TruckAccountingPage() {
                       <td className="py-3 px-4 font-mono text-slate-300 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                          <span>{item.date}</span>
+                          <span>{formatDateDisplay(item.date)}</span>
                         </div>
                       </td>
 
@@ -327,6 +404,15 @@ export default function TruckAccountingPage() {
                       {/* Amount */}
                       <td className="py-3 px-4 text-right font-extrabold font-mono text-white text-sm whitespace-nowrap">
                         {formatCurrency(item.amount)}
+                      </td>
+
+                      {/* Paid Date */}
+                      <td className="py-3 px-4 text-center font-mono text-xs whitespace-nowrap">
+                        {isPaid && item.paidDate && item.paidDate !== "-" ? (
+                          <span className="text-emerald-400 font-semibold">{formatDateDisplay(item.paidDate)}</span>
+                        ) : (
+                          <span className="text-slate-500">-</span>
+                        )}
                       </td>
 
                       {/* Status */}
