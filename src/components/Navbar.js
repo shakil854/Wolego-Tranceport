@@ -115,11 +115,11 @@ export default function Navbar() {
                 className="h-12 sm:h-14 w-auto object-cover object-top transform group-hover:scale-105 transition-transform"
               />
             </div>
-            <div className="flex flex-col justify-center">
+            <div className="flex flex-col justify-center items-center text-center">
               <span className="font-extrabold text-sm sm:text-base tracking-tight text-[#009a44] font-serif leading-none whitespace-nowrap">
                 WOLEGO TRANSPORT
               </span>
-              <span className="text-[9px] sm:text-[10px] font-black italic tracking-widest text-[#0072bc] uppercase leading-tight font-serif whitespace-nowrap mt-0.5">
+              <span className="text-[9px] sm:text-[10px] font-black italic tracking-widest text-[#0072bc] uppercase leading-tight font-serif whitespace-nowrap mt-0.5 text-center w-full">
                 EVERYTHING IS FAST
               </span>
             </div>
