@@ -24,9 +24,8 @@ router.post("/", async (req, res) => {
     }
     const [party, created] = await Party.upsert(partyData);
 
-    // Auto register party user account(s) only if selectType is CONSIGNEE or BOTH
-    const pType = partyData.selectType || (party && party.selectType);
-    if (partyData.mobileNos && (pType === "CONSIGNEE" || pType === "BOTH")) {
+    // Auto register party user account(s) for any party type (CONSIGNOR, CONSIGNEE, BOTH)
+    if (partyData.mobileNos) {
       const nums = String(partyData.mobileNos)
         .split(/[,/ ]+/)
         .map((n) => n.trim())
