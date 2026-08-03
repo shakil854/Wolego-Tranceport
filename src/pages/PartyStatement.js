@@ -49,6 +49,19 @@ export default function PartyStatement() {
     setParties(pts || []);
   };
 
+  // Filter party dropdown lists by category (CONSIGNOR vs CONSIGNEE)
+  const consignorParties = parties.filter((p) => {
+    if (!p.selectType) return true;
+    const type = String(p.selectType).toUpperCase();
+    return type === "CONSIGNOR" || type === "BOTH";
+  });
+
+  const consigneeParties = parties.filter((p) => {
+    if (!p.selectType) return true;
+    const type = String(p.selectType).toUpperCase();
+    return type === "CONSIGNEE" || type === "CONSIGNE" || type === "BOTH";
+  });
+
   const formatDateDisplay = (dateVal) => {
     if (!dateVal) return "";
     try {
@@ -257,10 +270,11 @@ export default function PartyStatement() {
               <User size={13} /> Select Consignor (Shipper)
             </label>
             <SearchablePartySelect
-              parties={parties}
+              parties={consignorParties}
               value={selectedConsignor}
               onSelectParty={(pName) => setSelectedConsignor(pName)}
               placeholder="-- All / Select Consignor --"
+              partyType="Consignor"
             />
           </div>
 
@@ -270,10 +284,11 @@ export default function PartyStatement() {
               <User size={13} /> Select Consignee (Receiver)
             </label>
             <SearchablePartySelect
-              parties={parties}
+              parties={consigneeParties}
               value={selectedConsignee}
               onSelectParty={(pName) => setSelectedConsignee(pName)}
               placeholder="-- All / Select Consignee --"
+              partyType="Consignee"
             />
           </div>
 
