@@ -106,7 +106,7 @@ export default function LetterPadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-2 sm:p-4 font-sans print:bg-white print:p-0 print:m-0 print:block print:h-auto print:overflow-visible">
+    <div className="h-full w-full overflow-y-auto bg-slate-900 text-slate-100 p-2 sm:p-4 font-sans print:bg-white print:p-0 print:m-0 print:block print:h-auto print:overflow-visible">
       
       {/* On-Screen Controls Toolbar (Hidden during Browser Print) */}
       <div className="max-w-[210mm] mx-auto space-y-3 mb-4 print:hidden">
