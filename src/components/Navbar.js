@@ -99,36 +99,29 @@ export default function Navbar() {
   }
 
   return (
-    <header className="bg-slate-900 text-white shadow-md sticky top-0 z-50 border-b border-amber-500/40 font-sans">
-
-      {/* Top Info Bar */}
-      <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 px-2 sm:px-4 py-1 text-[10px] sm:text-xs font-semibold flex justify-between items-center text-white max-w-full overflow-hidden">
-        <div className="flex items-center space-x-2 overflow-hidden text-ellipsis whitespace-nowrap min-w-0">
-          <span className="truncate">📍 8-A NATIONAL HIGHWAY, WANKANER-363621</span>
-          <span className="hidden md:inline">| GSTIN: 24DLTPS8567M1ZT</span>
-        </div>
-        <div className="flex items-center space-x-2 text-amber-100 shrink-0 ml-2">
-          <span className="flex items-center gap-1 font-mono text-[10px] sm:text-xs"><Phone size={11} /> +91 9979111555</span>
-          <span className="hidden sm:inline-flex items-center gap-1"><ShieldCheck size={12} /> Goods Consignment Note</span>
-        </div>
-      </div>
+    <header className="bg-white text-slate-900 shadow-md sticky top-0 z-50 border-b border-slate-200 font-sans">
 
       {/* Main Navbar */}
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
 
           {/* Logo / Brand */}
-          <Link to={isParty ? "/accounting" : isTruck ? "/truck-accounting" : "/"} className="flex items-center space-x-2 shrink-0 group">
-            <div className="bg-white p-1 rounded-lg shadow-md transform group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
-              <img src={logoImg} alt="Wolego Transport Logo" className="h-7 sm:h-8 w-auto object-contain" />
+          <Link to={isParty ? "/accounting" : isTruck ? "/truck-accounting" : "/"} className="flex items-center space-x-2.5 shrink-0 group">
+            {/* Crown & W Logo (Enlarged & Bottom Text Cropped Out) */}
+            <div className="h-9 sm:h-11 w-9 sm:w-11 overflow-hidden flex items-start justify-center shrink-0">
+              <img
+                src={logoImg}
+                alt="Wolego Transport Logo"
+                className="h-12 sm:h-14 w-auto object-cover object-top transform group-hover:scale-105 transition-transform"
+              />
             </div>
             <div className="flex flex-col justify-center">
-              <div className="font-extrabold text-xs sm:text-base tracking-tight text-amber-400 font-serif leading-none whitespace-nowrap">
+              <span className="font-extrabold text-sm sm:text-base tracking-tight text-[#009a44] font-serif leading-none whitespace-nowrap">
                 WOLEGO TRANSPORT
-              </div>
-              <div className="hidden lg:block text-[8.5px] uppercase tracking-wider text-slate-400 font-medium leading-tight whitespace-nowrap">
-                Transport Contractor & Agent
-              </div>
+              </span>
+              <span className="text-[9px] sm:text-[10px] font-black italic tracking-widest text-[#0072bc] uppercase leading-tight font-serif whitespace-nowrap mt-0.5">
+                EVERYTHING IS FAST
+              </span>
             </div>
           </Link>
 
@@ -142,9 +135,9 @@ export default function Navbar() {
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${active
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${active
                       ? "bg-amber-500 text-slate-950 shadow-md font-extrabold"
-                      : "text-slate-200 hover:bg-slate-800 hover:text-amber-400"
+                      : "text-slate-700 hover:bg-slate-100 hover:text-amber-600"
                     }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
@@ -159,9 +152,9 @@ export default function Navbar() {
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   onMouseEnter={() => setDropdownOpen(true)}
-                  className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${isDropdownActive
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${isDropdownActive
                       ? "bg-amber-500 text-slate-950 shadow-md font-extrabold"
-                      : "text-slate-200 hover:bg-slate-800 hover:text-amber-400"
+                      : "text-slate-700 hover:bg-slate-100 hover:text-amber-600"
                     }`}
                 >
                   <FolderKanban className="w-4 h-4 shrink-0" />
@@ -173,7 +166,7 @@ export default function Navbar() {
                 {dropdownOpen && (
                   <div
                     onMouseLeave={() => setDropdownOpen(false)}
-                    className="absolute right-0 mt-1 w-56 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 z-50 divide-y divide-slate-700/50 animate-fadeIn"
+                    className="absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-2xl py-2 z-50 divide-y divide-slate-100 animate-fadeIn"
                   >
                     {dropdownItems.map((item) => {
                       const Icon = item.icon;
@@ -183,12 +176,12 @@ export default function Navbar() {
                           key={item.name}
                           to={item.path}
                           onClick={() => setDropdownOpen(false)}
-                          className={`flex items-center space-x-3 px-4 py-2.5 text-sm font-medium transition-all ${active
-                              ? "bg-amber-500/20 text-amber-400 font-bold border-l-4 border-amber-400"
-                              : "text-slate-200 hover:bg-slate-700 hover:text-amber-400"
+                          className={`flex items-center space-x-3 px-4 py-2.5 text-sm font-semibold transition-all ${active
+                              ? "bg-amber-50 text-amber-800 font-extrabold border-l-4 border-amber-500"
+                              : "text-slate-700 hover:bg-slate-100 hover:text-amber-600"
                             }`}
                         >
-                          <Icon className="w-4 h-4 text-amber-400" />
+                          <Icon className="w-4 h-4 text-amber-600" />
                           <span>{item.name}</span>
                         </Link>
                       );
@@ -199,16 +192,16 @@ export default function Navbar() {
             )}
 
             {/* Auth / User Status Badge & Change Password & Logout */}
-            <div className="pl-3 border-l border-slate-700 flex items-center gap-2">
+            <div className="pl-3 border-l border-slate-200 flex items-center gap-2">
               {user ? (
                 <div className="flex items-center gap-2">
-                  <div className="bg-slate-800 border border-amber-500/30 px-3 py-1.5 rounded-xl flex items-center gap-2">
-                    <User className="w-4 h-4 text-amber-400" />
+                  <div className="bg-slate-100 border border-slate-300 px-3 py-1 rounded-xl flex items-center gap-2">
+                    <User className="w-4 h-4 text-amber-600" />
                     <div className="text-xs">
-                      <div className="font-extrabold text-amber-400 leading-none">
+                      <div className="font-extrabold text-amber-700 leading-none">
                         {isOwner ? "OWNER" : isTruck ? "TRUCK OWNER" : user.partyName || user.username}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono leading-tight">
+                      <div className="text-[10px] text-slate-500 font-mono font-medium leading-tight">
                         {user.username}
                       </div>
                     </div>
@@ -216,14 +209,14 @@ export default function Navbar() {
                   <button
                     onClick={() => setIsChangePasswordOpen(true)}
                     title="Change Password (पासवर्ड बदलें)"
-                    className="p-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-amber-200 rounded-xl transition cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                    className="p-2 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-xl transition cursor-pointer flex items-center gap-1 text-xs font-bold"
                   >
                     <Key className="w-4 h-4" />
                   </button>
                   <button
                     onClick={handleLogout}
                     title="Logout"
-                    className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 rounded-xl transition cursor-pointer"
+                    className="p-2 bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-200 rounded-xl transition cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
@@ -246,14 +239,14 @@ export default function Navbar() {
               <>
                 <button
                   onClick={() => setIsChangePasswordOpen(true)}
-                  className="p-1.5 text-amber-400 hover:bg-slate-800 rounded-lg bg-amber-500/10 border border-amber-500/30"
+                  className="p-1.5 text-amber-700 hover:bg-amber-100 rounded-lg bg-amber-50 border border-amber-200"
                   title="Change Password"
                 >
                   <Key className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="p-1.5 text-red-400 hover:bg-slate-800 rounded-lg bg-red-500/10 border border-red-500/30"
+                  className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-lg bg-rose-50 border border-rose-200"
                   title="Logout"
                 >
                   <LogOut className="w-4 h-4" />
@@ -262,7 +255,7 @@ export default function Navbar() {
             )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none"
+              className="p-1.5 rounded-md text-slate-700 hover:text-slate-900 hover:bg-slate-100 focus:outline-none"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -272,15 +265,15 @@ export default function Navbar() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-slate-900 border-t border-slate-800 px-2 pt-2 pb-3 space-y-1 sm:px-3 shadow-2xl">
+        <div className="md:hidden bg-white border-t border-slate-200 px-2 pt-2 pb-3 space-y-1 sm:px-3 shadow-2xl">
 
           {user && (
-            <div className="px-3 py-2 bg-slate-800 rounded-lg mb-2 flex justify-between items-center">
+            <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg mb-2 flex justify-between items-center">
               <div>
-                <div className="text-xs font-bold text-amber-400">
+                <div className="text-xs font-bold text-amber-700">
                   {isOwner ? "👑 OWNER ADMIN" : `🏢 ${user.partyName}`}
                 </div>
-                <div className="text-[11px] text-slate-400 font-mono">Mobile: {user.username}</div>
+                <div className="text-[11px] text-slate-500 font-mono">Mobile: {user.username}</div>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -288,13 +281,13 @@ export default function Navbar() {
                     setMobileMenuOpen(false);
                     setIsChangePasswordOpen(true);
                   }}
-                  className="text-xs text-amber-300 font-bold bg-amber-500/20 hover:bg-amber-500/30 px-2.5 py-1 rounded flex items-center gap-1"
+                  className="text-xs text-amber-800 font-bold bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded flex items-center gap-1 border border-amber-300"
                 >
                   <Key size={13} /> Password
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="text-xs text-red-400 font-bold bg-red-500/10 px-2.5 py-1 rounded"
+                  className="text-xs text-rose-700 font-bold bg-rose-100 hover:bg-rose-200 px-2.5 py-1 rounded border border-rose-200"
                 >
                   Logout
                 </button>
@@ -310,9 +303,9 @@ export default function Navbar() {
                 key={item.name}
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center space-x-3 px-3 py-3 rounded-md text-base font-medium ${active
-                    ? "bg-amber-500 text-slate-950 font-bold"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-amber-400"
+                className={`flex items-center space-x-3 px-3 py-3 rounded-md text-base font-bold ${active
+                    ? "bg-amber-500 text-slate-950 font-extrabold"
+                    : "text-slate-700 hover:bg-slate-100 hover:text-amber-600"
                   }`}
               >
                 <Icon className="w-5 h-5" />
@@ -322,8 +315,8 @@ export default function Navbar() {
           })}
 
           {isOwner && (
-            <div className="pt-2 border-t border-slate-800">
-              <div className="px-3 text-xs font-bold uppercase text-amber-400 tracking-wider mb-1">
+            <div className="pt-2 border-t border-slate-200">
+              <div className="px-3 text-xs font-bold uppercase text-amber-700 tracking-wider mb-1">
                 Reports & Party Master
               </div>
               {dropdownItems.map((item) => {
@@ -334,12 +327,12 @@ export default function Navbar() {
                     key={item.name}
                     to={item.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium ${active
-                        ? "bg-amber-500/20 text-amber-400 font-bold border-l-2 border-amber-400"
-                        : "text-slate-300 hover:bg-slate-800 hover:text-amber-400"
+                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-semibold ${active
+                        ? "bg-amber-50 text-amber-800 font-extrabold border-l-4 border-amber-500"
+                        : "text-slate-700 hover:bg-slate-100 hover:text-amber-600"
                       }`}
                   >
-                    <Icon className="w-4 h-4 text-amber-400" />
+                    <Icon className="w-4 h-4 text-amber-600" />
                     <span>{item.name}</span>
                   </Link>
                 );
