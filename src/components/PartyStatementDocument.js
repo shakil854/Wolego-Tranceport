@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { Printer, Download, Share2, ArrowLeft, X } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import logoImg from "../assets/logo.png";
 
 export default function PartyStatementDocument({
   partyName = "",
@@ -230,23 +231,46 @@ export default function PartyStatementDocument({
         className="w-[210mm] bg-white text-black p-8 font-sans border border-slate-300 shadow-lg print:shadow-none print:border-none print:w-full text-xs box-border my-1"
         style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
       >
-        {/* Top Header */}
-        <div className="text-center mb-1">
-          <span className="text-[11px] underline font-medium text-slate-900">
-            Subject to Wankaner Jurisdiction
+        {/* Top Header Jurisdiction */}
+        <div className="text-center mb-1 border-b border-slate-900 pb-0.5">
+          <span className="text-[10px] font-black uppercase underline tracking-wider text-slate-950">
+            SUBJECT TO WANKANER JURISDICTION
           </span>
         </div>
 
-        {/* Brand & Mobile */}
-        <div className="mb-2">
-          <h1 className="text-2xl font-bold tracking-wide uppercase my-0 font-sans text-black">
-            WOLEGO TRANSPORT
-          </h1>
-          <div className="text-[11px] font-bold mt-2 text-black">
-            Mobile No.
+        {/* Official Letterhead Header Banner & Logo */}
+        <div className="grid grid-cols-12 gap-1 items-center mb-3 pb-2 border-b-2 border-slate-900">
+          {/* Left Logo Column */}
+          <div className="col-span-2 flex justify-center items-center">
+            <img src={logoImg} alt="Wolego Transport Logo" className="h-20 sm:h-24 w-auto object-contain max-w-full" />
           </div>
-          {/* Double line separator */}
-          <div className="border-b-2 border-t border-black h-[3px] my-1"></div>
+
+          {/* Middle Column */}
+          <div className="col-span-7 text-center flex flex-col items-center justify-center space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-[#009a44] tracking-wider font-serif uppercase leading-none my-0">
+              WOLEGO TRANSPORT
+            </h1>
+            <div className="text-xs sm:text-sm font-black text-amber-900 italic font-serif leading-tight">
+              EVERYTHING IS FAST
+            </div>
+            <div className="whitespace-nowrap">
+              <span className="text-[9.5px] sm:text-[10.5px] font-black uppercase tracking-wider bg-blue-900 text-white px-2.5 py-0.5 inline-block rounded-sm">
+                TRANSPORT CONTRACTOR AND COMMISSION AGENT
+              </span>
+            </div>
+            <div className="text-[9px] sm:text-[10px] text-red-900 font-black tracking-tight uppercase leading-tight space-y-0.5 text-center">
+              <div>SURVEY NUMBER NA 178P8, 27 NATIONAL HIGHWAY, CHANDRAPUR,</div>
+              <div>WANKANER-363621 DISTRICT-MORBI ( GUJRAT )</div>
+            </div>
+          </div>
+
+          {/* Right Column: Contact, PAN, GSTIN */}
+          <div className="col-span-3 text-left text-[8.5px] sm:text-[9.5px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-2">
+            <div>MOBILE NO. +91 99 79 111 555</div>
+            <div>MOBILE NO. +91 81 41 111 555</div>
+            <div>PAN NO. : DLTPS8567M</div>
+            <div>GSTIN NO. : 24DLTPS8567M1ZT</div>
+          </div>
         </div>
 
         {/* Title Bar */}
