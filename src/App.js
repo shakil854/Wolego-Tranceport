@@ -18,6 +18,7 @@ import TruckPaymentPage from "./pages/TruckPaymentPage";
 import PaymentAlertsPage from "./pages/PaymentAlertsPage";
 import TruckAccountingPage from "./pages/TruckAccountingPage";
 import TruckComingPage from "./pages/TruckComingPage";
+import PartyLRRecordsPage from "./pages/PartyLRRecordsPage";
 
 import DashboardPage from "./pages/DashboardPage";
 
@@ -84,6 +85,16 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["OWNER", "PARTY"]}>
             <AccountingPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Party LR Records Page (Accessible by Owner and Party) */}
+      <Route
+        path="/party-lr-records"
+        element={
+          <ProtectedRoute allowedRoles={["OWNER", "PARTY"]}>
+            <PartyLRRecordsPage />
           </ProtectedRoute>
         }
       />

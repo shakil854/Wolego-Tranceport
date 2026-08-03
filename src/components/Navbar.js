@@ -46,6 +46,7 @@ export default function Navbar() {
   // Primary Navigation Items for Party
   const partyPrimaryItems = [
     { name: "My Accounting", path: "/accounting", icon: Calculator },
+    { name: "My LR Records", path: "/party-lr-records", icon: FileText },
   ];
 
   // Primary Navigation Items for Truck Owner
@@ -59,6 +60,7 @@ export default function Navbar() {
   const dropdownItems = [
     { name: "Daily Report", path: "/daily-report", icon: FileText },
     { name: "Accounting", path: "/accounting", icon: Calculator },
+    { name: "Party LR Records", path: "/party-lr-records", icon: FileText },
     { name: "Range LR Print", path: "/range-lr-print", icon: Printer },
     { name: "Party Statement", path: "/party-statement", icon: FileSpreadsheet },
     { name: "CA Excel", path: "/ca-excel", icon: FileSpreadsheet },
