@@ -641,7 +641,7 @@ export default function FreightReceipt() {
                 <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TRUCK NO.
                 </td>
-                <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base uppercase text-center border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
                   {truckNo || "-"}
                 </td>
               </tr>
@@ -650,7 +650,7 @@ export default function FreightReceipt() {
                 <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TOTAL WEIGHT IN KGS
                 </td>
-                <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base text-center border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
                   {weightKgs ? numericWeight.toLocaleString("en-IN") : "-"}
                 </td>
               </tr>
@@ -659,7 +659,7 @@ export default function FreightReceipt() {
                 <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   RATE PER M.T.
                 </td>
-                <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base text-center border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
                   {ratePerMt ? numericRate.toLocaleString("en-IN") : "-"}
                 </td>
               </tr>
@@ -668,7 +668,7 @@ export default function FreightReceipt() {
                 <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TOTAL FREIGHT
                 </td>
-                <td className="w-1/2 p-2 font-mono font-extrabold text-base sm:text-lg text-center border-b-2 border-black text-black">
+                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
                   {calculatedTotalFreight > 0 ? `₹ ${calculatedTotalFreight.toLocaleString("en-IN")}` : "-"}
                 </td>
               </tr>
@@ -679,7 +679,7 @@ export default function FreightReceipt() {
                     <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       PAID BY CHEQUE
                     </td>
-                    <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base text-center border-b-2 border-black text-black">
+                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
                       {paidByCheque ? `₹ ${numericPaidCheque.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
@@ -688,7 +688,7 @@ export default function FreightReceipt() {
                     <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       CASH PAID
                     </td>
-                    <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base text-center border-b-2 border-black text-black">
+                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
                       {calculatedTotalFreight > 0 ? `₹ ${calculatedCashPaid.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
@@ -698,7 +698,7 @@ export default function FreightReceipt() {
                   <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                     CASH PAID
                   </td>
-                  <td className="w-1/2 p-2 font-mono font-extrabold text-sm sm:text-base text-center border-b-2 border-black text-black">
+                  <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
                     {calculatedTotalFreight > 0 ? `₹ ${calculatedTotalFreight.toLocaleString("en-IN")}` : "-"}
                   </td>
                 </tr>
@@ -708,7 +708,7 @@ export default function FreightReceipt() {
                 <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase bg-gray-100 border-r-2 border-black text-red-600">
                   REMARKS
                 </td>
-                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm text-center text-red-600 uppercase">
+                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center text-red-600">
                   {remarks || "-"}
                 </td>
               </tr>
