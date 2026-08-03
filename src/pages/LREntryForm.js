@@ -575,28 +575,20 @@ export default function LREntryForm() {
   }
 
   return (
-    <div className="min-h-screen md:h-full w-full overflow-y-auto md:overflow-hidden bg-slate-900 p-1.5 text-slate-100 flex flex-col flex-1 min-h-0 font-sans">
-      <div className="w-full max-w-full mx-auto flex-1 flex flex-col min-h-0">
+    <div className="h-full w-full overflow-y-auto md:overflow-hidden bg-slate-900 p-1.5 text-slate-100 flex flex-col flex-1 min-h-0 font-sans">
+      <div className="w-full max-w-full mx-auto flex-1 flex flex-col min-h-0 h-full">
 
         {/* Main Classic Software Card Frame */}
-        <div className="bg-sky-900/90 border-2 border-sky-400 rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm flex-1 flex flex-col min-h-0">
+        <div className="bg-sky-900/90 border-2 border-sky-400 rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm flex-1 flex flex-col min-h-0 h-full">
 
-          {/* Header Bar */}
-          <div className="bg-sky-950 px-3 py-1.5 border-b border-sky-400 flex justify-between items-center gap-2 shrink-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xs sm:text-base font-black text-white tracking-wide uppercase font-sans">
-                L/R ENTRY - ADD / EDIT / CHANGE
-              </h1>
-              {statusMsg && (
-                <span className="bg-emerald-500 text-slate-950 px-2 py-0.5 text-xs font-bold rounded animate-pulse">
-                  {statusMsg}
-                </span>
-              )}
+          {statusMsg && (
+            <div className="bg-emerald-500 text-slate-950 px-3 py-1 text-xs font-black text-center shrink-0">
+              {statusMsg}
             </div>
-          </div>
+          )}
 
           {/* Form Content (Fits Viewport Height on PC, Scrollable on Mobile) */}
-          <form onSubmit={handleSave} onKeyDown={handleKeyDown} className="p-2 space-y-1.5 flex-1 flex flex-col justify-between overflow-y-auto md:overflow-hidden">
+          <form onSubmit={handleSave} onKeyDown={handleKeyDown} className="p-1.5 md:p-1.5 space-y-1 md:space-y-1 flex-1 flex flex-col justify-between overflow-y-auto md:overflow-hidden">
 
             {/* Row 1: LR Number, Date, From, To, Delivery At, Truck No */}
             <div className="bg-sky-950/80 p-1.5 rounded border border-sky-600/60 grid grid-cols-12 gap-1.5 items-center shrink-0">
@@ -1279,11 +1271,10 @@ export default function LREntryForm() {
                     <label
                       key={c.id}
                       onClick={() => setSelectedCopyForPrint(c.id)}
-                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border cursor-pointer transition-all ${
-                        selectedCopyForPrint === c.id
+                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border cursor-pointer transition-all ${selectedCopyForPrint === c.id
                           ? "bg-amber-400 text-slate-950 border-amber-400 font-black shadow"
                           : "bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       <input
                         type="radio"
