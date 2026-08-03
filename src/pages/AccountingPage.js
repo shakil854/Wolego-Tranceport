@@ -32,8 +32,10 @@ export default function AccountingPage() {
   const [loading, setLoading] = useState(true);
 
   // Owner View state
-  const [activeTab, setActiveTab] = useState("PARTY"); // "PARTY" or "TRUCK"
+  const [activeTab, setActiveTab] = useState("ALL"); // "ALL", "CONSIGNOR", "CONSIGNEE", "TRUCK"
   const [selectedFY, setSelectedFY] = useState("ALL"); // Financial Year Filter
+  const [fromDate, setFromDate] = useState(""); // From Date Filter (YYYY-MM-DD)
+  const [toDate, setToDate] = useState(""); // To Date Filter (YYYY-MM-DD)
   const [selectedPartyName, setSelectedPartyName] = useState("ALL");
   const [selectedTruckNo, setSelectedTruckNo] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, PAID, UNPAID
@@ -269,6 +271,25 @@ export default function AccountingPage() {
     )
   ).sort();
 
+  const getIsoDateString = (dateVal) => {
+    if (!dateVal) return "";
+    if (typeof dateVal === "string") {
+      if (dateVal.includes("T")) return dateVal.split("T")[0];
+      if (dateVal.match(/^\d{4}-\d{2}-\d{2}$/)) return dateVal;
+      if (dateVal.includes("/")) {
+        const parts = dateVal.split("/");
+        if (parts.length === 3) {
+          return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+        }
+      }
+    }
+    try {
+      const d = new Date(dateVal);
+      if (!isNaN(d.getTime())) return d.toISOString().split("T")[0];
+    } catch (e) {}
+    return "";
+  };
+
   // Extract unique Parties from LRs & Party master
   const uniqueParties = Array.from(
     new Set([
@@ -279,11 +300,41 @@ export default function AccountingPage() {
     .filter((p) => p && p !== "-" && p !== "CONSIGNEE" && p !== "CONSIGNOR")
     .sort();
 
+  // Consignor parties list
+  const consignorPartiesList = Array.from(
+    new Set([
+      ...parties
+        .filter((p) => !p.selectType || p.selectType === "CONSIGNOR" || p.selectType === "BOTH")
+        .map((p) => p.partyName?.trim()),
+      ...lrEntries.map((lr) => lr.consignorName?.trim()),
+    ])
+  )
+    .filter((p) => p && p !== "-")
+    .sort();
+
+  // Consignee parties list
+  const consigneePartiesList = Array.from(
+    new Set([
+      ...parties
+        .filter((p) => !p.selectType || p.selectType === "CONSIGNEE" || p.selectType === "CONSIGNE" || p.selectType === "BOTH")
+        .map((p) => p.partyName?.trim()),
+      ...lrEntries.map((lr) => lr.consigneeName?.trim()),
+    ])
+  )
+    .filter((p) => p && p !== "-")
+    .sort();
+
   // Filtered LRs for Party Role
   const partyLrEntries = isParty
     ? lrEntries.filter((lr) => {
         const lrFY = getLRFYLabel(lr);
         if (!matchFY(lrFY, selectedFY)) return false;
+
+        if (fromDate || toDate) {
+          const lrIso = getIsoDateString(getLRDate(lr));
+          if (fromDate && lrIso && lrIso < fromDate) return false;
+          if (toDate && lrIso && lrIso > toDate) return false;
+        }
 
         const pName = user?.partyName?.toLowerCase()?.trim();
         const pCalculated = getPartyName(lr).toLowerCase().trim();
@@ -310,11 +361,19 @@ export default function AccountingPage() {
   }, 0);
   const partyTotalRemaining = partyTotalBilled - partyTotalPaid;
 
-  // 1. Base Filtered LRs for Owner View (Filtered by FY, Search Query, Party/Truck selection)
+  // 1. Base Filtered LRs for Owner View (Filtered by FY, Date Range, Search Query, Active Tab selection)
   const baseOwnerEntries = lrEntries.filter((lr) => {
     // Financial Year filter
     const lrFY = getLRFYLabel(lr);
     if (!matchFY(lrFY, selectedFY)) return false;
+
+    // Date Range Filter (From Date -> To Date)
+    if (fromDate || toDate) {
+      const lrDateRaw = getLRDate(lr);
+      const lrIso = getIsoDateString(lrDateRaw);
+      if (fromDate && lrIso && lrIso < fromDate) return false;
+      if (toDate && lrIso && lrIso > toDate) return false;
+    }
 
     // Search query filter
     if (searchQuery) {
@@ -322,11 +381,19 @@ export default function AccountingPage() {
       const matchLr = lr.lrNumber?.toLowerCase().includes(q);
       const matchTruck = lr.truckNo?.toLowerCase().includes(q);
       const matchParty = getPartyName(lr).toLowerCase().includes(q);
-      if (!matchLr && !matchTruck && !matchParty) return false;
+      const matchConsignor = lr.consignorName?.toLowerCase().includes(q);
+      const matchConsignee = lr.consigneeName?.toLowerCase().includes(q);
+      if (!matchLr && !matchTruck && !matchParty && !matchConsignor && !matchConsignee) return false;
     }
 
-    // Party Tab filtering
-    if (activeTab === "PARTY") {
+    // Active Tab filtering: "ALL", "CONSIGNOR", "CONSIGNEE", "TRUCK"
+    if (activeTab === "CONSIGNOR") {
+      if (!lr.consignorName) return false;
+      if (selectedPartyName !== "ALL" && lr.consignorName?.trim() !== selectedPartyName) return false;
+    } else if (activeTab === "CONSIGNEE") {
+      if (!lr.consigneeName) return false;
+      if (selectedPartyName !== "ALL" && lr.consigneeName?.trim() !== selectedPartyName) return false;
+    } else if (activeTab === "ALL" || activeTab === "PARTY") {
       if (selectedPartyName !== "ALL") {
         const partyMatch =
           getPartyName(lr) === selectedPartyName ||
@@ -334,10 +401,7 @@ export default function AccountingPage() {
           lr.consigneeName?.trim() === selectedPartyName;
         if (!partyMatch) return false;
       }
-    }
-
-    // Truck Tab filtering
-    if (activeTab === "TRUCK") {
+    } else if (activeTab === "TRUCK") {
       if (selectedTruckNo !== "ALL") {
         if (lr.truckNo?.trim()?.toUpperCase() !== selectedTruckNo) return false;
       }
@@ -675,37 +739,71 @@ export default function AccountingPage() {
     <>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 font-sans space-y-4 print:hidden">
       
-      {/* Main Tabs (Party Ledger vs Truck Ledger) & Search */}
+      {/* Main 4 Tabs: ALL, CONSIGNOR, CONSIGNEE, TRUCK & Search */}
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-        <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+        <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700 overflow-x-auto">
           <button
             onClick={() => {
-              setActiveTab("PARTY");
+              setActiveTab("ALL");
               setStatusFilter("ALL");
+              setSelectedPartyName("ALL");
             }}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-lg font-bold text-xs transition cursor-pointer ${
-              activeTab === "PARTY"
-                ? "bg-amber-500 text-slate-950 shadow-md"
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${
+              activeTab === "ALL"
+                ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>1. All Accounting</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("CONSIGNOR");
+              setStatusFilter("ALL");
+              setSelectedPartyName("ALL");
+            }}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${
+              activeTab === "CONSIGNOR"
+                ? "bg-amber-500 text-slate-950 shadow-md font-black"
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>1. Party Accounting</span>
+            <span>2. Consignor (Shipper)</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("CONSIGNEE");
+              setStatusFilter("ALL");
+              setSelectedPartyName("ALL");
+            }}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${
+              activeTab === "CONSIGNEE"
+                ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>3. Consignee (Receiver)</span>
           </button>
 
           <button
             onClick={() => {
               setActiveTab("TRUCK");
               setStatusFilter("ALL");
+              setSelectedTruckNo("ALL");
             }}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-lg font-bold text-xs transition cursor-pointer ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${
               activeTab === "TRUCK"
-                ? "bg-amber-500 text-slate-950 shadow-md"
+                ? "bg-amber-500 text-slate-950 shadow-md font-black"
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
             <Truck className="w-3.5 h-3.5" />
-            <span>2. Truck Accounting</span>
+            <span>4. Truck Accounting</span>
           </button>
         </div>
 
@@ -734,7 +832,7 @@ export default function AccountingPage() {
 
       {/* Overview Metric Cards based on Tab */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {activeTab === "PARTY" ? (
+        {activeTab !== "TRUCK" ? (
           <>
             {/* Total Billed to Party */}
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-3.5 px-4 shadow">
@@ -825,7 +923,7 @@ export default function AccountingPage() {
         )}
       </div>
 
-      {/* Filter Bar */}
+      {/* Filter Bar with Date Range Selector */}
       <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-wrap items-center justify-between gap-3">
         
         <div className="flex flex-wrap items-center gap-3">
@@ -847,12 +945,42 @@ export default function AccountingPage() {
             </select>
           </div>
 
+          {/* Date Range Selection (From Date -> To Date) */}
+          <div className="flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700">
+            <span className="text-xs font-bold text-amber-400 uppercase">Date Range:</span>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="bg-slate-800 text-white font-bold px-2 py-0.5 rounded border border-slate-600 text-xs focus:outline-none"
+            />
+            <span className="text-slate-400 text-xs font-bold">to</span>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="bg-slate-800 text-white font-bold px-2 py-0.5 rounded border border-slate-600 text-xs focus:outline-none"
+            />
+            {(fromDate || toDate) && (
+              <button
+                onClick={() => {
+                  setFromDate("");
+                  setToDate("");
+                }}
+                className="text-rose-400 hover:text-rose-300 font-bold ml-1 text-xs underline"
+                title="Clear Date Filter"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
           {/* Dropdown Filter for Party Name or Truck No */}
           <div className="flex items-center gap-1.5">
             <Filter className="w-3.5 h-3.5 text-amber-400" />
             <span className="text-xs font-bold text-slate-300 uppercase">Filter:</span>
 
-            {activeTab === "PARTY" ? (
+            {activeTab === "ALL" && (
               <select
                 value={selectedPartyName}
                 onChange={(e) => setSelectedPartyName(e.target.value)}
@@ -865,7 +993,39 @@ export default function AccountingPage() {
                   </option>
                 ))}
               </select>
-            ) : (
+            )}
+
+            {activeTab === "CONSIGNOR" && (
+              <select
+                value={selectedPartyName}
+                onChange={(e) => setSelectedPartyName(e.target.value)}
+                className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              >
+                <option value="ALL">All Consignors</option>
+                {consignorPartiesList.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {activeTab === "CONSIGNEE" && (
+              <select
+                value={selectedPartyName}
+                onChange={(e) => setSelectedPartyName(e.target.value)}
+                className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              >
+                <option value="ALL">All Consignees</option>
+                {consigneePartiesList.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {activeTab === "TRUCK" && (
               <select
                 value={selectedTruckNo}
                 onChange={(e) => setSelectedTruckNo(e.target.value)}
@@ -939,7 +1099,7 @@ export default function AccountingPage() {
                 <th className="py-2.5 px-3 font-bold">Party Name</th>
                 <th className="py-2.5 px-3 font-bold">Truck No.</th>
                 <th className="py-2.5 px-3 font-bold text-right">Net Total (₹)</th>
-                {activeTab === "PARTY" ? (
+                {activeTab !== "TRUCK" ? (
                   <th className="py-2.5 px-3 font-bold text-center">Party Payment Status</th>
                 ) : (
                   <th className="py-2.5 px-3 font-bold text-center">Truck Payment Status</th>
