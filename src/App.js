@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import LREntryForm from "./pages/LREntryForm";
@@ -216,10 +216,36 @@ function AppRoutes() {
   );
 }
 
+// Global Escape key shortcut handler component
+function GlobalEscapeHandler() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" || e.key === "Esc") {
+        if (!user) return;
+        const targetRoute = user.role === "TRUCK" ? "/truck-accounting" : user.role === "PARTY" ? "/accounting" : "/dashboard";
+
+        if (location.pathname !== targetRoute) {
+          navigate(targetRoute);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navigate, location.pathname, user]);
+
+  return null;
+}
+
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <GlobalEscapeHandler />
         <div className="h-screen w-screen bg-slate-900 text-slate-100 flex flex-col font-sans overflow-hidden">
           <Navbar />
           <main className="flex-1 w-full flex flex-col min-h-0 overflow-y-auto md:overflow-hidden">

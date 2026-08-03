@@ -213,18 +213,18 @@ export default function DailyReport() {
     return consignorNames.length > 0 ? consignorNames : [rawConsignorStr.trim().toUpperCase()];
   };
 
-  // Format Party Name & Consignor Line: "# Party Name * CONSIGNOR Name"
+  // Format Party Name & Consignor Line: "P- Party Name - CONSIGNOR Name"
   const getPartyAndConsignorsLine = (lr) => {
     const partyName = (lr.consigneeName || lr.debitAmountTo || "PARTY").trim().toUpperCase();
     const consignors = parseConsignors(lr.consignorName);
 
     if (consignors.length === 0) {
-      return `#${partyName}`;
+      return `P-${partyName}`;
     }
 
-    // Format: #PartyName*Consignor1+Consignor2+Consignor3
+    // Format: P-PartyName-Consignor1+Consignor2+Consignor3
     const consignorsJoined = consignors.join("+");
-    return `#${partyName}*${consignorsJoined}`;
+    return `P-${partyName}-${consignorsJoined}`;
   };
 
   // Filter LR entries based on FY, Single Date, and Search Query
