@@ -41,6 +41,29 @@ export default function TruckMaster() {
     setTimeout(() => setStatusMessage(""), 4000);
   };
 
+  // Handle Enter key navigation across form fields
+  const handleFormKeyDown = (e) => {
+    if (e.key === "Enter") {
+      if (e.target.tagName === "BUTTON" || e.target.type === "submit") {
+        return;
+      }
+      e.preventDefault();
+      const form = e.currentTarget;
+      const focusable = Array.from(
+        form.querySelectorAll(
+          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])"
+        )
+      ).filter(
+        (el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0
+      );
+
+      const index = focusable.indexOf(e.target);
+      if (index > -1 && index < focusable.length - 1) {
+        focusable[index + 1].focus();
+      }
+    }
+  };
+
   // Submit Handler: Add New Truck
   const handleSaveNewTruck = async (e) => {
     if (e) e.preventDefault();
@@ -115,7 +138,7 @@ export default function TruckMaster() {
             </div>
 
             {/* Form Inputs */}
-            <form onSubmit={handleSaveNewTruck} className="p-2.5 space-y-2.5 lg:space-y-2 flex-1 flex flex-col lg:justify-between overflow-y-auto">
+            <form onSubmit={handleSaveNewTruck} onKeyDown={handleFormKeyDown} className="p-2.5 space-y-2.5 lg:space-y-2 flex-1 flex flex-col lg:justify-between overflow-y-auto">
 
               {/* Basic Truck & Owner Info */}
               <div className="space-y-2">
@@ -258,17 +281,10 @@ export default function TruckMaster() {
               </div>
 
               {/* Save / Clear Buttons */}
-              <div className="pt-2 border-t border-sky-700 flex justify-end gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setAddFormData(initialBlankForm)}
-                  className="px-3 py-1 bg-slate-700 text-slate-300 font-bold rounded hover:bg-slate-600 text-xs uppercase transition-colors"
-                >
-                  Clear Form
-                </button>
+              <div className="pt-2 border-t border-sky-700 flex justify-end shrink-0">
                 <button
                   type="submit"
-                  className="px-4 py-1 bg-yellow-400 text-slate-950 font-black rounded hover:bg-yellow-300 text-xs uppercase shadow flex items-center gap-1 transition-all"
+                  className="px-4 py-1 bg-yellow-400 text-slate-950 font-black rounded hover:bg-yellow-300 text-xs uppercase shadow flex items-center gap-1 transition-all focus:outline-none focus:ring-2 focus:ring-yellow-300"
                 >
                   <Save size={14} /> Save Truck Master
                 </button>
@@ -494,7 +510,7 @@ export default function TruckMaster() {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleUpdateTruck} className="p-4 space-y-3">
+            <form onSubmit={handleUpdateTruck} onKeyDown={handleFormKeyDown} className="p-4 space-y-3">
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>

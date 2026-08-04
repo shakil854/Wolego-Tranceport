@@ -129,6 +129,29 @@ export default function PartyMaster() {
     setTimeout(() => setStatusMessage(""), 4000);
   };
 
+  // Handle Enter key navigation across form fields
+  const handleFormKeyDown = (e) => {
+    if (e.key === "Enter") {
+      if (e.target.tagName === "BUTTON" || e.target.type === "submit") {
+        return;
+      }
+      e.preventDefault();
+      const form = e.currentTarget;
+      const focusable = Array.from(
+        form.querySelectorAll(
+          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])"
+        )
+      ).filter(
+        (el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0
+      );
+
+      const index = focusable.indexOf(e.target);
+      if (index > -1 && index < focusable.length - 1) {
+        focusable[index + 1].focus();
+      }
+    }
+  };
+
   const filteredParties = parties.filter(
     (p) =>
       p.partyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -164,7 +187,7 @@ export default function PartyMaster() {
             </div>
 
             {/* Form Inputs */}
-            <form onSubmit={handleSaveNewParty} className="p-2.5 space-y-2 lg:space-y-1 flex-1 flex flex-col lg:justify-between overflow-visible lg:overflow-hidden">
+            <form onSubmit={handleSaveNewParty} onKeyDown={handleFormKeyDown} className="p-2.5 space-y-2 lg:space-y-1 flex-1 flex flex-col lg:justify-between overflow-visible lg:overflow-hidden">
               
               {/* Party Name */}
               <div>
@@ -363,17 +386,10 @@ export default function PartyMaster() {
               </div>
 
               {/* Save Button */}
-              <div className="pt-1.5 border-t border-sky-700 flex justify-end gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setAddFormData(initialBlankForm)}
-                  className="px-3 py-1 bg-slate-700 text-slate-300 font-bold rounded hover:bg-slate-600 text-xs uppercase transition-colors"
-                >
-                  Clear Form
-                </button>
+              <div className="pt-1.5 border-t border-sky-700 flex justify-end shrink-0">
                 <button
                   type="submit"
-                  className="px-4 py-1 bg-yellow-400 text-slate-950 font-black rounded hover:bg-yellow-300 text-xs uppercase shadow flex items-center gap-1 transition-all"
+                  className="px-4 py-1 bg-yellow-400 text-slate-950 font-black rounded hover:bg-yellow-300 text-xs uppercase shadow flex items-center gap-1 transition-all focus:outline-none focus:ring-2 focus:ring-yellow-300"
                 >
                   <Save size={14} /> Save New Party
                 </button>
@@ -614,7 +630,7 @@ export default function PartyMaster() {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleUpdateParty} className="p-5 space-y-3">
+            <form onSubmit={handleUpdateParty} onKeyDown={handleFormKeyDown} className="p-5 space-y-3">
               
               {/* Party Name */}
               <div>

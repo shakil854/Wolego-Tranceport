@@ -470,6 +470,29 @@ export default function LREntryForm() {
     flashMsg(`Party "${createdName}" Added & Selected!`);
   };
 
+  // Handle Enter key navigation for modals (Quick Party Add)
+  const handleModalFormKeyDown = (e) => {
+    if (e.key === "Enter") {
+      if (e.target.tagName === "BUTTON" || e.target.type === "submit") {
+        return;
+      }
+      e.preventDefault();
+      const form = e.currentTarget;
+      const focusable = Array.from(
+        form.querySelectorAll(
+          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])"
+        )
+      ).filter(
+        (el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0
+      );
+
+      const index = focusable.indexOf(e.target);
+      if (index > -1 && index < focusable.length - 1) {
+        focusable[index + 1].focus();
+      }
+    }
+  };
+
   // Fast Data Entry: Keyboard navigation with Enter & Arrow Keys (Up, Down, Left, Right)
   const handleKeyDown = (e) => {
     const container = document.getElementById("lr-form-container") || e.currentTarget;
@@ -1547,7 +1570,7 @@ export default function LREntryForm() {
               </div>
 
               {/* Form Inputs */}
-              <form onSubmit={handleSaveNewTruckModal} className="p-3 space-y-3 text-xs overflow-y-auto">
+              <form onSubmit={handleSaveNewTruckModal} onKeyDown={handleModalFormKeyDown} className="p-3 space-y-3 text-xs overflow-y-auto">
                 {/* Basic Information Section */}
                 <div className="space-y-2">
                   <div className="text-[11px] font-extrabold text-amber-300 uppercase tracking-wider border-b border-sky-700/60 pb-0.5 flex items-center gap-1">
@@ -1690,17 +1713,10 @@ export default function LREntryForm() {
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="pt-2 border-t border-sky-700 flex justify-end gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddTruckModal(false)}
-                    className="px-3 py-1 bg-slate-700 text-slate-300 font-bold rounded hover:bg-slate-600 text-xs uppercase cursor-pointer"
-                  >
-                    Cancel
-                  </button>
+                <div className="pt-2 border-t border-sky-700 flex justify-end shrink-0">
                   <button
                     type="submit"
-                    className="px-4 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded text-xs uppercase flex items-center gap-1 shadow cursor-pointer"
+                    className="px-4 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded text-xs uppercase flex items-center gap-1 shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   >
                     <Save size={14} /> Save & Select Truck
                   </button>
@@ -1735,7 +1751,7 @@ export default function LREntryForm() {
               </div>
 
               {/* Form Inputs (Matches Screenshot Layout) */}
-              <form onSubmit={handleSaveNewParty} className="p-3 space-y-2 text-xs overflow-y-auto">
+              <form onSubmit={handleSaveNewParty} onKeyDown={handleModalFormKeyDown} className="p-3 space-y-2 text-xs overflow-y-auto">
 
                 {/* Party Name */}
                 <div>
@@ -1907,18 +1923,11 @@ export default function LREntryForm() {
                   </select>
                 </div>
 
-                {/* Modal Action Buttons (Matches Screenshot: CLEAR FORM & SAVE NEW PARTY) */}
+                {/* Modal Action Buttons */}
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-sky-700">
                   <button
-                    type="button"
-                    onClick={() => setNewPartyForm(initialBlankPartyForm)}
-                    className="px-4 py-1 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded text-xs uppercase cursor-pointer"
-                  >
-                    CLEAR FORM
-                  </button>
-                  <button
                     type="submit"
-                    className="flex items-center gap-1.5 px-5 py-1 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded text-xs uppercase shadow-md cursor-pointer transition-all"
+                    className="flex items-center gap-1.5 px-5 py-1 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded text-xs uppercase shadow-md cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-yellow-300"
                   >
                     <Save size={14} />
                     <span>SAVE NEW PARTY</span>
