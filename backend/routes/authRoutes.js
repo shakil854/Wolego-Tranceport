@@ -28,6 +28,31 @@ async function verifyAndUpgradePassword(user, password) {
   return isMatch;
 }
 
+// Helper to verify separate action/security password for protected actions (LR Edit, Delete, Truck Debit)
+async function verifyAndUpgradeActionPassword(user, password) {
+  if (!user || !user.actionPassword) {
+    // If no separate action password is set yet, verify against login password as fallback
+    return await verifyAndUpgradePassword(user, password);
+  }
+
+  const isBcrypt = user.actionPassword.startsWith("$2a$") || user.actionPassword.startsWith("$2b$") || user.actionPassword.startsWith("$2y$");
+  if (isBcrypt) {
+    return await bcrypt.compare(password, user.actionPassword);
+  }
+
+  const isMatch = user.actionPassword === password;
+  if (isMatch) {
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.actionPassword = hashedPassword;
+      await user.save();
+    } catch (e) {
+      console.error("Failed to upgrade action password hash:", e);
+    }
+  }
+  return isMatch;
+}
+
 // Login endpoint
 router.post("/login", async (req, res) => {
   try {
@@ -161,12 +186,17 @@ router.post("/change-password", async (req, res) => {
   }
 });
 
-// Verify password endpoint for security-protected actions (Edit/Delete LR)
-router.post("/verify-password", async (req, res) => {
+// Change Action/Security Password endpoint (for LR Edit, Delete, Truck Debit)
+router.post("/change-action-password", async (req, res) => {
   try {
-    const { password, id, username } = req.body;
-    if (!password) {
-      return res.status(400).json({ success: false, error: "Password is required." });
+    const { id, username, currentPassword, newActionPassword } = req.body;
+
+    if (!newActionPassword) {
+      return res.status(400).json({ error: "New Action Security Password is required." });
+    }
+
+    if (newActionPassword.length < 4) {
+      return res.status(400).json({ error: "Action Security Password must be at least 4 characters long." });
     }
 
     let user = null;
@@ -177,7 +207,55 @@ router.post("/verify-password", async (req, res) => {
       user = await User.findOne({ where: { username: String(username).trim() } });
     }
     if (!user) {
-      // Find OWNER or ADMIN user in database
+      user = await User.findOne({ where: { role: "OWNER" } });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Verify current password (either current action password or login password)
+    let isMatch = await verifyAndUpgradeActionPassword(user, currentPassword);
+    if (!isMatch && currentPassword) {
+      isMatch = await verifyAndUpgradePassword(user, currentPassword);
+    }
+
+    if (!isMatch) {
+      return res.status(400).json({ error: "Incorrect current password." });
+    }
+
+    // Hash and save new action password
+    const hashedPassword = await bcrypt.hash(newActionPassword, 10);
+    user.actionPassword = hashedPassword;
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Action Security Password updated successfully!",
+    });
+  } catch (err) {
+    console.error("Change action password error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Verify password endpoint for security-protected actions (Edit/Delete LR, Truck Debit)
+router.post("/verify-password", async (req, res) => {
+  try {
+    const { password, id, username } = req.body;
+    if (!password) {
+      return res.status(400).json({ success: false, error: "Action Password is required." });
+    }
+
+    let user = null;
+    if (id) {
+      user = await User.findByPk(id);
+    }
+    if (!user && username) {
+      user = await User.findOne({ where: { username: String(username).trim() } });
+    }
+    if (!user) {
+      // Find OWNER user in database
       user = await User.findOne({ where: { role: "OWNER" } });
     }
     if (!user) {
@@ -188,17 +266,17 @@ router.post("/verify-password", async (req, res) => {
       return res.status(404).json({ success: false, error: "No user account found." });
     }
 
-    const isMatch = await verifyAndUpgradePassword(user, password);
+    const isMatch = await verifyAndUpgradeActionPassword(user, password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, error: "Incorrect Password! Access Denied." });
+      return res.status(401).json({ success: false, error: "Incorrect Action Security Password! Access Denied." });
     }
 
     return res.json({
       success: true,
-      message: "Password verified successfully!",
+      message: "Action Password verified successfully!",
     });
   } catch (err) {
-    console.error("Verify password error:", err);
+    console.error("Verify action password error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

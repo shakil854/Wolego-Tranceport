@@ -55,10 +55,10 @@ export default function PasswordConfirmModal({ actionTitle, onConfirm, onClose }
             </div>
             <div>
               <h3 className="text-base font-black text-white uppercase tracking-wide">
-                Security Password Required
+                Action Security Password Required
               </h3>
               <p className="text-[11px] text-rose-300 font-bold">
-                {actionTitle || "Enter password to proceed"}
+                {actionTitle || "Enter action security password to proceed"}
               </p>
             </div>
           </div>
@@ -71,7 +71,7 @@ export default function PasswordConfirmModal({ actionTitle, onConfirm, onClose }
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
-              Enter Password (पासवर्ड दर्ज करें):
+              Enter Action Security Password (सिक्योरिटी पासवर्ड):
             </label>
             <div className="relative">
               <KeyRound className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
@@ -79,7 +79,7 @@ export default function PasswordConfirmModal({ actionTitle, onConfirm, onClose }
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter account password..."
+                placeholder="Enter Action Security Password..."
                 autoFocus
                 className="w-full bg-slate-900 border-2 border-rose-500/60 rounded-xl pl-9 pr-3 py-2 text-sm text-white font-mono placeholder-slate-500 focus:outline-none focus:border-rose-400"
               />

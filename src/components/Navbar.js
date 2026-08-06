@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ChangePasswordModal from "./ChangePasswordModal";
+import ChangeActionPasswordModal from "./ChangeActionPasswordModal";
 import {
   Truck,
   Users,
@@ -22,6 +23,7 @@ import {
   Key,
   LayoutDashboard,
   Bell,
+  Lock,
 } from "lucide-react";
 import logoImg from "../assets/logo.png";
 
@@ -33,6 +35,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [isChangeActionPasswordOpen, setIsChangeActionPasswordOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   // Primary Navigation Items for Owner
@@ -207,9 +210,18 @@ export default function Navbar() {
                       </div>
                     </div>
                   </div>
+                  {isOwner && (
+                    <button
+                      onClick={() => setIsChangeActionPasswordOpen(true)}
+                      title="Set / Change Action Security Password (LR Edit/Delete & Truck Debit Passcode)"
+                      className="p-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 rounded-xl transition cursor-pointer flex items-center gap-1 text-xs font-extrabold"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                    </button>
+                  )}
                   <button
                     onClick={() => setIsChangePasswordOpen(true)}
-                    title="Change Password (पासवर्ड बदलें)"
+                    title="Change Login Password (लॉगिन पासवर्ड बदलें)"
                     className="p-2 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-xl transition cursor-pointer flex items-center gap-1 text-xs font-bold"
                   >
                     <Key className="w-4 h-4" />
@@ -276,19 +288,30 @@ export default function Navbar() {
                 </div>
                 <div className="text-[11px] text-slate-500 font-mono">Mobile: {user.username}</div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {isOwner && (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setIsChangeActionPasswordOpen(true);
+                    }}
+                    className="text-xs text-emerald-950 font-black bg-emerald-300 hover:bg-emerald-400 px-2 py-1 rounded flex items-center gap-1 border border-emerald-400"
+                  >
+                    <ShieldCheck size={13} /> Action PIN
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
                     setIsChangePasswordOpen(true);
                   }}
-                  className="text-xs text-amber-800 font-bold bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded flex items-center gap-1 border border-amber-300"
+                  className="text-xs text-amber-800 font-bold bg-amber-100 hover:bg-amber-200 px-2 py-1 rounded flex items-center gap-1 border border-amber-300"
                 >
-                  <Key size={13} /> Password
+                  <Key size={13} /> Login Pass
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="text-xs text-rose-700 font-bold bg-rose-100 hover:bg-rose-200 px-2.5 py-1 rounded border border-rose-200"
+                  className="text-xs text-rose-700 font-bold bg-rose-100 hover:bg-rose-200 px-2 py-1 rounded border border-rose-200"
                 >
                   Logout
                 </button>
@@ -347,6 +370,13 @@ export default function Navbar() {
       <ChangePasswordModal
         isOpen={isChangePasswordOpen}
         onClose={() => setIsChangePasswordOpen(false)}
+        user={user}
+      />
+
+      {/* Action Security Password Modal (LR Edit/Delete & Truck Debit) */}
+      <ChangeActionPasswordModal
+        isOpen={isChangeActionPasswordOpen}
+        onClose={() => setIsChangeActionPasswordOpen(false)}
         user={user}
       />
     </header>
