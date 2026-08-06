@@ -384,13 +384,27 @@ export default function LREntryForm() {
     });
   };
 
-  // Save Record handler (Locks ID so multiple clicks only update single record)
+  // Save Record handler
   const handleSave = async (e) => {
     if (e) e.preventDefault();
+    const isEditing = Boolean(formData.id);
+    const editedLRNo = formData.lrNumber;
+
     const saved = await saveLREntry(formData);
-    setFormData(saved); // Lock form to this saved record
     setActiveLR(saved);
-    setShowSuccessModal(true); // Open success popup!
+
+    if (isEditing) {
+      // Revert back to current running LR number after saving edits
+      const today = getTodayDateStr();
+      const nextNo = getNextLRNumber(today);
+      setFormData({ ...initialForm, lrNumber: nextNo, dateTime: today });
+      setSelectedConsignors([]);
+      flashMsg(`LR #${editedLRNo} Updated & Saved! Returned to Next LR #${nextNo}`);
+    } else {
+      setFormData(saved);
+      flashMsg(`LR #${saved.lrNumber} Saved Successfully!`);
+    }
+
     return saved;
   };
 
@@ -406,9 +420,50 @@ export default function LREntryForm() {
     const today = getTodayDateStr();
     const nextNo = getNextLRNumber(today);
     setFormData({ ...initialForm, lrNumber: nextNo, dateTime: today });
+    setSelectedConsignors([]);
   };
 
   const [showDeletePasswordModal, setShowDeletePasswordModal] = useState(false);
+  const [showEditLoadPasswordModal, setShowEditLoadPasswordModal] = useState(false);
+  const [pendingLoadLR, setPendingLoadLR] = useState(null);
+
+  const handleCheckAndLoadExistingLR = async (lrNumToSearch) => {
+    if (!lrNumToSearch || !String(lrNumToSearch).trim()) return false;
+    const cleanSearch = String(lrNumToSearch).trim();
+
+    const allLRs = await fetchLREntriesFromDB();
+    if (!allLRs || allLRs.length === 0) return false;
+
+    const foundLR = allLRs.find((item) => {
+      if (!item.lrNumber) return false;
+      const itemNumStr = String(item.lrNumber).trim();
+      if (itemNumStr.toLowerCase() === cleanSearch.toLowerCase()) return true;
+      const numItem = parseInt(itemNumStr, 10);
+      const numSearch = parseInt(cleanSearch, 10);
+      if (!isNaN(numItem) && !isNaN(numSearch) && numItem === numSearch) return true;
+      return false;
+    });
+
+    if (foundLR) {
+      if (formData.id && formData.id === foundLR.id) {
+        return true;
+      }
+      setPendingLoadLR(foundLR);
+      setShowEditLoadPasswordModal(true);
+      return true;
+    }
+    return false;
+  };
+
+  const confirmLoadExistingLR = () => {
+    if (pendingLoadLR) {
+      setFormData(pendingLoadLR);
+      setActiveLR(pendingLoadLR);
+      flashMsg(`LR #${pendingLoadLR.lrNumber} Loaded for Editing!`);
+    }
+    setShowEditLoadPasswordModal(false);
+    setPendingLoadLR(null);
+  };
 
   const handleDeleteCurrentLR = () => {
     if (!formData.id) return;
@@ -508,6 +563,28 @@ export default function LREntryForm() {
 
     // 1. Handle Enter Key Navigation
     if (e.key === "Enter") {
+      // Check if user pressed Enter on LR Number field and check if it exists in DB
+      if (e.target.id === "lr-number-input" || e.target.name === "lrNumber") {
+        const val = e.target.value;
+        if (val && val.trim()) {
+          e.preventDefault();
+          handleCheckAndLoadExistingLR(val).then((isFound) => {
+            if (!isFound) {
+              const focusable = getFocusable();
+              const index = focusable.indexOf(e.target);
+              const nextInput = focusable.slice(index + 1).find((el) => el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA");
+              if (nextInput) {
+                nextInput.focus();
+                if (typeof nextInput.select === "function" && nextInput.tagName === "INPUT") {
+                  nextInput.select();
+                }
+              }
+            }
+          });
+          return;
+        }
+      }
+
       // If user is on a button, execute its action naturally
       if (e.target.tagName === "BUTTON") {
         return;
@@ -617,16 +694,35 @@ export default function LREntryForm() {
             <div className="bg-sky-950/80 p-1.5 rounded border border-sky-600/60 grid grid-cols-12 gap-1.5 items-center shrink-0">
 
               <div className="col-span-6 sm:col-span-4 md:col-span-2">
-                <label className="text-[10px] font-extrabold text-yellow-300 uppercase block mb-0.5">
-                  L/R NUMBER
-                </label>
-                <input
-                  type="text"
-                  value={formData.lrNumber}
-                  onChange={(e) => setFormData({ ...formData, lrNumber: e.target.value })}
-                  placeholder="LR NO."
-                  className="w-full bg-white text-slate-900 font-mono font-black text-xs px-2 py-0.5 border-2 border-amber-400 rounded focus:outline-none"
-                />
+                <div className="flex items-center justify-between mb-0.5">
+                  <label className="text-[10px] font-extrabold text-yellow-300 uppercase block">
+                    L/R NUMBER
+                  </label>
+                  {formData.id && (
+                    <span className="text-[9px] font-black text-slate-950 bg-amber-400 px-1 py-0.2 rounded shadow animate-pulse">
+                      EDITING
+                    </span>
+                  )}
+                </div>
+                <div className="relative flex items-center">
+                  <input
+                    id="lr-number-input"
+                    name="lrNumber"
+                    type="text"
+                    value={formData.lrNumber}
+                    onChange={(e) => setFormData({ ...formData, lrNumber: e.target.value })}
+                    placeholder="LR NO."
+                    className="w-full bg-white text-slate-900 font-mono font-black text-xs px-2 py-0.5 pr-7 border-2 border-amber-400 rounded focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleCheckAndLoadExistingLR(formData.lrNumber)}
+                    title="Search & Open LR for Editing"
+                    className="absolute right-1 text-slate-600 hover:text-amber-600 p-0.5 transition cursor-pointer"
+                  >
+                    <Search className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
               <div className="col-span-6 sm:col-span-4 md:col-span-2">
@@ -1945,6 +2041,18 @@ export default function LREntryForm() {
             actionTitle={`Enter password to Delete LR #${formData.lrNumber}`}
             onConfirm={confirmDeleteCurrentLR}
             onClose={() => setShowDeletePasswordModal(false)}
+          />
+        )}
+
+        {/* Edit / Load Existing LR Password Confirmation Modal */}
+        {showEditLoadPasswordModal && pendingLoadLR && (
+          <PasswordConfirmModal
+            actionTitle={`Enter password to Edit LR #${pendingLoadLR.lrNumber}`}
+            onConfirm={confirmLoadExistingLR}
+            onClose={() => {
+              setShowEditLoadPasswordModal(false);
+              setPendingLoadLR(null);
+            }}
           />
         )}
 
