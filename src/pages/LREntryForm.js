@@ -3,7 +3,8 @@ import { useLocation } from "react-router-dom";
 import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, deleteLREntry, getNextLRNumber, saveParty, fetchTrucksFromDB, saveTruck } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
 import PasswordConfirmModal from "../components/PasswordConfirmModal";
-import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2, Truck, Trash2 } from "lucide-react";
+import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2, Truck, Trash2, AlertCircle } from "lucide-react";
+import { API_BASE_URL } from "../config/api";
 
 export default function LREntryForm() {
   const location = useLocation();
@@ -42,6 +43,7 @@ export default function LREntryForm() {
 
   // Truck Master State & Modal
   const [trucks, setTrucks] = useState([]);
+  const [truckPayments, setTruckPayments] = useState([]);
   const [showAddTruckModal, setShowAddTruckModal] = useState(false);
   const [showTruckSearchDropdown, setShowTruckSearchDropdown] = useState(false);
   const [newTruckForm, setNewTruckForm] = useState({
@@ -194,6 +196,17 @@ export default function LREntryForm() {
       const loadedTrucks = await fetchTrucksFromDB();
       setParties(loadedParties || []);
       setTrucks(loadedTrucks || []);
+
+      // Fetch truck debit / payments from server for live DUE calculation
+      try {
+        const tpRes = await fetch(`${API_BASE_URL}/truck-payments`);
+        if (tpRes.ok) {
+          const tpData = await tpRes.json();
+          if (Array.isArray(tpData)) setTruckPayments(tpData);
+        }
+      } catch (e) {
+        console.error("Failed to fetch truck payments for due check:", e);
+      }
 
       if (location.state && location.state.editLR) {
         setFormData(location.state.editLR);
@@ -785,86 +798,118 @@ export default function LREntryForm() {
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-4 md:col-span-2 relative">
-                <div className="flex items-center justify-between mb-0.5">
-                  <label className="text-[10px] font-extrabold text-yellow-300 uppercase block">
-                    TRUCK NO.
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewTruckForm({ ...newTruckForm, truckNo: formData.truckNo });
-                      setShowAddTruckModal(true);
-                    }}
-                    className="text-[9px] bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-1 py-0.2 rounded font-black uppercase shadow flex items-center gap-0.5 cursor-pointer"
-                    title="Add New Truck to Master"
-                  >
-                    <Plus size={10} /> + Add
-                  </button>
-                </div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    list="truck-master-list"
-                    value={formData.truckNo}
-                    onChange={(e) => {
-                      setFormData({ ...formData, truckNo: e.target.value.toUpperCase() });
-                      setShowTruckSearchDropdown(true);
-                    }}
-                    onFocus={() => setShowTruckSearchDropdown(true)}
-                    onBlur={() => setTimeout(() => setShowTruckSearchDropdown(false), 200)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === "Tab" || e.key === "Escape") {
-                        setShowTruckSearchDropdown(false);
-                      }
-                    }}
-                    placeholder="TRUCK NO."
-                    className="w-full bg-white text-slate-900 font-mono font-black px-1.5 py-0.5 border-2 border-sky-400 rounded uppercase text-xs"
-                  />
-                  <datalist id="truck-master-list">
-                    {trucks.map((t, idx) => (
-                      <option key={idx} value={(t.truckNo || "").toUpperCase()}>
-                        {t.ownerName ? `${t.truckNo} - ${t.ownerName}` : t.truckNo}
-                      </option>
-                    ))}
-                  </datalist>
-                  {showTruckSearchDropdown && (
-                    <div className="absolute left-0 right-0 top-full mt-0.5 z-40 bg-slate-900 border-2 border-sky-400 rounded-md shadow-2xl max-h-48 overflow-y-auto">
-                      {trucks
-                        .filter((t) => (t.truckNo || "").toUpperCase().includes((formData.truckNo || "").toUpperCase()))
-                        .map((t, idx) => (
-                          <div
-                            key={idx}
-                            onMouseDown={() => {
-                              setFormData({ ...formData, truckNo: (t.truckNo || "").toUpperCase() });
-                              setShowTruckSearchDropdown(false);
-                            }}
-                            className="px-2 py-1.5 hover:bg-sky-700 cursor-pointer text-xs border-b border-slate-800 flex justify-between items-center"
-                          >
-                            <span className="font-mono font-bold text-amber-300">{(t.truckNo || "").toUpperCase()}</span>
-                            <span className="text-[10px] text-slate-400">{t.ownerName || "No Owner"}</span>
-                          </div>
-                        ))}
-                      {trucks.filter((t) => (t.truckNo || "").toUpperCase().includes((formData.truckNo || "").toUpperCase())).length === 0 && (
-                        <div className="p-2 text-center text-xs text-slate-400">
-                          Manual entry enabled.
-                          <button
-                            type="button"
-                            onMouseDown={() => {
-                              setNewTruckForm({ ...newTruckForm, truckNo: formData.truckNo });
-                              setShowAddTruckModal(true);
-                              setShowTruckSearchDropdown(false);
-                            }}
-                            className="block mx-auto mt-1 px-2 py-0.5 bg-emerald-500 text-slate-950 font-bold rounded text-[10px]"
-                          >
-                            + Save "{formData.truckNo}" to Master
-                          </button>
-                        </div>
-                      )}
+              {/* Compute live Truck Debit Due for currently entered truckNo */}
+              {(() => {
+                const currentTruckNoClean = (formData.truckNo || "").trim().toUpperCase();
+                const currentTruckDue = currentTruckNoClean && Array.isArray(truckPayments)
+                  ? truckPayments
+                      .filter((rec) => (rec.truckNo || "").trim().toUpperCase() === currentTruckNoClean && rec.status !== "PAID")
+                      .reduce((sum, rec) => sum + (Number(rec.amount) || 0), 0)
+                  : 0;
+
+                return (
+                  <div className="col-span-6 sm:col-span-4 md:col-span-2 relative">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <label className="text-[10px] font-extrabold text-yellow-300 uppercase block">
+                        TRUCK NO.
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewTruckForm({ ...newTruckForm, truckNo: formData.truckNo });
+                          setShowAddTruckModal(true);
+                        }}
+                        className="text-[9px] bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-1 py-0.2 rounded font-black uppercase shadow flex items-center gap-0.5 cursor-pointer"
+                        title="Add New Truck to Master"
+                      >
+                        <Plus size={10} /> + Add
+                      </button>
                     </div>
-                  )}
-                </div>
-              </div>
+
+                    <div className="flex items-center gap-1">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          list="truck-master-list"
+                          value={formData.truckNo}
+                          onChange={(e) => {
+                            setFormData({ ...formData, truckNo: e.target.value.toUpperCase() });
+                            setShowTruckSearchDropdown(true);
+                          }}
+                          onFocus={() => setShowTruckSearchDropdown(true)}
+                          onBlur={() => setTimeout(() => setShowTruckSearchDropdown(false), 200)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === "Tab" || e.key === "Escape") {
+                              setShowTruckSearchDropdown(false);
+                            }
+                          }}
+                          placeholder="TRUCK NO."
+                          className="w-full bg-white text-slate-900 font-mono font-black px-1.5 py-0.5 border-2 border-sky-400 rounded uppercase text-xs"
+                        />
+                        <datalist id="truck-master-list">
+                          {trucks.map((t, idx) => (
+                            <option key={idx} value={(t.truckNo || "").toUpperCase()}>
+                              {t.ownerName ? `${t.truckNo} - ${t.ownerName}` : t.truckNo}
+                            </option>
+                          ))}
+                        </datalist>
+                        {showTruckSearchDropdown && (
+                          <div className="absolute left-0 right-0 top-full mt-0.5 z-40 bg-slate-900 border-2 border-sky-400 rounded-md shadow-2xl max-h-48 overflow-y-auto">
+                            {trucks
+                              .filter((t) => (t.truckNo || "").toUpperCase().includes((formData.truckNo || "").toUpperCase()))
+                              .map((t, idx) => (
+                                <div
+                                  key={idx}
+                                  onMouseDown={() => {
+                                    setFormData({ ...formData, truckNo: (t.truckNo || "").toUpperCase() });
+                                    setShowTruckSearchDropdown(false);
+                                  }}
+                                  className="px-2 py-1.5 hover:bg-sky-700 cursor-pointer text-xs border-b border-slate-800 flex justify-between items-center"
+                                >
+                                  <span className="font-mono font-bold text-amber-300">{(t.truckNo || "").toUpperCase()}</span>
+                                  <span className="text-[10px] text-slate-400">{t.ownerName || "No Owner"}</span>
+                                </div>
+                              ))}
+                            {trucks.filter((t) => (t.truckNo || "").toUpperCase().includes((formData.truckNo || "").toUpperCase())).length === 0 && (
+                              <div className="p-2 text-center text-xs text-slate-400">
+                                Manual entry enabled.
+                                <button
+                                  type="button"
+                                  onMouseDown={() => {
+                                    setNewTruckForm({ ...newTruckForm, truckNo: formData.truckNo });
+                                    setShowAddTruckModal(true);
+                                    setShowTruckSearchDropdown(false);
+                                  }}
+                                  className="block mx-auto mt-1 px-2 py-0.5 bg-emerald-500 text-slate-950 font-bold rounded text-[10px]"
+                                >
+                                  + Save "{formData.truckNo}" to Master
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* TRUCK DEBIT DUE LIVE BADGE */}
+                      <div
+                        title={currentTruckDue > 0 ? `Truck Debit Pending Due: ₹${currentTruckDue.toLocaleString("en-IN")}` : "No Truck Debit Due"}
+                        className={`shrink-0 px-2 py-0.5 border-2 rounded-lg font-mono text-center transition-all ${
+                          currentTruckDue > 0
+                            ? "bg-rose-100 border-rose-500 text-rose-700 shadow-md animate-pulse"
+                            : "bg-slate-100 border-slate-300 text-slate-400"
+                        }`}
+                      >
+                        <div className="text-[8px] font-black uppercase leading-none tracking-tight text-slate-500">
+                          DUE
+                        </div>
+                        <div className={`text-xs font-black leading-tight ${currentTruckDue > 0 ? "text-rose-600 font-black" : "text-slate-400 font-normal"}`}>
+                          {currentTruckDue > 0 ? `₹${currentTruckDue.toLocaleString("en-IN")}` : "-"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
             </div>
 
