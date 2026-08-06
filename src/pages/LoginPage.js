@@ -86,12 +86,15 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Brand Title */}
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-wider text-slate-900 uppercase">
-                Wolego Transport
+            {/* Brand Title & Tagline matching LR Document */}
+            <div className="pt-1 flex flex-col items-center">
+              <h1 className="text-xl sm:text-2xl font-black text-[#009a44] tracking-wider font-serif uppercase whitespace-nowrap drop-shadow-sm">
+                WOLEGO TRANSPORT
               </h1>
-              <div className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100/90 border border-amber-300/80 rounded-full shadow-sm">
+              <div className="mt-0.5 text-xs sm:text-sm font-black text-amber-900 italic font-serif uppercase tracking-widest">
+                EVERYTHING IS FAST
+              </div>
+              <div className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1 bg-amber-100/90 border border-amber-300/80 rounded-full shadow-sm">
                 <Sparkles className="w-3.5 h-3.5 text-amber-700" />
                 <span className="text-[10px] font-black text-amber-900 tracking-widest uppercase">
                   Transport Billing & Accounting Portal
