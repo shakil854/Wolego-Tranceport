@@ -266,7 +266,7 @@ export default function Navbar() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-slate-200 px-2 pt-2 pb-3 space-y-1 sm:px-3 shadow-2xl">
+        <div className="md:hidden bg-white border-t border-slate-200 px-2 pt-2 pb-6 space-y-1 sm:px-3 shadow-2xl max-h-[calc(100vh-4rem)] overflow-y-auto">
 
           {user && (
             <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg mb-2 flex justify-between items-center">
