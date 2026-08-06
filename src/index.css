@@ -4,8 +4,217 @@
 
 @layer base {
   html, body, #root {
-    @apply bg-slate-900 text-slate-100 antialiased font-sans h-full w-full overflow-hidden;
+    @apply bg-slate-900 text-slate-100 antialiased font-sans h-full w-full overflow-hidden transition-colors duration-200;
   }
+}
+
+/* ==========================================
+   MULTI-THEME STYLESHEET (5 BEAUTIFUL THEMES)
+   ========================================== */
+
+/* 1. LIGHT WHITE THEME (Clean Pure White & High Contrast) */
+html[data-theme="light"],
+html[data-theme="light"] body,
+html[data-theme="light"] #root,
+body[data-theme="light"],
+[data-theme="light"] {
+  background-color: #f8fafc !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Light Theme Container Overrides (No Dark Blue Patches) */
+[data-theme="light"] .bg-slate-900,
+[data-theme="light"] .bg-slate-950,
+[data-theme="light"] .bg-sky-950,
+[data-theme="light"] .bg-sky-900,
+[data-theme="light"] .bg-sky-950\/90,
+[data-theme="light"] .bg-sky-950\/80,
+[data-theme="light"] .bg-sky-900\/90,
+[data-theme="light"] .bg-sky-900\/80,
+[data-theme="light"] .bg-slate-800,
+[data-theme="light"] .bg-slate-800\/90,
+[data-theme="light"] .bg-slate-800\/80,
+[data-theme="light"] .bg-slate-800\/40,
+[data-theme="light"] .bg-slate-900\/80,
+[data-theme="light"] .bg-slate-900\/90,
+[data-theme="light"] .bg-slate-900\/60,
+[data-theme="light"] .bg-sky-950\/80,
+[data-theme="light"] .bg-zinc-900,
+[data-theme="light"] .bg-zinc-950 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Light Theme Text Contrast Enhancements */
+[data-theme="light"] .text-slate-100,
+[data-theme="light"] .text-slate-200,
+[data-theme="light"] .text-slate-300,
+[data-theme="light"] .text-white {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .text-slate-400,
+[data-theme="light"] .text-slate-500 {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .text-yellow-300,
+[data-theme="light"] .text-amber-400,
+[data-theme="light"] .text-amber-300,
+[data-theme="light"] .text-amber-200 {
+  color: #b45309 !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .text-blue-100,
+[data-theme="light"] .text-sky-200,
+[data-theme="light"] .text-sky-300,
+[data-theme="light"] .text-sky-400 {
+  color: #0369a1 !important;
+  font-weight: 700 !important;
+}
+
+/* Light Theme Input & Select Field Legibility */
+[data-theme="light"] input:not([type="submit"]):not([type="button"]),
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] select::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #64748b !important;
+  font-weight: 600 !important;
+}
+
+/* Light Theme Button Enhancements (Fix Dark Refresh & Dark Buttons) */
+[data-theme="light"] .bg-slate-900:not(.bg-amber-500):not(.bg-emerald-500):not(.bg-rose-500),
+[data-theme="light"] .bg-slate-800:not(.bg-amber-500):not(.bg-emerald-500):not(.bg-rose-500),
+[data-theme="light"] .bg-slate-700:not(.bg-amber-500):not(.bg-emerald-500):not(.bg-rose-500),
+[data-theme="light"] button.bg-slate-900,
+[data-theme="light"] button.bg-slate-800,
+[data-theme="light"] button.bg-slate-700 {
+  background-color: #f1f5f9 !important;
+  border: 1.5px solid #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] button.bg-slate-900:hover,
+[data-theme="light"] button.bg-slate-800:hover,
+[data-theme="light"] button.bg-slate-700:hover {
+  background-color: #e2e8f0 !important;
+  color: #0284c7 !important;
+}
+
+/* 2. CLASSIC NAVY BLUE THEME (Midnight Navy) */
+html[data-theme="navy"],
+html[data-theme="navy"] body,
+html[data-theme="navy"] #root,
+body[data-theme="navy"],
+[data-theme="navy"] {
+  background-color: #0b1329 !important;
+  color: #f8fafc !important;
+}
+
+/* 3. EMERALD DARK THEME (Modern Emerald Green & Gold) */
+html[data-theme="emerald"],
+html[data-theme="emerald"] body,
+html[data-theme="emerald"] #root,
+body[data-theme="emerald"],
+[data-theme="emerald"] {
+  background-color: #022c22 !important;
+  color: #ecfdf5 !important;
+}
+
+[data-theme="emerald"] .bg-slate-900,
+[data-theme="emerald"] .bg-slate-950,
+[data-theme="emerald"] .bg-sky-950,
+[data-theme="emerald"] .bg-sky-900,
+[data-theme="emerald"] .bg-sky-900\/90,
+[data-theme="emerald"] .bg-slate-800,
+[data-theme="emerald"] .bg-slate-800\/90,
+[data-theme="emerald"] .bg-slate-800\/40 {
+  background-color: #064e3b !important;
+  border-color: #10b981 !important;
+  color: #ecfdf5 !important;
+}
+
+[data-theme="emerald"] input:not([type="submit"]):not([type="button"]),
+[data-theme="emerald"] select,
+[data-theme="emerald"] textarea {
+  background-color: #022c22 !important;
+  color: #ffffff !important;
+  border-color: #059669 !important;
+}
+
+/* 4. ROYAL PURPLE THEME (Midnight Indigo & Violet) */
+html[data-theme="purple"],
+html[data-theme="purple"] body,
+html[data-theme="purple"] #root,
+body[data-theme="purple"],
+[data-theme="purple"] {
+  background-color: #1e1b4b !important;
+  color: #f5f3ff !important;
+}
+
+[data-theme="purple"] .bg-slate-900,
+[data-theme="purple"] .bg-slate-950,
+[data-theme="purple"] .bg-sky-950,
+[data-theme="purple"] .bg-sky-900,
+[data-theme="purple"] .bg-sky-900\/90,
+[data-theme="purple"] .bg-slate-800,
+[data-theme="purple"] .bg-slate-800\/90,
+[data-theme="purple"] .bg-slate-800\/40 {
+  background-color: #312e81 !important;
+  border-color: #8b5cf6 !important;
+  color: #f5f3ff !important;
+}
+
+[data-theme="purple"] input:not([type="submit"]):not([type="button"]),
+[data-theme="purple"] select,
+[data-theme="purple"] textarea {
+  background-color: #1e1b4b !important;
+  color: #ffffff !important;
+  border-color: #7c3aed !important;
+}
+
+/* 5. DARK GOLD THEME (Rich Zinc & Warm Amber) */
+html[data-theme="amber"],
+html[data-theme="amber"] body,
+html[data-theme="amber"] #root,
+body[data-theme="amber"],
+[data-theme="amber"] {
+  background-color: #18181b !important;
+  color: #fffbeb !important;
+}
+
+[data-theme="amber"] .bg-slate-900,
+[data-theme="amber"] .bg-slate-950,
+[data-theme="amber"] .bg-sky-950,
+[data-theme="amber"] .bg-sky-900,
+[data-theme="amber"] .bg-sky-900\/90,
+[data-theme="amber"] .bg-slate-800,
+[data-theme="amber"] .bg-slate-800\/90,
+[data-theme="amber"] .bg-slate-800\/40 {
+  background-color: #27272a !important;
+  border-color: #f59e0b !important;
+  color: #fffbeb !important;
+}
+
+[data-theme="amber"] input:not([type="submit"]):not([type="button"]),
+[data-theme="amber"] select,
+[data-theme="amber"] textarea {
+  background-color: #18181b !important;
+  color: #ffffff !important;
+  border-color: #d97706 !important;
 }
 
 /* Guaranteed 1-Sheet & Multi-Page A4 Portrait Print Stylesheet */

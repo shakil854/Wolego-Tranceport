@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import ChangePasswordModal from "./ChangePasswordModal";
 import ChangeActionPasswordModal from "./ChangeActionPasswordModal";
 import {
@@ -24,6 +25,7 @@ import {
   LayoutDashboard,
   Bell,
   Lock,
+  Palette,
 } from "lucide-react";
 import logoImg from "../assets/logo.png";
 
@@ -31,12 +33,17 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, isOwner, isParty, isTruck } = useAuth();
+  const { theme, setTheme, THEMES } = useTheme();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [desktopThemeOpen, setDesktopThemeOpen] = useState(false);
+  const [mobileThemeOpen, setMobileThemeOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isChangeActionPasswordOpen, setIsChangeActionPasswordOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const desktopThemeRef = useRef(null);
+  const mobileThemeRef = useRef(null);
 
   // Primary Navigation Items for Owner
   const ownerPrimaryItems = [
@@ -81,11 +88,17 @@ export default function Navbar() {
 
   const isDropdownActive = dropdownItems.some((item) => isActive(item.path));
 
-  // Close dropdown when user clicks outside
+  // Close dropdowns when user clicks outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
+      }
+      if (desktopThemeRef.current && !desktopThemeRef.current.contains(event.target)) {
+        setDesktopThemeOpen(false);
+      }
+      if (mobileThemeRef.current && !mobileThemeRef.current.contains(event.target)) {
+        setMobileThemeOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -106,11 +119,11 @@ export default function Navbar() {
     <header className="bg-white text-slate-900 shadow-md sticky top-0 z-50 border-b border-slate-200 font-sans">
 
       {/* Main Navbar */}
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16">
+      <div className="w-full max-w-full mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-3 sm:gap-6">
 
           {/* Logo / Brand */}
-          <Link to={isParty ? "/accounting" : isTruck ? "/truck-accounting" : "/"} className="flex items-center space-x-2.5 shrink-0 group">
+          <Link to={isParty ? "/accounting" : isTruck ? "/truck-accounting" : "/"} className="flex items-center space-x-2.5 shrink-0 group mr-4 sm:mr-6 lg:mr-10">
             {/* Crown & W Logo (Enlarged & Bottom Text Cropped Out) */}
             <div className="h-9 sm:h-11 w-9 sm:w-11 overflow-hidden flex items-start justify-center shrink-0">
               <img
@@ -130,7 +143,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+          <nav className="hidden md:flex items-center space-x-1.5 sm:space-x-2 lg:space-x-3">
             {/* Primary Nav Items */}
             {primaryItems.map((item) => {
               const Icon = item.icon;
@@ -210,6 +223,43 @@ export default function Navbar() {
                       </div>
                     </div>
                   </div>
+                  {/* Theme Popover Button */}
+                  <div className="relative" ref={desktopThemeRef}>
+                    <button
+                      type="button"
+                      onClick={() => setDesktopThemeOpen(!desktopThemeOpen)}
+                      title="Choose Theme (थीम बदलें)"
+                      className="p-2 bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 rounded-xl transition cursor-pointer flex items-center justify-center"
+                    >
+                      <Palette className="w-4 h-4 text-purple-700" />
+                    </button>
+                    {desktopThemeOpen && (
+                      <div className="absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-2xl py-1 z-50 animate-fadeIn">
+                        <div className="px-3 py-1.5 border-b border-slate-100 text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                          Select Color Theme
+                        </div>
+                        {THEMES.map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => {
+                              setTheme(t.id);
+                              setDesktopThemeOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                              theme === t.id
+                                ? "bg-amber-50 text-amber-900 font-extrabold border-l-4 border-amber-500"
+                                : "text-slate-700 hover:bg-slate-100 hover:text-amber-600"
+                            }`}
+                          >
+                            <span>{t.icon}</span>
+                            <span>{t.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   {isOwner && (
                     <button
                       onClick={() => setIsChangeActionPasswordOpen(true)}
@@ -246,31 +296,52 @@ export default function Navbar() {
             </div>
           </nav>
 
-          {/* Mobile menu toggle */}
-          <div className="md:hidden flex items-center gap-1 shrink-0">
+          {/* Mobile header controls */}
+          <div className="md:hidden flex items-center gap-1.5 shrink-0 pr-1 sm:pr-0">
             {user && (
               <>
-                <button
-                  onClick={() => setIsChangePasswordOpen(true)}
-                  className="p-1.5 text-amber-700 hover:bg-amber-100 rounded-lg bg-amber-50 border border-amber-200"
-                  title="Change Password"
-                >
-                  <Key className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-lg bg-rose-50 border border-rose-200"
-                  title="Logout"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
+                {/* Compact Theme Popover Button for Mobile Header */}
+                <div className="relative" ref={mobileThemeRef}>
+                  <button
+                    type="button"
+                    onClick={() => setMobileThemeOpen(!mobileThemeOpen)}
+                    className="p-1.5 text-purple-700 hover:bg-purple-100 rounded-xl bg-purple-50 border border-purple-200 cursor-pointer"
+                    title="Choose Theme"
+                  >
+                    <Palette className="w-4 h-4" />
+                  </button>
+                  {mobileThemeOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-2xl py-1 z-50 animate-fadeIn">
+                      {THEMES.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => {
+                            setTheme(t.id);
+                            setMobileThemeOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-xs font-bold flex items-center gap-2 transition-all ${
+                            theme === t.id
+                              ? "bg-amber-50 text-amber-900 font-extrabold border-l-4 border-amber-500"
+                              : "text-slate-700 hover:bg-slate-100"
+                          }`}
+                        >
+                          <span>{t.icon}</span>
+                          <span>{t.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </>
             )}
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 rounded-md text-slate-700 hover:text-slate-900 hover:bg-slate-100 focus:outline-none"
+              title="Toggle Menu"
+              className="p-2 rounded-xl text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 focus:outline-none transition shrink-0 ml-0.5"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 text-rose-600" /> : <Menu className="w-5 h-5 text-slate-800" />}
             </button>
           </div>
         </div>
@@ -279,6 +350,24 @@ export default function Navbar() {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-slate-200 px-2 pt-2 pb-6 space-y-1 sm:px-3 shadow-2xl max-h-[calc(100vh-4rem)] overflow-y-auto">
+
+          {/* Mobile Theme Selector Bar */}
+          <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg mb-2 flex justify-between items-center">
+            <span className="text-xs font-black text-amber-900 flex items-center gap-1 uppercase">
+              🎨 Color Theme:
+            </span>
+            <select
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              className="bg-white text-slate-900 font-extrabold text-xs px-2 py-1 rounded border border-amber-300 focus:outline-none cursor-pointer"
+            >
+              {THEMES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.icon} {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {user && (
             <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg mb-2 flex justify-between items-center">
