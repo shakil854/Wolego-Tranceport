@@ -20,6 +20,7 @@ export default function FreightReceipt() {
   const [weightKgs, setWeightKgs] = useState("");
   const [ratePerMt, setRatePerMt] = useState("");
   const [paidByCheque, setPaidByCheque] = useState("");
+  const [advanceAmount, setAdvanceAmount] = useState("");
   const [remarks, setRemarks] = useState("");
 
   const printRef = useRef(null);
@@ -27,6 +28,7 @@ export default function FreightReceipt() {
   const inputTruckNoRef = useRef(null);
   const inputWeightRef = useRef(null);
   const inputRateRef = useRef(null);
+  const inputAdvanceRef = useRef(null);
   const inputChequeRef = useRef(null);
   const inputRemarksRef = useRef(null);
 
@@ -73,6 +75,8 @@ export default function FreightReceipt() {
     // ratePerMt is NOT auto-filled from LR (user will enter manually)
     const chequeAmt = lr.netTotalAmount || lr.freightAmount || "";
     setPaidByCheque(chequeAmt);
+    const adv = lr.lessAdvancePaid || lr.advancePaid || "";
+    setAdvanceAmount(adv);
     setRemarks(lr.remarks || "");
   };
 
@@ -96,6 +100,8 @@ export default function FreightReceipt() {
       // ratePerMt is NOT auto-filled from LR (user will enter manually)
       const chequeAmt = match.netTotalAmount || match.freightAmount || "";
       setPaidByCheque(chequeAmt);
+      const adv = match.lessAdvancePaid || match.advancePaid || "";
+      setAdvanceAmount(adv);
       setRemarks(match.remarks || "");
     }
   };
@@ -106,8 +112,21 @@ export default function FreightReceipt() {
   // Total Freight = Total Weight (KGs) / 1000 * Rate per M.T.
   const calculatedTotalFreight = Math.round((numericWeight / 1000) * numericRate);
 
+  const numericAdvance = parseFloat(advanceAmount) || 0;
+  const netFreightAfterAdvance = Math.max(0, calculatedTotalFreight - numericAdvance);
+
   const numericPaidCheque = parseFloat(paidByCheque) || 0;
-  const calculatedCashPaid = Math.max(0, calculatedTotalFreight - numericPaidCheque);
+
+  let calculatedCashPaid = 0;
+  if (receiptType === "CHEQUE") {
+    calculatedCashPaid = Math.max(0, calculatedTotalFreight - numericPaidCheque);
+  } else if (receiptType === "ADVANCE_CHEQUE") {
+    calculatedCashPaid = Math.max(0, netFreightAfterAdvance - numericPaidCheque);
+  } else if (receiptType === "ADVANCE_CASH") {
+    calculatedCashPaid = netFreightAfterAdvance;
+  } else {
+    calculatedCashPaid = calculatedTotalFreight;
+  }
 
   // Helper to generate crisp, high-res A4 PDF matching Print preview
   const generateFreightReceiptPdf = async () => {
@@ -323,11 +342,11 @@ export default function FreightReceipt() {
           <label className="text-xs font-extrabold text-amber-400 uppercase tracking-wider block">
             1. Select Receipt Type
           </label>
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 max-w-md">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               type="button"
               onClick={() => setReceiptType("CHEQUE")}
-              className={`py-2 px-3 sm:px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer ${receiptType === "CHEQUE"
+              className={`py-2 px-2 sm:px-3 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${receiptType === "CHEQUE"
                   ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
                   : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
                 }`}
@@ -338,12 +357,34 @@ export default function FreightReceipt() {
             <button
               type="button"
               onClick={() => setReceiptType("CASH")}
-              className={`py-2 px-3 sm:px-4 rounded-lg font-black text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer ${receiptType === "CASH"
+              className={`py-2 px-2 sm:px-3 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${receiptType === "CASH"
                   ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
                   : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
                 }`}
             >
               <DollarSign size={15} /> Cash Only
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setReceiptType("ADVANCE_CHEQUE")}
+              className={`py-2 px-2 sm:px-3 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${receiptType === "ADVANCE_CHEQUE"
+                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
+                  : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                }`}
+            >
+              <CheckCircle2 size={15} /> Advance Cheque
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setReceiptType("ADVANCE_CASH")}
+              className={`py-2 px-2 sm:px-3 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${receiptType === "ADVANCE_CASH"
+                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
+                  : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                }`}
+            >
+              <DollarSign size={15} /> Advance Cash
             </button>
           </div>
         </div>
@@ -453,7 +494,9 @@ export default function FreightReceipt() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    if (receiptType === "CHEQUE") {
+                    if (receiptType === "ADVANCE_CHEQUE" || receiptType === "ADVANCE_CASH") {
+                      inputAdvanceRef.current?.focus();
+                    } else if (receiptType === "CHEQUE") {
                       inputChequeRef.current?.focus();
                     } else {
                       inputRemarksRef.current?.focus();
@@ -475,7 +518,7 @@ export default function FreightReceipt() {
             </div>
           </div>
 
-          {receiptType === "CHEQUE" ? (
+          {receiptType === "CHEQUE" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
                 <label className="block text-[10px] font-bold text-slate-300 uppercase mb-0.5">
@@ -506,7 +549,9 @@ export default function FreightReceipt() {
                 </div>
               </div>
             </div>
-          ) : (
+          )}
+
+          {receiptType === "CASH" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">
@@ -523,6 +568,92 @@ export default function FreightReceipt() {
                 </label>
                 <div className="w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded font-mono font-black text-amber-400 text-xs">
                   ₹ {calculatedTotalFreight.toLocaleString("en-IN")}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {receiptType === "ADVANCE_CHEQUE" && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div>
+                <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                  Advance Amount (₹)
+                </label>
+                <input
+                  ref={inputAdvanceRef}
+                  type="number"
+                  value={advanceAmount}
+                  onChange={(e) => setAdvanceAmount(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      inputChequeRef.current?.focus();
+                    }
+                  }}
+                  placeholder="ADVANCE RS."
+                  className="w-full px-2 py-1 bg-slate-950 border border-yellow-500 rounded font-mono font-extrabold text-yellow-300 text-xs focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-300 uppercase mb-0.5">
+                  Paid By Cheque
+                </label>
+                <input
+                  ref={inputChequeRef}
+                  type="number"
+                  value={paidByCheque}
+                  onChange={(e) => setPaidByCheque(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      inputRemarksRef.current?.focus();
+                    }
+                  }}
+                  placeholder="CHEQUE AMOUNT"
+                  className="w-full px-2 py-1 bg-slate-950 border border-slate-600 rounded font-mono font-bold text-sky-400 text-xs focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">
+                  Cash Paid (Calculated)
+                </label>
+                <div className="w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded font-mono font-black text-amber-400 text-xs">
+                  ₹ {calculatedCashPaid.toLocaleString("en-IN")}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {receiptType === "ADVANCE_CASH" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                  Advance Amount (₹)
+                </label>
+                <input
+                  ref={inputAdvanceRef}
+                  type="number"
+                  value={advanceAmount}
+                  onChange={(e) => setAdvanceAmount(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      inputRemarksRef.current?.focus();
+                    }
+                  }}
+                  placeholder="ADVANCE RS."
+                  className="w-full px-2 py-1 bg-slate-950 border border-yellow-500 rounded font-mono font-extrabold text-yellow-300 text-xs focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">
+                  Cash Paid (Net Freight)
+                </label>
+                <div className="w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded font-mono font-black text-amber-400 text-xs">
+                  ₹ {calculatedCashPaid.toLocaleString("en-IN")}
                 </div>
               </div>
             </div>
@@ -673,7 +804,7 @@ export default function FreightReceipt() {
                 </td>
               </tr>
 
-              {receiptType === "CHEQUE" ? (
+              {receiptType === "CHEQUE" && (
                 <>
                   <tr>
                     <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
@@ -693,7 +824,9 @@ export default function FreightReceipt() {
                     </td>
                   </tr>
                 </>
-              ) : (
+              )}
+
+              {receiptType === "CASH" && (
                 <tr>
                   <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                     CASH PAID
@@ -702,6 +835,68 @@ export default function FreightReceipt() {
                     {calculatedTotalFreight > 0 ? `₹ ${calculatedTotalFreight.toLocaleString("en-IN")}` : "-"}
                   </td>
                 </tr>
+              )}
+
+              {receiptType === "ADVANCE_CHEQUE" && (
+                <>
+                  <tr>
+                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                      LESS ADVANCE PAID
+                    </td>
+                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black text-amber-700">
+                      {advanceAmount ? `₹ ${numericAdvance.toLocaleString("en-IN")}` : "-"}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                      NET FREIGHT
+                    </td>
+                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                      {calculatedTotalFreight > 0 ? `₹ ${netFreightAfterAdvance.toLocaleString("en-IN")}` : "-"}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                      PAID BY CHEQUE
+                    </td>
+                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                      {paidByCheque ? `₹ ${numericPaidCheque.toLocaleString("en-IN")}` : "-"}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                      CASH PAID
+                    </td>
+                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                      {calculatedTotalFreight > 0 ? `₹ ${calculatedCashPaid.toLocaleString("en-IN")}` : "-"}
+                    </td>
+                  </tr>
+                </>
+              )}
+
+              {receiptType === "ADVANCE_CASH" && (
+                <>
+                  <tr>
+                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                      LESS ADVANCE PAID
+                    </td>
+                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black text-amber-700">
+                      {advanceAmount ? `₹ ${numericAdvance.toLocaleString("en-IN")}` : "-"}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                      CASH PAID (NET FREIGHT)
+                    </td>
+                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                      {calculatedTotalFreight > 0 ? `₹ ${netFreightAfterAdvance.toLocaleString("en-IN")}` : "-"}
+                    </td>
+                  </tr>
+                </>
               )}
 
               <tr>
