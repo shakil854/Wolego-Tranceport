@@ -816,14 +816,14 @@ export default function BulkLRPrintPage() {
               Close Preview
             </button>
           </div>
-          <div className="w-full max-w-[210mm] bg-white p-[3.5mm] rounded shadow-2xl box-border">
+          <div className="print-document print-container w-full max-w-[210mm] bg-white p-[3.5mm] rounded shadow-2xl box-border">
             {renderLRDocument(previewLR)}
           </div>
         </div>
       )}
 
       {/* PRINTABLE CONTAINER (Rendered only when browser print triggers) */}
-      <div className="hidden print:block bg-white text-black font-sans m-0 p-0">
+      <div className="print-document print-container hidden print:block bg-white text-black font-sans m-0 p-0">
         {filteredLRs.map((lr, idx) => (
           <div key={lr.id || idx} className="range-print-sheet">
             {renderLRDocument(lr)}

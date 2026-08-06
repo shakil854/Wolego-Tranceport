@@ -203,10 +203,10 @@ export default function LetterPadPage() {
       </div>
 
       {/* Printable A4 Letter Pad Container */}
-      <div className="w-full max-w-[210mm] mx-auto bg-white p-[4mm] shadow-2xl rounded-sm print-container print:p-[4mm] print:m-0 print:w-[210mm] print:h-[297mm] print:max-w-none print:shadow-none font-sans text-xs box-border">
+      <div className="w-full max-w-[210mm] mx-auto bg-white p-[3.5mm] shadow-2xl rounded-sm print-container print:p-0 print:m-0 print:w-[203mm] print:h-[290mm] print:max-w-none print:shadow-none font-sans text-xs box-border">
         
         {/* Inner Bordered Document Container */}
-        <div className="border-2 border-slate-900 bg-white text-slate-900 min-h-[287mm] h-full flex flex-col justify-between print-document relative overflow-hidden box-border p-3">
+        <div className="border-2 border-slate-900 bg-white text-slate-900 h-[290mm] min-h-[290mm] w-full flex flex-col justify-between print-document relative overflow-hidden box-border p-3">
           
           {/* Background Watermark Logo */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
@@ -220,14 +220,10 @@ export default function LetterPadPage() {
           <div className="relative z-10 flex-1 flex flex-col justify-between h-full">
             
             {/* Top Official Header Banner (Identical to LR Print Header) */}
-            <div>
-              <div className="text-center font-extrabold uppercase tracking-wide text-[10px] border-b border-slate-900 pb-0.5 mb-2 text-slate-900">
-                <u>SUBJECT TO WANKANER JURISDICTION</u>
-              </div>
-
-              <div className="grid grid-cols-12 items-center gap-2 pb-2 border-b-2 border-slate-900">
-                {/* Left Logo */}
-                <div className="col-span-3 flex flex-col items-center justify-center border-r border-slate-300 pr-2">
+            <div className="border-b-2 border-slate-900 pb-2 mb-2">
+              <div className="grid grid-cols-12 gap-1 items-center">
+                {/* Left Logo Column */}
+                <div className="col-span-2 flex justify-center items-center">
                   <img
                     src={logoImg}
                     alt="Wolego Transport Logo"
@@ -235,24 +231,39 @@ export default function LetterPadPage() {
                   />
                 </div>
 
-                {/* Center Title & Address */}
-                <div className="col-span-6 text-center space-y-1">
-                  <h1 className="text-[24px] sm:text-[28px] font-black text-[#009a44] font-serif tracking-wider uppercase leading-tight">
+                {/* Center Column: Exact Company Header Sequence */}
+                <div className="col-span-7 text-center flex flex-col items-center justify-center space-y-1">
+                  {/* Line 1: SUBJECT TO WANKANER JURISDICTION */}
+                  <div className="text-[10px] font-black text-slate-950 uppercase underline tracking-wider whitespace-nowrap">
+                    SUBJECT TO WANKANER JURISDICTION
+                  </div>
+
+                  {/* Line 2: WOLEGO TRANSPORT */}
+                  <h1 className="text-2xl sm:text-3xl font-black text-[#009a44] tracking-wider font-serif uppercase leading-none whitespace-nowrap">
                     WOLEGO TRANSPORT
                   </h1>
-                  <p className="text-[12px] font-black italic text-[#800000] tracking-wide">
+
+                  {/* Line 3: EVERYTHING IS FAST */}
+                  <div className="text-xs sm:text-sm font-black text-[#800000] italic font-serif whitespace-nowrap">
                     EVERYTHING IS FAST
-                  </p>
-                  <div className="bg-[#1e3a8a] text-white font-black text-[10.5px] py-0.5 px-2 rounded-xs uppercase tracking-wider inline-block">
-                    TRANSPORT CONTRACTOR AND COMMISSION AGENT
                   </div>
-                  <p className="text-[9.5px] font-black text-[#800000] leading-snug px-1">
-                    SURVEY NUMBER NA 178P8, 27 NATIONAL HIGHWAY, CHANDRAPUR, WANKANER-363621 DISTRICT-MORBI ( GUJRAT )
-                  </p>
+
+                  {/* Line 4: TRANSPORT CONTRACTOR AND COMMISSION AGENT */}
+                  <div className="whitespace-nowrap">
+                    <span className="text-[10.5px] sm:text-xs font-black uppercase tracking-wider bg-[#1e3a8a] text-white px-3 py-0.5 inline-block">
+                      TRANSPORT CONTRACTOR AND COMMISSION AGENT
+                    </span>
+                  </div>
+
+                  {/* Line 5 & 6: Address */}
+                  <div className="text-[10px] sm:text-[10.5px] text-[#800000] font-black tracking-tight uppercase leading-tight space-y-0.5 whitespace-nowrap text-center">
+                    <div>SURVEY NUMBER NA 178P8, 27 NATIONAL HIGHWAY,</div>
+                    <div>CHANDRAPUR, WANKANER-363621 DISTRICT-MORBI ( GUJRAT )</div>
+                  </div>
                 </div>
 
-                {/* Right Contact Details */}
-                <div className="col-span-3 border-l border-slate-300 pl-2 space-y-1 text-[9.5px] font-black text-slate-950">
+                {/* Right Contact Details Column */}
+                <div className="col-span-3 text-left text-[9.5px] sm:text-[10px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-3">
                   <div>MOBILE NO. +91 99 79 111 555</div>
                   <div>MOBILE NO. +91 81 41 111 555</div>
                   <div>PAN NO. : DLTPS8567M</div>
@@ -262,12 +273,12 @@ export default function LetterPadPage() {
             </div>
 
             {/* Middle Editable Letter Body Canvas */}
-            <div className="flex-1 py-4 px-2 my-2 relative min-h-[550px]">
+            <div className="flex-1 py-4 px-2 my-2 relative min-h-[550px] print:overflow-hidden">
               <div
                 ref={editorRef}
                 contentEditable
                 suppressContentEditableWarning
-                className="w-full h-full min-h-[550px] outline-none text-slate-950 font-sans text-sm leading-relaxed focus:bg-amber-50/10 p-2 rounded transition-all whitespace-pre-wrap"
+                className="w-full h-full min-h-[550px] outline-none text-slate-950 font-sans text-sm leading-relaxed focus:bg-amber-50/10 p-2 rounded transition-all whitespace-pre-wrap print:overflow-hidden print:bg-transparent"
               >
                 <p><br /></p>
               </div>

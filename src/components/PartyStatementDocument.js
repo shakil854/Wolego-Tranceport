@@ -228,7 +228,7 @@ export default function PartyStatementDocument({
       {/* Actual A4 Printable Statement Container */}
       <div
         ref={printRef}
-        className="w-[210mm] bg-white text-black p-8 font-sans border border-slate-300 shadow-lg print:shadow-none print:border-none print:w-full text-xs box-border my-1"
+        className="print-document print-container w-[210mm] bg-white text-black p-8 font-sans border border-slate-300 shadow-lg print:shadow-none print:border-none print:w-full text-xs box-border my-1"
         style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
       >
         {/* Top Header Jurisdiction */}

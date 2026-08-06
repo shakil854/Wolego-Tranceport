@@ -8,299 +8,260 @@
   }
 }
 
-/* ==========================================
-   MULTI-THEME STYLESHEET (5 BEAUTIFUL THEMES)
-   ========================================== */
+/* ==========================================================================
+   MULTI-THEME STYLESHEET (STRICTLY SCOPED TO APP UI - ZERO PRINT IMPACT)
+   ========================================================================== */
+@media screen {
 
-/* 1. LIGHT WHITE THEME (Clean Pure White & High Contrast) */
-html[data-theme="light"],
-html[data-theme="light"] body,
-html[data-theme="light"] #root,
-body[data-theme="light"],
-[data-theme="light"] {
-  background-color: #f8fafc !important;
-  background: #f8fafc !important;
-  color: #0f172a !important;
-}
+  /* 1. LIGHT WHITE THEME */
+  html[data-theme="light"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  body[data-theme="light"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  #root[data-theme="light"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="light"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *) {
+    background-color: #f8fafc !important;
+    background: #f8fafc !important;
+    color: #0f172a !important;
+  }
 
-/* Light Theme Container Overrides (No Dark Blue Patches) */
-[data-theme="light"] .bg-slate-900,
-[data-theme="light"] .bg-slate-950,
-[data-theme="light"] .bg-sky-950,
-[data-theme="light"] .bg-sky-900,
-[data-theme="light"] .bg-sky-950\/90,
-[data-theme="light"] .bg-sky-950\/80,
-[data-theme="light"] .bg-sky-900\/90,
-[data-theme="light"] .bg-sky-900\/80,
-[data-theme="light"] .bg-slate-800,
-[data-theme="light"] .bg-slate-800\/90,
-[data-theme="light"] .bg-slate-800\/80,
-[data-theme="light"] .bg-slate-800\/40,
-[data-theme="light"] .bg-slate-900\/80,
-[data-theme="light"] .bg-slate-900\/90,
-[data-theme="light"] .bg-slate-900\/60,
-[data-theme="light"] .bg-sky-950\/80,
-[data-theme="light"] .bg-zinc-900,
-[data-theme="light"] .bg-zinc-950 {
-  background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
-}
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-900,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-950,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-950,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-900,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-950\/90,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-950\/80,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-900\/90,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-900\/80,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800\/90,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800\/80,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800\/40,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-900\/80,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-900\/90,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-900\/60,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-950\/80,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-zinc-900,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-zinc-950 {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+  }
 
-/* Light Theme Text Contrast Enhancements */
-[data-theme="light"] .text-slate-100,
-[data-theme="light"] .text-slate-200,
-[data-theme="light"] .text-slate-300,
-[data-theme="light"] .text-white {
-  color: #0f172a !important;
-}
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-slate-100,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-slate-200,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-slate-300,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-white {
+    color: #0f172a !important;
+  }
 
-[data-theme="light"] .text-slate-400,
-[data-theme="light"] .text-slate-500 {
-  color: #334155 !important;
-  font-weight: 600 !important;
-}
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-slate-400,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-slate-500 {
+    color: #334155 !important;
+    font-weight: 600 !important;
+  }
 
-[data-theme="light"] .text-yellow-300,
-[data-theme="light"] .text-amber-400,
-[data-theme="light"] .text-amber-300,
-[data-theme="light"] .text-amber-200 {
-  color: #b45309 !important;
-  font-weight: 800 !important;
-}
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-yellow-300,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-amber-400,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-amber-300,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-amber-200 {
+    color: #b45309 !important;
+    font-weight: 800 !important;
+  }
 
-[data-theme="light"] .text-blue-100,
-[data-theme="light"] .text-sky-200,
-[data-theme="light"] .text-sky-300,
-[data-theme="light"] .text-sky-400 {
-  color: #0369a1 !important;
-  font-weight: 700 !important;
-}
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-blue-100,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-sky-200,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-sky-300,
+  [data-theme="light"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).text-sky-400 {
+    color: #0369a1 !important;
+    font-weight: 700 !important;
+  }
 
-/* Light Theme Input & Select Field Legibility */
-[data-theme="light"] input:not([type="submit"]):not([type="button"]),
-[data-theme="light"] select,
-[data-theme="light"] textarea {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #94a3b8 !important;
-  font-weight: 700 !important;
-}
+  [data-theme="light"] input:not([type="submit"]):not([type="button"]):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="light"] select:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="light"] textarea:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *) {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+    font-weight: 700 !important;
+  }
 
-[data-theme="light"] input::placeholder,
-[data-theme="light"] select::placeholder,
-[data-theme="light"] textarea::placeholder {
-  color: #64748b !important;
-  font-weight: 600 !important;
-}
+  [data-theme="light"] input::placeholder,
+  [data-theme="light"] select::placeholder,
+  [data-theme="light"] textarea::placeholder {
+    color: #64748b !important;
+    font-weight: 600 !important;
+  }
 
-/* Light Theme Button Enhancements (Fix Dark Refresh & Dark Buttons) */
-[data-theme="light"] .bg-slate-900:not(.bg-amber-500):not(.bg-emerald-500):not(.bg-rose-500),
-[data-theme="light"] .bg-slate-800:not(.bg-amber-500):not(.bg-emerald-500):not(.bg-rose-500),
-[data-theme="light"] .bg-slate-700:not(.bg-amber-500):not(.bg-emerald-500):not(.bg-rose-500),
-[data-theme="light"] button.bg-slate-900,
-[data-theme="light"] button.bg-slate-800,
-[data-theme="light"] button.bg-slate-700 {
-  background-color: #f1f5f9 !important;
-  border: 1.5px solid #94a3b8 !important;
-  color: #0f172a !important;
-}
+  [data-theme="light"] .bg-slate-900:not(.bg-amber-500):not(.bg-emerald-500):not(.bg-rose-500):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="light"] .bg-slate-800:not(.bg-amber-500):not(.bg-emerald-500):not(.bg-rose-500):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="light"] .bg-slate-700:not(.bg-amber-500):not(.bg-emerald-500):not(.bg-rose-500):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="light"] button.bg-slate-900,
+  [data-theme="light"] button.bg-slate-800,
+  [data-theme="light"] button.bg-slate-700 {
+    background-color: #f1f5f9 !important;
+    border: 1.5px solid #94a3b8 !important;
+    color: #0f172a !important;
+  }
 
-[data-theme="light"] button.bg-slate-900:hover,
-[data-theme="light"] button.bg-slate-800:hover,
-[data-theme="light"] button.bg-slate-700:hover {
-  background-color: #e2e8f0 !important;
-  color: #0284c7 !important;
-}
+  [data-theme="light"] button.bg-slate-900:hover,
+  [data-theme="light"] button.bg-slate-800:hover,
+  [data-theme="light"] button.bg-slate-700:hover {
+    background-color: #e2e8f0 !important;
+    color: #0284c7 !important;
+  }
 
-/* 2. CLASSIC NAVY BLUE THEME (Midnight Navy) */
-html[data-theme="navy"],
-html[data-theme="navy"] body,
-html[data-theme="navy"] #root,
-body[data-theme="navy"],
-[data-theme="navy"] {
-  background-color: #0b1329 !important;
-  color: #f8fafc !important;
-}
+  /* 2. CLASSIC NAVY BLUE THEME */
+  html[data-theme="navy"] body:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  body[data-theme="navy"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  #root[data-theme="navy"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="navy"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *) {
+    background-color: #0b1329 !important;
+    color: #f8fafc !important;
+  }
 
-/* 3. EMERALD DARK THEME (Modern Emerald Green & Gold) */
-html[data-theme="emerald"],
-html[data-theme="emerald"] body,
-html[data-theme="emerald"] #root,
-body[data-theme="emerald"],
-[data-theme="emerald"] {
-  background-color: #022c22 !important;
-  color: #ecfdf5 !important;
-}
+  /* 3. EMERALD DARK THEME */
+  html[data-theme="emerald"] body:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  body[data-theme="emerald"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  #root[data-theme="emerald"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="emerald"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *) {
+    background-color: #022c22 !important;
+    color: #ecfdf5 !important;
+  }
 
-[data-theme="emerald"] .bg-slate-900,
-[data-theme="emerald"] .bg-slate-950,
-[data-theme="emerald"] .bg-sky-950,
-[data-theme="emerald"] .bg-sky-900,
-[data-theme="emerald"] .bg-sky-900\/90,
-[data-theme="emerald"] .bg-slate-800,
-[data-theme="emerald"] .bg-slate-800\/90,
-[data-theme="emerald"] .bg-slate-800\/40 {
-  background-color: #064e3b !important;
-  border-color: #10b981 !important;
-  color: #ecfdf5 !important;
-}
+  [data-theme="emerald"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-900,
+  [data-theme="emerald"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-950,
+  [data-theme="emerald"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-950,
+  [data-theme="emerald"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-900,
+  [data-theme="emerald"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-900\/90,
+  [data-theme="emerald"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800,
+  [data-theme="emerald"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800\/90,
+  [data-theme="emerald"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800\/40 {
+    background-color: #064e3b !important;
+    border-color: #10b981 !important;
+    color: #ecfdf5 !important;
+  }
 
-[data-theme="emerald"] input:not([type="submit"]):not([type="button"]),
-[data-theme="emerald"] select,
-[data-theme="emerald"] textarea {
-  background-color: #022c22 !important;
-  color: #ffffff !important;
-  border-color: #059669 !important;
-}
+  [data-theme="emerald"] input:not([type="submit"]):not([type="button"]):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="emerald"] select:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="emerald"] textarea:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *) {
+    background-color: #022c22 !important;
+    color: #ffffff !important;
+    border-color: #059669 !important;
+  }
 
-/* 4. ROYAL PURPLE THEME (Midnight Indigo & Violet) */
-html[data-theme="purple"],
-html[data-theme="purple"] body,
-html[data-theme="purple"] #root,
-body[data-theme="purple"],
-[data-theme="purple"] {
-  background-color: #1e1b4b !important;
-  color: #f5f3ff !important;
-}
+  /* 4. ROYAL PURPLE THEME */
+  html[data-theme="purple"] body:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  body[data-theme="purple"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  #root[data-theme="purple"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="purple"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *) {
+    background-color: #1e1b4b !important;
+    color: #f5f3ff !important;
+  }
 
-[data-theme="purple"] .bg-slate-900,
-[data-theme="purple"] .bg-slate-950,
-[data-theme="purple"] .bg-sky-950,
-[data-theme="purple"] .bg-sky-900,
-[data-theme="purple"] .bg-sky-900\/90,
-[data-theme="purple"] .bg-slate-800,
-[data-theme="purple"] .bg-slate-800\/90,
-[data-theme="purple"] .bg-slate-800\/40 {
-  background-color: #312e81 !important;
-  border-color: #8b5cf6 !important;
-  color: #f5f3ff !important;
-}
+  [data-theme="purple"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-900,
+  [data-theme="purple"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-950,
+  [data-theme="purple"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-950,
+  [data-theme="purple"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-900,
+  [data-theme="purple"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-900\/90,
+  [data-theme="purple"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800,
+  [data-theme="purple"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800\/90,
+  [data-theme="purple"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800\/40 {
+    background-color: #312e81 !important;
+    border-color: #8b5cf6 !important;
+    color: #f5f3ff !important;
+  }
 
-[data-theme="purple"] input:not([type="submit"]):not([type="button"]),
-[data-theme="purple"] select,
-[data-theme="purple"] textarea {
-  background-color: #1e1b4b !important;
-  color: #ffffff !important;
-  border-color: #7c3aed !important;
-}
+  [data-theme="purple"] input:not([type="submit"]):not([type="button"]):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="purple"] select:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="purple"] textarea:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *) {
+    background-color: #1e1b4b !important;
+    color: #ffffff !important;
+    border-color: #7c3aed !important;
+  }
 
-/* 5. DARK GOLD THEME (Rich Zinc & Warm Amber) */
-html[data-theme="amber"],
-html[data-theme="amber"] body,
-html[data-theme="amber"] #root,
-body[data-theme="amber"],
-[data-theme="amber"] {
-  background-color: #18181b !important;
-  color: #fffbeb !important;
-}
+  /* 5. DARK GOLD THEME */
+  html[data-theme="amber"] body:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  body[data-theme="amber"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  #root[data-theme="amber"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="amber"]:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *) {
+    background-color: #18181b !important;
+    color: #fffbeb !important;
+  }
 
-[data-theme="amber"] .bg-slate-900,
-[data-theme="amber"] .bg-slate-950,
-[data-theme="amber"] .bg-sky-950,
-[data-theme="amber"] .bg-sky-900,
-[data-theme="amber"] .bg-sky-900\/90,
-[data-theme="amber"] .bg-slate-800,
-[data-theme="amber"] .bg-slate-800\/90,
-[data-theme="amber"] .bg-slate-800\/40 {
-  background-color: #27272a !important;
-  border-color: #f59e0b !important;
-  color: #fffbeb !important;
-}
+  [data-theme="amber"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-900,
+  [data-theme="amber"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-950,
+  [data-theme="amber"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-950,
+  [data-theme="amber"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-900,
+  [data-theme="amber"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-sky-900\/90,
+  [data-theme="amber"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800,
+  [data-theme="amber"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800\/90,
+  [data-theme="amber"] :not(.print-document):not(.freight-print-wrapper):not(.range-print-sheet):not(.print-container):not(.printable):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *).bg-slate-800\/40 {
+    background-color: #27272a !important;
+    border-color: #f59e0b !important;
+    color: #fffbeb !important;
+  }
 
-[data-theme="amber"] input:not([type="submit"]):not([type="button"]),
-[data-theme="amber"] select,
-[data-theme="amber"] textarea {
-  background-color: #18181b !important;
-  color: #ffffff !important;
-  border-color: #d97706 !important;
-}
+  [data-theme="amber"] input:not([type="submit"]):not([type="button"]):not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="amber"] select:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *),
+  [data-theme="amber"] textarea:not(.print-document *):not(.freight-print-wrapper *):not(.range-print-sheet *):not(.print-container *):not(.printable *) {
+    background-color: #18181b !important;
+    color: #ffffff !important;
+    border-color: #d97706 !important;
+  }
 
-/* Guaranteed 1-Sheet & Multi-Page A4 Portrait Print Stylesheet */
+} /* END @media screen */
+
+/* Guaranteed Clean Master Print Stylesheet */
 @media print {
   @page {
     size: A4 portrait;
     margin: 3.5mm;
   }
 
+  /* Hide all scrollbars in print output */
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-    text-rendering: optimizeLegibility !important;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
   }
 
-  html, body, #root, #root *, main {
-    overflow: visible !important;
-  }
-
-  html, body, #root, #root > div, main {
-    height: auto !important;
-    max-height: none !important;
-    min-height: 0 !important;
-    position: static !important;
-    display: block !important;
-    flex: none !important;
+  /* Force pure white paper background on page root & containers regardless of active screen theme */
+  html,
+  html[data-theme],
+  html[data-theme="light"],
+  html[data-theme="navy"],
+  html[data-theme="emerald"],
+  html[data-theme="purple"],
+  html[data-theme="amber"],
+  body,
+  body[data-theme],
+  #root,
+  #root[data-theme],
+  #root > div,
+  main {
     background-color: #ffffff !important;
     background: #ffffff !important;
   }
 
+  /* Prevent scrollbars and dark background leaks */
+  .print-container,
+  .print-document,
+  .freight-print-wrapper,
+  .range-print-sheet,
+  [contenteditable] {
+    overflow: hidden !important;
+    box-shadow: none !important;
+  }
+
   header, nav, .print\:hidden {
     display: none !important;
-  }
-
-  .print-container {
-    padding: 0 !important;
-    margin: 0 auto !important;
-    box-shadow: none !important;
-    width: 203mm !important;
-    max-width: 203mm !important;
-    height: 290mm !important;
-    max-height: 290mm !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  .print-document {
-    border-width: 2.5px !important;
-    border-color: #0f172a !important;
-    padding: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  .range-print-sheet {
-    padding: 0 !important;
-    margin: 0 auto !important;
-    box-shadow: none !important;
-    width: 203mm !important;
-    max-width: 203mm !important;
-    height: 290mm !important;
-    max-height: 290mm !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-    page-break-after: always !important;
-    break-after: page !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    display: block !important;
-  }
-
-  .range-print-sheet:last-child {
-    page-break-after: avoid !important;
-    break-after: avoid !important;
   }
 }
