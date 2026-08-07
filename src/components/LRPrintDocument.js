@@ -371,7 +371,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
               <img
                 src={logoImg}
                 alt="Watermark Logo"
-                className="w-[450px] max-w-[75%] opacity-[0.08] object-contain mix-blend-multiply"
+                className="w-[620px] max-w-[88%] max-h-[85%] opacity-[0.08] object-contain mix-blend-multiply"
               />
             </div>
 
@@ -754,27 +754,27 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
           </div>
         </div>
 
-        {/* Page 2: Terms and Conditions Document (Included in PDF Export) */}
-        <div className="max-w-4xl mx-auto bg-white p-3 sm:p-5 shadow-2xl rounded-sm print-container print:p-0 print:shadow-none font-sans text-xs mt-6 print:hidden">
+        {/* Page 2: Terms and Conditions Document (Included in PDF Export & Print Preview) */}
+        <div className="w-full max-w-[210mm] mx-auto bg-white p-[3.5mm] shadow-2xl rounded-sm print-container print:p-0 print:m-0 print:w-[203mm] print:h-[290mm] print:max-w-none print:shadow-none font-sans text-xs box-border mt-6 print:block print:break-before-page">
           <div
             ref={termsRef}
-            className="border-2 border-slate-900 bg-white text-slate-900 min-h-[265mm] h-full flex flex-col justify-between print-document relative overflow-hidden p-6 sm:p-10"
+            className="border-2 border-slate-900 bg-white text-slate-900 h-[290mm] min-h-[290mm] w-full flex flex-col justify-between print-document relative overflow-hidden p-6 sm:p-8 box-border"
           >
             {/* Inner Rounded Frame matching Photo */}
-            <div className="border border-slate-400 rounded-2xl p-6 sm:p-8 h-full flex flex-col justify-start relative overflow-hidden">
+            <div className="border border-slate-400 rounded-2xl p-6 sm:p-8 h-full flex flex-col justify-between relative overflow-hidden">
               {/* Background Watermark Logo */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center -translate-y-8 pointer-events-none select-none z-0 overflow-hidden">
                 <img
                   src={logoImg}
                   alt="Watermark Logo"
-                  className="w-[450px] max-w-[75%] opacity-[0.08] object-contain mix-blend-multiply"
+                  className="w-[640px] max-w-[90%] max-h-[88%] opacity-[0.13] object-contain mix-blend-multiply"
                 />
               </div>
 
-              <div className="relative z-10 flex-1 flex flex-col justify-start">
+              <div className="relative z-10 flex-1 flex flex-col justify-between mb-4">
                 {/* Header Bar */}
-                <div className="pb-4 mb-6 text-center">
-                  <div className="text-[10px] sm:text-[11px] font-bold text-slate-700 tracking-wider uppercase mb-2">
+                <div className="pb-3 mb-2 text-center">
+                  <div className="text-[10px] sm:text-[11px] font-bold text-slate-700 tracking-wider uppercase mb-1.5">
                     :: GOOD BOOKED ON ARE REVERS CARRIED CARRIED SUBJECT TO THE FOLLOWING ::
                   </div>
                   <h2 className="text-xl sm:text-2xl font-black text-slate-950 uppercase tracking-widest border-b-2 border-slate-900 inline-block pb-1">
@@ -782,8 +782,8 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   </h2>
                 </div>
 
-                {/* 8 Terms & Conditions Points */}
-                <div className="space-y-4 text-[11px] sm:text-xs leading-relaxed text-slate-900 font-medium">
+                {/* 8 Terms & Conditions Points - Stretched Vertically Down */}
+                <div className="flex-1 flex flex-col justify-between py-2 text-[11.5px] sm:text-xs leading-relaxed text-slate-900 font-medium space-y-4 sm:space-y-0">
                   <div className="flex gap-2.5">
                     <span className="font-bold text-slate-950 shrink-0 min-w-[20px]">1)</span>
                     <p>
@@ -839,6 +839,49 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                       PLEASE CHEQUETHE DOCUMENT OF THETRUCK & DRIVER LICENCE.
                     </p>
                   </div>
+                </div>
+              </div>
+
+              {/* Footer Section in Empty Space */}
+              <div className="relative z-10 mt-auto pt-6 border-t-2 border-slate-200 flex flex-row items-center justify-between gap-4">
+                <div className="flex flex-col justify-center space-y-3">
+                  {/* Web App Symbol & Domain */}
+                  <div className="flex items-center gap-2.5">
+                    <img src={logoImg} alt="Wolego Symbol" className="h-8 w-auto object-contain" />
+                    <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-sm sm:text-base tracking-wide">
+                      <span>-</span>
+                      <a href="https://www.wolegotransport.com" target="_blank" rel="noopener noreferrer" className="hover:underline text-blue-900 font-black">
+                        www.wolegotransport.com
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Play Store Logo & Coming Soon */}
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex items-center justify-center w-8 h-8 bg-slate-900 rounded-lg p-1.5 text-white shadow-sm">
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+                        <path d="M3.609 1.814L13.792 12 3.61 22.186a1.536 1.536 0 0 1-.61-.926V2.74c.094-.356.31-.666.609-.926zm11.31 11.31l2.483 2.483-11.83 6.877 9.347-9.36zm1.127-1.124l3.753 2.181a1.25 1.25 0 0 1 0 2.164l-3.753 2.182-2.316-2.316 2.316-2.211zm-1.127-1.128L5.572 1.505l11.83 6.877-2.483 2.49z" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-900 text-xs sm:text-sm">Play Store</span>
+                      <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-black px-2.5 py-0.5 rounded-full tracking-wider uppercase">
+                        Coming Soon
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* QR Code Section */}
+                <div className="flex flex-col items-center justify-center bg-white border border-slate-300 rounded-xl p-2.5 shadow-sm">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 31" shapeRendering="crispEdges" className="w-full h-full">
+                      <path fill="#ffffff" d="M0 0h31v31H0z" />
+                      <path stroke="#000000" d="M1 1.5h7m4 0h1m3 0h2m2 0h2m1 0h7M1 2.5h1m5 0h1m2 0h2m1 0h1m4 0h2m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m2 0h1m3 0h2m1 0h1m2 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h2m2 0h4m3 0h2m1 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h9m1 0h1m1 0h1m1 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h2m1 0h3m1 0h1m2 0h1M1 9.5h1m1 0h5m3 0h2m2 0h2m1 0h1m4 0h5M1 10.5h3m1 0h1m3 0h1m6 0h6m1 0h3m3 0h1M1 11.5h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m4 0h1M1 12.5h2m2 0h2m1 0h3m2 0h1m1 0h1m1 0h1m2 0h1m2 0h2m1 0h1m1 0h1M1 13.5h1m1 0h1m3 0h4m1 0h1m4 0h2m2 0h1m4 0h2M1 14.5h1m1 0h2m1 0h1m2 0h2m1 0h1m1 0h3m3 0h4m1 0h1m3 0h1M1 15.5h2m2 0h1m1 0h2m4 0h7m3 0h2m1 0h2M1 16.5h2m1 0h1m3 0h2m3 0h2m1 0h1m2 0h1m1 0h1m1 0h3m2 0h1M7 17.5h2m1 0h2m1 0h1m1 0h2m1 0h1m2 0h1m2 0h1m1 0h2M1 18.5h4m3 0h3m1 0h2m2 0h2m2 0h6m1 0h1m1 0h1M1 19.5h1m3 0h6m1 0h1m8 0h1m1 0h2m2 0h1M1 20.5h1m2 0h2m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h4m1 0h2m2 0h1M1 21.5h1m1 0h2m2 0h1m3 0h1m6 0h8m1 0h3M9 22.5h4m1 0h3m1 0h2m1 0h1m3 0h5M1 23.5h7m2 0h2m1 0h6m1 0h2m1 0h1m1 0h3M1 24.5h1m5 0h1m1 0h2m2 0h2m1 0h2m1 0h3m3 0h1m3 0h1M1 25.5h1m1 0h3m1 0h1m1 0h2m4 0h1m2 0h1m2 0h5m1 0h1m1 0h1M1 26.5h1m1 0h3m1 0h1m1 0h2m3 0h1m2 0h1m1 0h3m2 0h1m1 0h2M1 27.5h1m1 0h3m1 0h1m1 0h1m3 0h2m1 0h5m1 0h7M1 28.5h1m5 0h1m5 0h1m3 0h1m3 0h1m2 0h1m1 0h1m1 0h1M1 29.5h7m1 0h3m1 0h1m1 0h1m2 0h1m1 0h1m3 0h4" />
+                    </svg>
+                  </div>
+                  <span className="text-[9.5px] font-extrabold text-slate-800 mt-1 uppercase tracking-tight">Scan to Visit</span>
+                  <span className="text-[8.5px] font-bold text-blue-900 font-mono">www.wolegotransport.com</span>
                 </div>
               </div>
             </div>

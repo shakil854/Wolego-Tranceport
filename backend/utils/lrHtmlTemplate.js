@@ -129,7 +129,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies 
       <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
         ${
           logoBase64
-            ? `<img src="${logoBase64}" alt="Watermark Logo" class="w-[450px] max-w-[75%] opacity-[0.08] object-contain mix-blend-multiply" />`
+            ? `<img src="${logoBase64}" alt="Watermark Logo" class="w-[620px] max-w-[88%] max-h-[85%] opacity-[0.08] object-contain mix-blend-multiply" />`
             : ""
         }
       </div>
@@ -488,20 +488,20 @@ export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies 
   <!-- PAGE 2: Terms & Conditions Document -->
   <div class="a4-page">
     <div class="print-document p-6 sm:p-10 relative">
-      <div class="border border-slate-400 rounded-2xl p-6 sm:p-8 h-full flex flex-col justify-start relative overflow-hidden">
+      <div class="border border-slate-400 rounded-2xl p-6 sm:p-8 h-full flex flex-col justify-between relative overflow-hidden">
         
         <!-- Background Watermark Logo -->
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+        <div class="absolute inset-0 flex items-center justify-center -translate-y-8 pointer-events-none select-none z-0 overflow-hidden">
           ${
             logoBase64
-              ? `<img src="${logoBase64}" alt="Watermark Logo" class="w-[450px] max-w-[75%] opacity-[0.08] object-contain mix-blend-multiply" />`
+              ? `<img src="${logoBase64}" alt="Watermark Logo" class="w-[640px] max-w-[90%] max-h-[88%] opacity-[0.13] object-contain mix-blend-multiply" />`
               : ""
           }
         </div>
 
-        <div class="relative z-10 flex-1 flex flex-col justify-start">
-          <div class="pb-4 mb-6 text-center">
-            <div class="text-[10px] sm:text-[11px] font-bold text-slate-700 tracking-wider uppercase mb-2">
+        <div class="relative z-10 flex-1 flex flex-col justify-between mb-4">
+          <div class="pb-3 mb-2 text-center">
+            <div class="text-[10px] sm:text-[11px] font-bold text-slate-700 tracking-wider uppercase mb-1.5">
               :: GOOD BOOKED ON ARE REVERS CARRIED CARRIED SUBJECT TO THE FOLLOWING ::
             </div>
             <h2 class="text-xl sm:text-2xl font-black text-slate-950 uppercase tracking-widest border-b-2 border-slate-900 inline-block pb-1">
@@ -509,7 +509,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies 
             </h2>
           </div>
 
-          <div class="space-y-4 text-[11px] sm:text-xs leading-relaxed text-slate-900 font-medium">
+          <div class="flex-1 flex flex-col justify-between py-2 text-[11.5px] sm:text-xs leading-relaxed text-slate-900 font-medium space-y-4 sm:space-y-0">
             <div class="flex gap-2.5">
               <span class="font-bold text-slate-950 shrink-0 min-w-[20px]">1)</span>
               <p>THE COMPANY DOES NOT GUARANTEE DELIVERY WITHIN ANY SPECIFIED TIME AND THE COMPANY DOES NOT BE LIABLE FOR ANY DELAY IN TRANSPORT OR DELIVERY, NOT ANY NEGLIGENCE FDEFAULT OF THE CARRIEROF HISAGENTS.</p>
@@ -549,6 +549,53 @@ export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies 
               <span class="font-bold text-slate-950 shrink-0 min-w-[20px]">8)</span>
               <p>PLEASE CHEQUETHE DOCUMENT OF THETRUCK & DRIVER LICENCE.</p>
             </div>
+          </div>
+        </div>
+
+        <!-- Footer Section in Empty Space -->
+        <div class="relative z-10 mt-auto pt-6 border-t-2 border-slate-200 flex flex-row items-center justify-between gap-4">
+          <div class="flex flex-col justify-center space-y-3">
+            <!-- Web App Symbol & Domain -->
+            <div class="flex items-center gap-2.5">
+              ${
+                logoBase64
+                  ? `<img src="${logoBase64}" alt="Wolego Symbol" class="h-8 w-auto object-contain" />`
+                  : ""
+              }
+              <div class="text-slate-900 font-extrabold text-sm sm:text-base tracking-wide flex items-center gap-1.5">
+                <span>-</span>
+                <a href="https://www.wolegotransport.com" target="_blank" rel="noopener noreferrer" class="hover:underline text-blue-900 font-black">
+                  www.wolegotransport.com
+                </a>
+              </div>
+            </div>
+
+            <!-- Play Store Logo & Coming Soon -->
+            <div class="flex items-center gap-2.5">
+              <div class="flex items-center justify-center w-8 h-8 bg-slate-900 rounded-lg p-1.5 text-white shadow-sm">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current">
+                  <path d="M3.609 1.814L13.792 12 3.61 22.186a1.536 1.536 0 0 1-.61-.926V2.74c.094-.356.31-.666.609-.926zm11.31 11.31l2.483 2.483-11.83 6.877 9.347-9.36zm1.127-1.124l3.753 2.181a1.25 1.25 0 0 1 0 2.164l-3.753 2.182-2.316-2.316 2.316-2.211zm-1.127-1.128L5.572 1.505l11.83 6.877-2.483 2.49z"/>
+                </svg>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-900 text-xs sm:text-sm">Play Store</span>
+                <span class="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-black px-2.5 py-0.5 rounded-full tracking-wider uppercase">
+                  Coming Soon
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- QR Code Section -->
+          <div class="flex flex-col items-center justify-center bg-white border border-slate-300 rounded-xl p-2.5 shadow-sm">
+            <div class="w-24 h-24 sm:w-28 sm:h-28">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 31" shape-rendering="crispEdges" class="w-full h-full">
+                <path fill="#ffffff" d="M0 0h31v31H0z"/>
+                <path stroke="#000000" d="M1 1.5h7m4 0h1m3 0h2m2 0h2m1 0h7M1 2.5h1m5 0h1m2 0h2m1 0h1m4 0h2m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m2 0h1m3 0h2m1 0h1m2 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h2m2 0h4m3 0h2m1 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h9m1 0h1m1 0h1m1 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h2m1 0h3m1 0h1m2 0h1M1 9.5h1m1 0h5m3 0h2m2 0h2m1 0h1m4 0h5M1 10.5h3m1 0h1m3 0h1m6 0h6m1 0h3m3 0h1M1 11.5h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m4 0h1M1 12.5h2m2 0h2m1 0h3m2 0h1m1 0h1m1 0h1m2 0h1m2 0h2m1 0h1m1 0h1M1 13.5h1m1 0h1m3 0h4m1 0h1m4 0h2m2 0h1m4 0h2M1 14.5h1m1 0h2m1 0h1m2 0h2m1 0h1m1 0h3m3 0h4m1 0h1m3 0h1M1 15.5h2m2 0h1m1 0h2m4 0h7m3 0h2m1 0h2M1 16.5h2m1 0h1m3 0h2m3 0h2m1 0h1m2 0h1m1 0h1m1 0h3m2 0h1M7 17.5h2m1 0h2m1 0h1m1 0h2m1 0h1m2 0h1m2 0h1m1 0h2M1 18.5h4m3 0h3m1 0h2m2 0h2m2 0h6m1 0h1m1 0h1M1 19.5h1m3 0h6m1 0h1m8 0h1m1 0h2m2 0h1M1 20.5h1m2 0h2m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h4m1 0h2m2 0h1M1 21.5h1m1 0h2m2 0h1m3 0h1m6 0h8m1 0h3M9 22.5h4m1 0h3m1 0h2m1 0h1m3 0h5M1 23.5h7m2 0h2m1 0h6m1 0h2m1 0h1m1 0h3M1 24.5h1m5 0h1m1 0h2m2 0h2m1 0h2m1 0h3m3 0h1m3 0h1M1 25.5h1m1 0h3m1 0h1m1 0h2m4 0h1m2 0h1m2 0h5m1 0h1m1 0h1M1 26.5h1m1 0h3m1 0h1m1 0h2m3 0h1m2 0h1m1 0h3m2 0h1m1 0h2M1 27.5h1m1 0h3m1 0h1m1 0h1m3 0h2m1 0h5m1 0h7M1 28.5h1m5 0h1m5 0h1m3 0h1m3 0h1m2 0h1m1 0h1m1 0h1M1 29.5h7m1 0h3m1 0h1m1 0h1m2 0h1m1 0h1m3 0h4"/>
+              </svg>
+            </div>
+            <span class="text-[9.5px] font-extrabold text-slate-800 mt-1 uppercase tracking-tight">Scan to Visit</span>
+            <span class="text-[8.5px] font-bold text-blue-900 font-mono">www.wolegotransport.com</span>
           </div>
         </div>
       </div>

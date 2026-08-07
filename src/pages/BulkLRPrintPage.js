@@ -160,7 +160,7 @@ export default function BulkLRPrintPage() {
         <img
           src={logoImg}
           alt="Watermark Logo"
-          className="w-[450px] max-w-[75%] opacity-[0.08] object-contain mix-blend-multiply"
+          className="w-[620px] max-w-[88%] max-h-[85%] opacity-[0.08] object-contain mix-blend-multiply"
         />
       </div>
 
