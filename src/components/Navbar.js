@@ -57,17 +57,21 @@ export default function Navbar() {
   const partyPrimaryItems = [
     { name: "My Accounting", path: "/accounting", icon: Calculator },
     { name: "My LR Records", path: "/party-lr-records", icon: FileText },
+    { name: "Party Orders", path: "/party-orders", icon: FileText },
   ];
 
   // Primary Navigation Items for Truck Owner
   const truckPrimaryItems = [
     { name: "My Truck Accounting", path: "/truck-accounting", icon: Truck },
+    { name: "Truck Orders", path: "/truck-orders", icon: Truck },
   ];
 
   const primaryItems = isTruck ? truckPrimaryItems : isParty ? partyPrimaryItems : ownerPrimaryItems;
 
   // Dropdown Items (Owner only)
   const dropdownItems = [
+    { name: "Party Orders", path: "/party-orders", icon: FileText },
+    { name: "Truck Orders", path: "/truck-orders", icon: Truck },
     { name: "Daily Report", path: "/daily-report", icon: FileText },
     { name: "Accounting", path: "/accounting", icon: Calculator },
     { name: "Range LR Print", path: "/range-lr-print", icon: Printer },

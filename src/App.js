@@ -19,6 +19,8 @@ import PaymentAlertsPage from "./pages/PaymentAlertsPage";
 import TruckAccountingPage from "./pages/TruckAccountingPage";
 import TruckComingPage from "./pages/TruckComingPage";
 import PartyLRRecordsPage from "./pages/PartyLRRecordsPage";
+import PartyOrdersPage from "./pages/PartyOrdersPage";
+import TruckOrdersPage from "./pages/TruckOrdersPage";
 
 import DashboardPage from "./pages/DashboardPage";
 
@@ -79,6 +81,16 @@ function AppRoutes() {
         }
       />
 
+      {/* Truck Orders Page (Accessible by Owner and Truck role) */}
+      <Route
+        path="/truck-orders"
+        element={
+          <ProtectedRoute allowedRoles={["OWNER", "TRUCK"]}>
+            <TruckOrdersPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Accounting Page (Accessible by Owner and Party) */}
       <Route
         path="/accounting"
@@ -95,6 +107,16 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["OWNER", "PARTY"]}>
             <PartyLRRecordsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Party Orders Page (Accessible by Owner and Party) */}
+      <Route
+        path="/party-orders"
+        element={
+          <ProtectedRoute allowedRoles={["OWNER", "PARTY"]}>
+            <PartyOrdersPage />
           </ProtectedRoute>
         }
       />

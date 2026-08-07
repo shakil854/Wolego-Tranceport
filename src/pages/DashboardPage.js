@@ -20,6 +20,7 @@ import {
   RefreshCw,
   Zap,
   Bell,
+  PackagePlus,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -88,6 +89,24 @@ export default function DashboardPage() {
 
   // Shortcuts Page Configuration
   const allAppPages = [
+    {
+      title: "Party Orders",
+      path: "/party-orders",
+      icon: PackagePlus,
+      badge: "Orders",
+      color: "from-amber-500 to-amber-700",
+      textColor: "text-amber-400",
+      borderColor: "border-amber-500/30 hover:border-amber-400",
+    },
+    {
+      title: "Truck Orders",
+      path: "/truck-orders",
+      icon: Truck,
+      badge: "Orders",
+      color: "from-blue-500 to-blue-700",
+      textColor: "text-blue-400",
+      borderColor: "border-blue-500/30 hover:border-blue-400",
+    },
     {
       title: "New L/R Entry",
       path: "/lr-entry",
