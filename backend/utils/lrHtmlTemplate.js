@@ -586,16 +586,21 @@ export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies 
             </div>
           </div>
 
-          <!-- QR Code Section -->
-          <div class="flex flex-col items-center justify-center bg-white border border-slate-300 rounded-xl p-2.5 shadow-sm">
-            <div class="w-24 h-24 sm:w-28 sm:h-28">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 31" shape-rendering="crispEdges" class="w-full h-full">
-                <path fill="#ffffff" d="M0 0h31v31H0z"/>
-                <path stroke="#000000" d="M1 1.5h7m4 0h1m3 0h2m2 0h2m1 0h7M1 2.5h1m5 0h1m2 0h2m1 0h1m4 0h2m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m2 0h1m3 0h2m1 0h1m2 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h2m2 0h4m3 0h2m1 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h9m1 0h1m1 0h1m1 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h2m1 0h3m1 0h1m2 0h1M1 9.5h1m1 0h5m3 0h2m2 0h2m1 0h1m4 0h5M1 10.5h3m1 0h1m3 0h1m6 0h6m1 0h3m3 0h1M1 11.5h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m4 0h1M1 12.5h2m2 0h2m1 0h3m2 0h1m1 0h1m1 0h1m2 0h1m2 0h2m1 0h1m1 0h1M1 13.5h1m1 0h1m3 0h4m1 0h1m4 0h2m2 0h1m4 0h2M1 14.5h1m1 0h2m1 0h1m2 0h2m1 0h1m1 0h3m3 0h4m1 0h1m3 0h1M1 15.5h2m2 0h1m1 0h2m4 0h7m3 0h2m1 0h2M1 16.5h2m1 0h1m3 0h2m3 0h2m1 0h1m2 0h1m1 0h1m1 0h3m2 0h1M7 17.5h2m1 0h2m1 0h1m1 0h2m1 0h1m2 0h1m2 0h1m1 0h2M1 18.5h4m3 0h3m1 0h2m2 0h2m2 0h6m1 0h1m1 0h1M1 19.5h1m3 0h6m1 0h1m8 0h1m1 0h2m2 0h1M1 20.5h1m2 0h2m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h4m1 0h2m2 0h1M1 21.5h1m1 0h2m2 0h1m3 0h1m6 0h8m1 0h3M9 22.5h4m1 0h3m1 0h2m1 0h1m3 0h5M1 23.5h7m2 0h2m1 0h6m1 0h2m1 0h1m1 0h3M1 24.5h1m5 0h1m1 0h2m2 0h2m1 0h2m1 0h3m3 0h1m3 0h1M1 25.5h1m1 0h3m1 0h1m1 0h2m4 0h1m2 0h1m2 0h5m1 0h1m1 0h1M1 26.5h1m1 0h3m1 0h1m1 0h2m3 0h1m2 0h1m1 0h3m2 0h1m1 0h2M1 27.5h1m1 0h3m1 0h1m1 0h1m3 0h2m1 0h5m1 0h7M1 28.5h1m5 0h1m5 0h1m3 0h1m3 0h1m2 0h1m1 0h1m1 0h1M1 29.5h7m1 0h3m1 0h1m1 0h1m2 0h1m1 0h1m3 0h4"/>
-              </svg>
+          <!-- Right Group: QR Code Section & Logo -->
+          <div class="flex items-center gap-3 sm:gap-4">
+            <!-- QR Code Section -->
+            <div class="flex flex-col items-center justify-center bg-white border border-slate-300 rounded-xl p-2.5 shadow-sm">
+              <div class="w-24 h-24 sm:w-28 sm:h-28">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 31" shape-rendering="crispEdges" class="w-full h-full">
+                  <path fill="#ffffff" d="M0 0h31v31H0z"/>
+                  <path stroke="#000000" d="M1 1.5h7m4 0h1m3 0h2m2 0h2m1 0h7M1 2.5h1m5 0h1m2 0h2m1 0h1m4 0h2m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m2 0h1m3 0h2m1 0h1m2 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h2m2 0h4m3 0h2m1 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h9m1 0h1m1 0h1m1 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h2m1 0h3m1 0h1m2 0h1M1 9.5h1m1 0h5m3 0h2m2 0h2m1 0h1m4 0h5M1 10.5h3m1 0h1m3 0h1m6 0h6m1 0h3m3 0h1M1 11.5h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m4 0h1M1 12.5h2m2 0h2m1 0h3m2 0h1m1 0h1m1 0h1m2 0h1m2 0h2m1 0h1m1 0h1M1 13.5h1m1 0h1m3 0h4m1 0h1m4 0h2m2 0h1m4 0h2M1 14.5h1m1 0h2m1 0h1m2 0h2m1 0h1m1 0h3m3 0h4m1 0h1m3 0h1M1 15.5h2m2 0h1m1 0h2m4 0h7m3 0h2m1 0h2M1 16.5h2m1 0h1m3 0h2m3 0h2m1 0h1m2 0h1m1 0h1m1 0h3m2 0h1M7 17.5h2m1 0h2m1 0h1m1 0h2m1 0h1m2 0h1m2 0h1m1 0h2M1 18.5h4m3 0h3m1 0h2m2 0h2m2 0h6m1 0h1m1 0h1M1 19.5h1m3 0h6m1 0h1m8 0h1m1 0h2m2 0h1M1 20.5h1m2 0h2m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h4m1 0h2m2 0h1M1 21.5h1m1 0h2m2 0h1m3 0h1m6 0h8m1 0h3M9 22.5h4m1 0h3m1 0h2m1 0h1m3 0h5M1 23.5h7m2 0h2m1 0h6m1 0h2m1 0h1m1 0h3M1 24.5h1m5 0h1m1 0h2m2 0h2m1 0h2m1 0h3m3 0h1m3 0h1M1 25.5h1m1 0h3m1 0h1m1 0h2m4 0h1m2 0h1m2 0h5m1 0h1m1 0h1M1 26.5h1m1 0h3m1 0h1m1 0h2m3 0h1m2 0h1m1 0h3m2 0h1m1 0h2M1 27.5h1m1 0h3m1 0h1m1 0h1m3 0h2m1 0h5m1 0h7M1 28.5h1m5 0h1m5 0h1m3 0h1m3 0h1m2 0h1m1 0h1m1 0h1M1 29.5h7m1 0h3m1 0h1m1 0h1m2 0h1m1 0h1m3 0h4"/>
+                </svg>
+              </div>
+              <span class="text-[9.5px] font-extrabold text-slate-800 mt-1 uppercase tracking-tight">Scan to Visit</span>
+              <span class="text-[8.5px] font-bold text-blue-900 font-mono">www.wolegotransport.com</span>
             </div>
-            <span class="text-[9.5px] font-extrabold text-slate-800 mt-1 uppercase tracking-tight">Scan to Visit</span>
-            <span class="text-[8.5px] font-bold text-blue-900 font-mono">www.wolegotransport.com</span>
+
+            ${logoBase64 ? `<img src="${logoBase64}" alt="Wolego Logo" class="h-28 sm:h-32 max-w-[160px] sm:max-w-[200px] object-contain" />` : ""}
           </div>
         </div>
       </div>
