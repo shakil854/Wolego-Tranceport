@@ -37,6 +37,16 @@ export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies 
 
   const sigImageSrc = signatureImg || lrData.signatureImg || null;
 
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+  const currentTimestamp = `${year}.${month}.${day} ${hours}:${minutes}:${seconds} +05'30'`;
+  const signatoryName = lrData.signatoryName || "MOHMADSIRAJ YUNUSH SHERASIYA";
+
   const isCopyChecked = (type) => {
     if (!selectedCopies) return type === "CONSIGNEE" || type === "CONSIGNOR";
     if (Array.isArray(selectedCopies)) return selectedCopies.includes(type);
@@ -450,14 +460,23 @@ export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies 
             </div>
 
             <!-- Signatory Block -->
-            <div class="text-center font-sans p-2 mt-auto flex flex-col items-center justify-end min-h-[60px]">
-              <div class="font-black uppercase text-[11px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
+            <div class="text-center font-sans px-2 py-1 mt-auto flex flex-col items-center justify-end min-h-[55px]">
+              <div class="font-black uppercase text-[10.5px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
               ${
                 sigImageSrc
-                  ? `<img src="${sigImageSrc}" alt="Authorised Digital Signature" class="h-10 w-auto max-w-[150px] object-contain my-1 mix-blend-multiply" />`
-                  : `<div class="h-6"></div>`
+                  ? `<img src="${sigImageSrc}" alt="Authorised Digital Signature" class="h-8 w-auto max-w-[130px] object-contain my-0.5 mix-blend-multiply" />`
+                  : `<div class="flex items-center gap-1 border border-slate-300 px-1 py-[1px] bg-white my-0.5 text-left inline-flex">
+                      <div class="font-black text-[6px] text-slate-900 leading-none uppercase whitespace-nowrap border-r border-slate-300 pr-1">
+                        ${signatoryName}
+                      </div>
+                      <div class="text-[5.5px] text-slate-800 leading-tight font-mono whitespace-nowrap">
+                        <div class="text-slate-500 font-sans text-[5px] leading-none whitespace-nowrap">Digitally signed by</div>
+                        <div class="font-bold text-slate-900 uppercase text-[5.5px] leading-none whitespace-nowrap">${signatoryName}</div>
+                        <div class="text-slate-500 leading-none whitespace-nowrap text-[5px]">Date: ${currentTimestamp}</div>
+                      </div>
+                    </div>`
               }
-              <div class="text-[9.5px] text-slate-950 uppercase tracking-wider font-extrabold">(AUTHORISED SIGNATORY)</div>
+              <div class="text-[9px] text-slate-950 uppercase tracking-wider font-extrabold pb-0.5">(AUTHORISED SIGNATORY)</div>
             </div>
           </div>
         </div>

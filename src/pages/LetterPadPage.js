@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import logoImg from "../assets/logo.png";
+import AdobeDigitalSignature from "../components/AdobeDigitalSignature";
 
 export default function LetterPadPage() {
   const editorRef = useRef(null);
@@ -292,16 +293,8 @@ export default function LetterPadPage() {
                   <div className="font-black uppercase text-[11px] text-slate-950">
                     FOR, WOLEGO TRANSPORT
                   </div>
-                  {signatureImg ? (
-                    <img
-                      src={signatureImg}
-                      alt="Authorised Digital Signature"
-                      className="h-10 w-auto max-w-[150px] object-contain my-1 mix-blend-multiply"
-                    />
-                  ) : (
-                    <div className="h-8"></div>
-                  )}
-                  <div className="text-[9.5px] text-slate-950 uppercase tracking-wider font-extrabold">
+                  <AdobeDigitalSignature />
+                  <div className="text-[9.5px] text-slate-950 uppercase tracking-wider font-extrabold mt-1">
                     (AUTHORISED SIGNATORY)
                   </div>
                 </div>

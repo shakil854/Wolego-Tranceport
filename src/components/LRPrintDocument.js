@@ -3,6 +3,7 @@ import { Printer, Download, Share2, ArrowLeft, FileSignature, X } from "lucide-r
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import logoImg from "../assets/logo.png";
+import AdobeDigitalSignature from "./AdobeDigitalSignature";
 import { API_URL, API_BASE_URL } from "../config/api";
 
 export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, autoAction, initialCopyType = "CONSIGNOR" }) {
@@ -730,28 +731,20 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   </div>
 
                   {/* Logo Centered Between NET TOTAL and Signatory Block (Bottom tagline clipped out) */}
-                  <div className="my-auto pt-3.5 pb-1 flex items-center justify-center flex-1 w-full px-2 overflow-hidden">
+                  <div className="my-auto pt-1 pb-0.5 flex items-center justify-center flex-1 w-full px-2 overflow-hidden">
                     <img
                       src={logoImg}
                       alt="Wolego Transport Logo"
-                      className="w-full max-w-[260px] h-auto max-h-[200px] object-contain mix-blend-multiply opacity-95"
-                      style={{ clipPath: "inset(0 0 18% 0)", transform: "scale(1.1)" }}
+                      className="w-full max-w-[240px] h-auto max-h-[180px] object-contain mix-blend-multiply opacity-95"
+                      style={{ clipPath: "inset(0 0 18% 0)", transform: "scale(1.05)" }}
                     />
                   </div>
 
                   {/* Signatory Block Inside Grid */}
-                  <div className="text-center font-sans p-2 mt-auto flex flex-col items-center justify-end min-h-[60px]">
-                    <div className="font-black uppercase text-[11px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
-                    {signatureImg ? (
-                      <img
-                        src={signatureImg}
-                        alt="Authorised Digital Signature"
-                        className="h-10 w-auto max-w-[150px] object-contain my-1 mix-blend-multiply"
-                      />
-                    ) : (
-                      <div className="h-6"></div>
-                    )}
-                    <div className="text-[9.5px] text-slate-950 uppercase tracking-wider font-extrabold">(AUTHORISED SIGNATORY)</div>
+                  <div className="text-center font-sans px-2 py-1 mt-auto flex flex-col items-center justify-end min-h-[55px]">
+                    <div className="font-black uppercase text-[10.5px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
+                    <AdobeDigitalSignature />
+                    <div className="text-[9px] text-slate-950 uppercase tracking-wider font-extrabold pb-0.5">(AUTHORISED SIGNATORY)</div>
                   </div>
                 </div>
 
