@@ -262,7 +262,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
           title: filename,
         });
       } else {
-        // Desktop Fallback: Download PDF file directly & Open WhatsApp Web
+        // Desktop Fallback: Download PDF file directly & Open Installed WhatsApp App with Contact Selection
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -272,12 +272,14 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        window.open("https://api.whatsapp.com/send", "_blank");
+        const textMsg = encodeURIComponent(`*WOLEGO TRANSPORT - LR Copy*\n*LR No:* ${lrData?.lrNo || ""}`);
+        window.location.href = `whatsapp://send?text=${textMsg}`;
       }
     } catch (err) {
       console.error("WhatsApp PDF sharing error:", err);
       setIsGeneratingPdf(false);
-      window.open("https://api.whatsapp.com/send", "_blank");
+      const textMsg = encodeURIComponent(`*WOLEGO TRANSPORT - LR Copy*\n*LR No:* ${lrData?.lrNo || ""}`);
+      window.location.href = `whatsapp://send?text=${textMsg}`;
     }
   };
 
