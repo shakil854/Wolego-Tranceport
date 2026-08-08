@@ -59,13 +59,23 @@ app.get("/", (req, res) => {
   res.send("Wolego Transport Billing Server is Running!");
 });
 
-// Sync database models if connected
+// Sync database models if connected (Tries alter: true first, falls back smoothly if 64 keys limit is hit)
 (async () => {
   try {
     await sequelize.sync({ alter: true });
-    console.log("Database models synchronized successfully.");
+    console.log("Database models synchronized successfully with alter.");
   } catch (error) {
-    console.log("Database connection error:", error.message);
+    if (error?.message?.includes("Too many keys")) {
+      console.warn("MySQL 64-keys index limit reached. Synchronizing safely with standard sync...");
+      try {
+        await sequelize.sync();
+        console.log("Database models synchronized successfully.");
+      } catch (fallbackErr) {
+        console.error("Database connection error:", fallbackErr.message);
+      }
+    } else {
+      console.error("Database connection error:", error.message);
+    }
   }
 })();
 

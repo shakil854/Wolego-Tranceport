@@ -105,54 +105,63 @@ const installChromeIfNeeded = () => {
 };
 
 const getBrowserInstance = async () => {
-  if (!browserInstance || !browserInstance.connected) {
-    const launchOptions = {
-      headless: "new",
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--disable-gpu",
-        "--no-first-run",
-        "--no-zygote",
-        "--disable-extensions",
-        "--disable-background-networking",
-      ],
-    };
+  if (browserInstance && browserInstance.connected) {
+    return browserInstance;
+  }
 
-    let chromeExecutablePath = findChromeExecutable();
-    if (chromeExecutablePath) {
-      launchOptions.executablePath = chromeExecutablePath;
-    }
+  const baseArgs = [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-accelerated-2d-canvas",
+    "--disable-gpu",
+    "--no-first-run",
+    "--no-zygote",
+    "--disable-extensions",
+    "--disable-background-networking",
+  ];
 
+  // Tier 1: Try system Chrome/Chromium installation
+  const systemChrome = findChromeExecutable();
+  if (systemChrome) {
     try {
-      browserInstance = await puppeteer.launch(launchOptions);
-    } catch (launchErr) {
-      console.warn("Initial puppeteer.launch failed:", launchErr?.message);
-
-      // If missing Chrome binary, auto-install Chrome dynamically
-      if (
-        launchErr?.message?.includes("Could not find Chrome") ||
-        launchErr?.message?.includes("executable") ||
-        !chromeExecutablePath
-      ) {
-        installChromeIfNeeded();
-        chromeExecutablePath = findChromeExecutable();
-        if (chromeExecutablePath) {
-          launchOptions.executablePath = chromeExecutablePath;
-        } else {
-          delete launchOptions.executablePath;
-        }
-      } else if (launchOptions.executablePath) {
-        delete launchOptions.executablePath;
-      }
-
-      // Retry browser launch
-      browserInstance = await puppeteer.launch(launchOptions);
+      browserInstance = await puppeteer.launch({
+        executablePath: systemChrome,
+        headless: "new",
+        args: baseArgs,
+      });
+      console.log("Puppeteer launched using system Chrome at:", systemChrome);
+      return browserInstance;
+    } catch (err1) {
+      console.warn("Launch failed with system Chrome at", systemChrome, ":", err1?.message);
     }
   }
-  return browserInstance;
+
+  // Tier 2: Try default Puppeteer bundled Chrome (no custom executablePath)
+  try {
+    browserInstance = await puppeteer.launch({
+      headless: "new",
+      args: baseArgs,
+    });
+    console.log("Puppeteer launched using default bundled Chrome.");
+    return browserInstance;
+  } catch (err2) {
+    console.warn("Default Puppeteer launch failed:", err2?.message);
+  }
+
+  // Tier 3: Legacy headless mode fallback with single-process
+  try {
+    browserInstance = await puppeteer.launch({
+      headless: true,
+      args: [...baseArgs, "--single-process"],
+      executablePath: systemChrome || undefined,
+    });
+    console.log("Puppeteer launched using legacy headless mode.");
+    return browserInstance;
+  } catch (err3) {
+    console.error("All Puppeteer launch attempts failed:", err3?.message);
+    throw err3;
+  }
 };
 
 // Pre-warm browser instance on server start
