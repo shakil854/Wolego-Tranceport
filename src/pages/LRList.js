@@ -37,17 +37,38 @@ export default function LRList() {
     }
   };
 
+  const [selectedCopies, setSelectedCopies] = useState(["CONSIGNOR", "CONSIGNEE"]);
+  const [showCopySelectModal, setShowCopySelectModal] = useState(false);
+  const [pendingActionType, setPendingActionType] = useState(null);
+
+  const toggleCopySelection = (type) => {
+    setSelectedCopies((prev) => {
+      if (prev.includes(type)) {
+        return prev.length > 1 ? prev.filter((c) => c !== type) : prev;
+      } else {
+        return [...prev, type];
+      }
+    });
+  };
+
   // Direct action handlers (Print, PDF, WhatsApp)
   const handleDirectAction = (lr, actionType) => {
     setSelectedLR(lr);
-    setActiveAutoAction(actionType);
-    setShowPrintModal(true);
+    setPendingActionType(actionType);
+    setShowCopySelectModal(true);
   };
 
   // Interactive View Handler - Opens full screen preview
   const handleView = (lr) => {
     setSelectedLR(lr);
-    setActiveAutoAction(null);
+    setPendingActionType(null);
+    setShowCopySelectModal(true);
+  };
+
+  const confirmCopySelectionAndProceed = (actionToExecute) => {
+    const act = actionToExecute !== undefined ? actionToExecute : pendingActionType;
+    setActiveAutoAction(act);
+    setShowCopySelectModal(false);
     setShowPrintModal(true);
   };
 
@@ -108,6 +129,7 @@ export default function LRList() {
       <LRPrintDocument
         lrData={selectedLR}
         autoAction={activeAutoAction}
+        initialCopyType={selectedCopies}
         onClose={() => {
           setShowPrintModal(false);
           setActiveAutoAction(null);
@@ -312,6 +334,107 @@ export default function LRList() {
             onConfirm={executePendingAction}
             onClose={() => setPendingAction(null)}
           />
+        )}
+
+        {/* Copy Selection Selector Modal */}
+        {showCopySelectModal && selectedLR && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4">
+              
+              <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-amber-400" />
+                  <h3 className="text-base font-black text-amber-400">
+                    Select Copies for LR #{selectedLR.lrNumber}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowCopySelectModal(false)}
+                  className="text-slate-400 hover:text-white text-lg font-bold px-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-300 font-medium">
+                Select which copy types to include (Consignor, Consignee, Truck or Office):
+              </p>
+
+              {/* Copy Checkboxes Grid */}
+              <div className="grid grid-cols-2 gap-2.5 bg-slate-900/80 p-3 rounded-lg border border-slate-700/60">
+                {[
+                  { id: "CONSIGNOR", label: "Consignor Copy" },
+                  { id: "CONSIGNEE", label: "Consignee Copy" },
+                  { id: "TRUCK", label: "Truck Copy" },
+                  { id: "OFFICE", label: "Office Copy" },
+                ].map((copy) => {
+                  const isChecked = selectedCopies.includes(copy.id);
+                  return (
+                    <label
+                      key={copy.id}
+                      onClick={() => toggleCopySelection(copy.id)}
+                      className={`flex items-center gap-2.5 p-2.5 rounded-lg border cursor-pointer select-none transition-all ${
+                        isChecked
+                          ? "bg-amber-500/15 border-amber-500/60 text-amber-300 font-bold"
+                          : "bg-slate-800/80 border-slate-700 text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {}}
+                        className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                      />
+                      <span className="text-xs uppercase font-extrabold">{copy.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => confirmCopySelectionAndProceed("print")}
+                    className="py-2 px-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-lg shadow flex items-center justify-center gap-1 transition-all"
+                  >
+                    <Printer size={15} /> Print
+                  </button>
+
+                  <button
+                    onClick={() => confirmCopySelectionAndProceed("pdf")}
+                    className="py-2 px-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-lg shadow flex items-center justify-center gap-1 transition-all"
+                  >
+                    <Download size={15} /> Export PDF
+                  </button>
+
+                  <button
+                    onClick={() => confirmCopySelectionAndProceed("whatsapp")}
+                    className="py-2 px-2.5 bg-green-600 hover:bg-green-500 text-white font-black text-xs rounded-lg shadow flex items-center justify-center gap-1 transition-all"
+                  >
+                    <Share2 size={15} /> WhatsApp
+                  </button>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => confirmCopySelectionAndProceed(null)}
+                    className="flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold text-xs rounded-lg border border-slate-600 transition-all flex items-center justify-center gap-1"
+                  >
+                    <Eye size={14} /> Document Preview
+                  </button>
+
+                  <button
+                    onClick={() => setShowCopySelectModal(false)}
+                    className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold rounded-lg border border-slate-700"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
         )}
 
       </div>
