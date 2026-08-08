@@ -510,7 +510,7 @@ export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies 
         <div class="relative z-10 flex-1 flex flex-col justify-between mb-4">
           <div class="pb-3 mb-2 text-center">
             <div class="text-[10px] sm:text-[11px] font-bold text-slate-700 tracking-wider uppercase mb-1.5">
-              :: GOOD BOOKED ON ARE REVERS CARRIED CARRIED SUBJECT TO THE FOLLOWING ::
+              :: GOODS BOOKED ARE CARRIED SUBJECT TO THE FOLLOWING ::
             </div>
             <h2 class="text-xl sm:text-2xl font-black text-slate-950 uppercase tracking-widest border-b-2 border-slate-900 inline-block pb-1">
               TERMS AND CONDITIONS
@@ -520,42 +520,42 @@ export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies 
           <div class="flex-1 flex flex-col justify-between py-2 text-[11.5px] sm:text-xs leading-relaxed text-slate-900 font-medium space-y-4 sm:space-y-0">
             <div class="flex gap-2.5">
               <span class="font-bold text-slate-950 shrink-0 min-w-[20px]">1)</span>
-              <p>THE COMPANY DOES NOT GUARANTEE DELIVERY WITHIN ANY SPECIFIED TIME AND THE COMPANY DOES NOT BE LIABLE FOR ANY DELAY IN TRANSPORT OR DELIVERY, NOT ANY NEGLIGENCE FDEFAULT OF THE CARRIEROF HISAGENTS.</p>
+              <p>THE COMPANY DOES NOT GUARANTEE DELIVERY WITHIN ANY SPECIFIED TIME AND SHALL NOT BE LIABLE FOR ANY DELAY IN TRANSPORTATION OR DELIVERY, NOR FOR ANY NEGLIGENCE OR DEFAULT ON THE PART OF THE CARRIER OR ITS AGENTS.</p>
             </div>
 
             <div class="flex gap-2.5">
               <span class="font-bold text-slate-950 shrink-0 min-w-[20px]">2)</span>
-              <p>NATURE, CONTENTE CONDITION AND VALUE OF THE CONSIGNMENT ARE UNKNOWN TO GOODS CARRERS OF INDIA (HEREIN-AFTER CALLED THE COMPANY) THE COMPANY CARRY THE GOODSAND PACKEDAT OWNER'S RISK.</p>
+              <p>THE NATURE, CONTENTS, CONDITION, AND VALUE OF THE CONSIGNMENT ARE UNKNOWN TO THE GOODS CARRIERS OF INDIA (HEREINAFTER REFERRED TO AS "THE COMPANY"). THE GOODS ARE CARRIED AT THE OWNER'S RISK AND ARE DEEMED TO BE PROPERLY PACKED.</p>
             </div>
 
             <div class="flex gap-2.5">
               <span class="font-bold text-slate-950 shrink-0 min-w-[20px]">3)</span>
-              <p>THE COMPANY SHALL NOT BE RESPONSIBLE IF THE GOOD S ARE DETAINED SEIZED OR CONFICATED GOVERNMENT AUTHORITIES.</p>
+              <p>THE COMPANY SHALL NOT BE RESPONSIBLE IF THE GOODS ARE DETAINED, SEIZED, OR CONFISCATED BY GOVERNMENT AUTHORITIES.</p>
             </div>
 
             <div class="flex gap-2.5">
               <span class="font-bold text-slate-950 shrink-0 min-w-[20px]">4)</span>
-              <p>THE COMPANY SHALL NOT BE LIABLE FOR ANY LOSS OR DAMAGE DUE TO PILFERAGE THEFT WEALTHIER CONDITIONS STRIKES, RIOTS, DISTURBANCES, FIRE EXPLOSION OR ACCIDENT, PROVIDED HOWEVER ALL REASONABLE PRECAUTIONS ARE TAKEN TO PROVIDE AGAINST SUCHCONTINGENCY.</p>
+              <p>THE COMPANY SHALL NOT BE LIABLE FOR ANY LOSS OR DAMAGE DUE TO PILFERAGE, THEFT, WEATHER CONDITIONS, STRIKES, RIOTS, CIVIL DISTURBANCES, FIRE, EXPLOSION, OR ACCIDENTS, PROVIDED THAT ALL REASONABLE PRECAUTIONS HAVE BEEN TAKEN AGAINST SUCH CONTINGENCIES.</p>
             </div>
 
             <div class="flex gap-2.5">
               <span class="font-bold text-slate-950 shrink-0 min-w-[20px]">5)</span>
-              <p>NO ENQUIRY WELL ENTERTAINED RELATING TO ANY CONSIGNMENT AFTER THE EXPIRY OF 30 DAYSFORM THE DATE DELIVERY.</p>
+              <p>NO ENQUIRY RELATING TO ANY CONSIGNMENT WILL BE ENTERTAINED AFTER THE EXPIRY OF 30 DAYS FROM THE DATE OF DELIVERY.</p>
             </div>
 
             <div class="flex gap-2.5">
               <span class="font-bold text-slate-950 shrink-0 min-w-[20px]">6)</span>
-              <p>THE COMPANY IS NOT RESPONSIBLE FOR LEAKAGE, BREAKAGE OR SHORTAGE BY SUN, RAIN ORWATER DUE TOBAD ROAD CONDUCTION OR DUEIMPROPER PACKING ETC.</p>
+              <p>THE COMPANY IS NOT RESPONSIBLE FOR LEAKAGE, BREAKAGE, OR SHORTAGE CAUSED BY SUN, RAIN, WATER, BAD ROAD CONDITIONS, OR IMPROPER PACKING.</p>
             </div>
 
             <div class="flex gap-2.5">
               <span class="font-bold text-slate-950 shrink-0 min-w-[20px]">7)</span>
-              <p>THE COURT IN WANKANER ALONE SHALL HAVE JURIDITION IN RESPECT OF ALLCLAIMS AND MATTESARISING UNDER THE CONSIGNMENT OF THEGOODS ENTRUSTED FOR TRANSPORT.</p>
+              <p>THE COURTS AT WANKANER ALONE SHALL HAVE JURISDICTION IN RESPECT OF ALL CLAIMS AND MATTERS ARISING UNDER THE CONSIGNMENT OF GOODS ENTRUSTED FOR TRANSPORTATION.</p>
             </div>
 
             <div class="flex gap-2.5">
               <span class="font-bold text-slate-950 shrink-0 min-w-[20px]">8)</span>
-              <p>PLEASE CHEQUETHE DOCUMENT OF THETRUCK & DRIVER LICENCE.</p>
+              <p>PLEASE CHECK THE TRUCK DOCUMENTS AND THE DRIVER'S LICENCE BEFORE DISPATCH.</p>
             </div>
           </div>
         </div>
