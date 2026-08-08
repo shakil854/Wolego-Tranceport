@@ -438,35 +438,33 @@ export default function DailyReport() {
                         </td>
 
                         {/* COLUMN 2: CONSINEE city - Area - LR.weight / Party Name * consignor Name / P- Party mobile */}
-                        <td className="border border-slate-950 p-3 sm:p-3.5 align-top w-[52%]">
+                        <td className="border border-slate-950 p-2.5 sm:p-3 align-top w-[52%]">
                           {/* Line 1: CONSINEE city - Area - LR.weight */}
-                          <div className="font-black text-slate-950 uppercase tracking-tight text-sm sm:text-base">
+                          <div className="font-black text-slate-950 uppercase tracking-tight text-sm sm:text-base truncate">
                             {consigneeDetails}
                           </div>
                           {/* Line 2: Party Name * consignor Name */}
-                          <div className="font-extrabold text-slate-900 uppercase whitespace-pre-wrap leading-snug my-1.5 text-sm sm:text-base">
+                          <div className="font-extrabold text-slate-900 uppercase truncate leading-snug my-1 text-sm sm:text-base">
                             {partyConsignorLine}
                           </div>
                           {/* Line 3: P- Party mobile */}
-                          {partyMobile && (
-                            <div className="font-bold text-slate-800 text-sm sm:text-base">
-                              {partyMobile}
-                            </div>
-                          )}
+                          <div className="font-bold text-slate-800 text-sm sm:text-base truncate">
+                            {partyMobile || "P-"}
+                          </div>
                         </td>
 
                         {/* COLUMN 3: D- Driver No. / Truck No. / LR- Rate per ton */}
-                        <td className="border border-slate-950 p-3 sm:p-3.5 align-top w-[28%]">
+                        <td className="border border-slate-950 p-2.5 sm:p-3 align-top w-[28%]">
                           {/* Line 1: D- Driver No. */}
-                          <div className="font-bold text-slate-900 text-sm sm:text-base">
-                            {driverMobile}
+                          <div className="font-bold text-slate-900 text-sm sm:text-base truncate">
+                            {driverMobile || "D-"}
                           </div>
                           {/* Line 2: Truck No. */}
-                          <div className="font-black text-slate-950 uppercase text-sm sm:text-base my-1">
+                          <div className="font-black text-slate-950 uppercase text-sm sm:text-base my-1 truncate">
                             {lr.truckNo || "-"}
                           </div>
                           {/* Line 3: LR- Rate per ton + */}
-                          <div className="font-extrabold text-slate-900 text-sm sm:text-base">
+                          <div className="font-extrabold text-slate-900 text-sm sm:text-base truncate">
                             {rateStr}
                           </div>
                         </td>
