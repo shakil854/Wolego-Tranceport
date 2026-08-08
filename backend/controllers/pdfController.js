@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 import puppeteer from "puppeteer";
 import { generateLRHtml } from "../utils/lrHtmlTemplate.js";
 
@@ -8,7 +9,7 @@ let browserInstance = null;
 const findChromeExecutable = () => {
   const isWin = process.platform === "win32";
 
-  // 1. System Chrome/Chromium installation paths
+  // 1. Direct System Paths
   const systemPaths = isWin
     ? [
         "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
@@ -22,6 +23,11 @@ const findChromeExecutable = () => {
         "/usr/bin/chromium",
         "/usr/bin/chromium-browser",
         "/snap/bin/chromium",
+        "/opt/google/chrome/chrome",
+        "/opt/google/chrome/google-chrome",
+        "/usr/local/bin/chrome",
+        "/usr/local/bin/chromium",
+        "/usr/bin/headless-shell",
       ];
 
   for (const p of systemPaths) {
@@ -30,30 +36,49 @@ const findChromeExecutable = () => {
     }
   }
 
-  // 2. Scan Puppeteer Cache Directory dynamically
-  try {
-    const homeDir = process.env.HOME || process.env.USERPROFILE || "C:\\Users\\shakil";
-    const cacheDir = path.join(homeDir, ".cache", "puppeteer", "chrome");
-
-    if (fs.existsSync(cacheDir)) {
-      const dirs = fs.readdirSync(cacheDir);
-      for (const d of dirs) {
-        const winExe = path.join(cacheDir, d, "chrome-win64", "chrome.exe");
-        const win32Exe = path.join(cacheDir, d, "chrome-win32", "chrome.exe");
-        const linuxExe = path.join(cacheDir, d, "chrome-linux64", "chrome");
-        const linuxBin = path.join(cacheDir, d, "chrome-linux", "chrome");
-
-        if (fs.existsSync(winExe)) return winExe;
-        if (fs.existsSync(win32Exe)) return win32Exe;
-        if (fs.existsSync(linuxExe)) return linuxExe;
-        if (fs.existsSync(linuxBin)) return linuxBin;
+  // Recursive search helper
+  const findBinaryRecursively = (dir, targetNames, maxDepth = 4) => {
+    if (!fs.existsSync(dir) || maxDepth <= 0) return null;
+    try {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isFile()) {
+          const lowerName = entry.name.toLowerCase();
+          if (targetNames.includes(lowerName)) {
+            return fullPath;
+          }
+        } else if (entry.isDirectory()) {
+          const found = findBinaryRecursively(fullPath, targetNames, maxDepth - 1);
+          if (found) return found;
+        }
       }
+    } catch (e) {
+      // Ignore read errors
     }
-  } catch (e) {
-    // Ignore scan errors
+    return null;
+  };
+
+  const targetNames = isWin
+    ? ["chrome.exe"]
+    : ["chrome", "google-chrome", "chromium", "chromium-browser", "chrome-headless-shell"];
+
+  // 2. Scan all possible Puppeteer cache roots (/root/.cache/puppeteer, ~/.cache/puppeteer, /home/*/.cache/puppeteer)
+  const possibleCacheRoots = [
+    path.join(process.env.HOME || "/root", ".cache", "puppeteer"),
+    path.join(process.env.USERPROFILE || "C:\\Users\\shakil", ".cache", "puppeteer"),
+    "/root/.cache/puppeteer",
+    "/home",
+  ];
+
+  for (const root of possibleCacheRoots) {
+    if (fs.existsSync(root)) {
+      const found = findBinaryRecursively(root, targetNames, 5);
+      if (found) return found;
+    }
   }
 
-  // 3. Try Puppeteer's built-in executablePath resolver
+  // 3. Try Puppeteer built-in executablePath
   try {
     const pPath = puppeteer.executablePath();
     if (pPath && fs.existsSync(pPath)) {
@@ -64,6 +89,19 @@ const findChromeExecutable = () => {
   }
 
   return null;
+};
+
+const installChromeIfNeeded = () => {
+  try {
+    console.log("Automated Puppeteer Chrome installation starting via npx...");
+    execSync("npx puppeteer browsers install chrome", {
+      stdio: "inherit",
+      timeout: 180000,
+    });
+    console.log("Automated Puppeteer Chrome installation completed.");
+  } catch (e) {
+    console.warn("Auto Chrome installation failed or timed out:", e?.message);
+  }
 };
 
 const getBrowserInstance = async () => {
@@ -83,7 +121,7 @@ const getBrowserInstance = async () => {
       ],
     };
 
-    const chromeExecutablePath = findChromeExecutable();
+    let chromeExecutablePath = findChromeExecutable();
     if (chromeExecutablePath) {
       launchOptions.executablePath = chromeExecutablePath;
     }
@@ -91,13 +129,27 @@ const getBrowserInstance = async () => {
     try {
       browserInstance = await puppeteer.launch(launchOptions);
     } catch (launchErr) {
-      if (launchOptions.executablePath) {
-        console.warn("Failed to launch with custom executablePath, retrying default puppeteer.launch:", launchErr.message);
+      console.warn("Initial puppeteer.launch failed:", launchErr?.message);
+
+      // If missing Chrome binary, auto-install Chrome dynamically
+      if (
+        launchErr?.message?.includes("Could not find Chrome") ||
+        launchErr?.message?.includes("executable") ||
+        !chromeExecutablePath
+      ) {
+        installChromeIfNeeded();
+        chromeExecutablePath = findChromeExecutable();
+        if (chromeExecutablePath) {
+          launchOptions.executablePath = chromeExecutablePath;
+        } else {
+          delete launchOptions.executablePath;
+        }
+      } else if (launchOptions.executablePath) {
         delete launchOptions.executablePath;
-        browserInstance = await puppeteer.launch(launchOptions);
-      } else {
-        throw launchErr;
       }
+
+      // Retry browser launch
+      browserInstance = await puppeteer.launch(launchOptions);
     }
   }
   return browserInstance;
