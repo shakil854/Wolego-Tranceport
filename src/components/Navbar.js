@@ -37,12 +37,12 @@ export default function Navbar() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [desktopThemeOpen, setDesktopThemeOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileThemeOpen, setMobileThemeOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isChangeActionPasswordOpen, setIsChangeActionPasswordOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const desktopThemeRef = useRef(null);
+  const userMenuRef = useRef(null);
   const mobileThemeRef = useRef(null);
 
   // Primary Navigation Items for Owner
@@ -98,8 +98,8 @@ export default function Navbar() {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
-      if (desktopThemeRef.current && !desktopThemeRef.current.contains(event.target)) {
-        setDesktopThemeOpen(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
       }
       if (mobileThemeRef.current && !mobileThemeRef.current.contains(event.target)) {
         setMobileThemeOpen(false);
@@ -123,12 +123,12 @@ export default function Navbar() {
     <header className="bg-white text-slate-900 shadow-md sticky top-0 z-50 border-b border-slate-200 font-sans">
 
       {/* Main Navbar */}
-      <div className="w-full max-w-full mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16 gap-3 sm:gap-6">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-3">
 
-          {/* Logo / Brand */}
-          <Link to={isParty ? "/accounting" : isTruck ? "/truck-accounting" : "/"} className="flex items-center space-x-2.5 shrink-0 group mr-4 sm:mr-6 lg:mr-10">
-            {/* Crown & W Logo (Enlarged & Bottom Text Cropped Out) */}
+          {/* Left Side: Logo / Brand */}
+          <Link to={isParty ? "/accounting" : isTruck ? "/truck-accounting" : "/"} className="flex items-center space-x-2.5 shrink-0 group">
+            {/* Crown & W Logo */}
             <div className="h-9 sm:h-11 w-9 sm:w-11 overflow-hidden flex items-start justify-center shrink-0">
               <img
                 src={logoImg}
@@ -146,8 +146,8 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1.5 sm:space-x-2 lg:space-x-3">
+          {/* Center: Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-1 sm:space-x-1.5 lg:space-x-2">
             {/* Primary Nav Items */}
             {primaryItems.map((item) => {
               const Icon = item.icon;
@@ -187,7 +187,7 @@ export default function Navbar() {
                 {dropdownOpen && (
                   <div
                     onMouseLeave={() => setDropdownOpen(false)}
-                    className="absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-2xl py-2 z-50 divide-y divide-slate-100 animate-fadeIn"
+                    className="absolute left-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-2xl py-2 z-50 divide-y divide-slate-100 animate-fadeIn"
                   >
                     {dropdownItems.map((item) => {
                       const Icon = item.icon;
@@ -211,94 +211,137 @@ export default function Navbar() {
                 )}
               </div>
             )}
+          </nav>
 
-            {/* Auth / User Status Badge & Change Password & Logout */}
-            <div className="pl-3 border-l border-slate-200 flex items-center gap-2">
-              {user ? (
-                <div className="flex items-center gap-2">
-                  <div className="bg-slate-100 border border-slate-300 px-3 py-1 rounded-xl flex items-center gap-2">
-                    <User className="w-4 h-4 text-amber-600" />
-                    <div className="text-xs">
-                      <div className="font-extrabold text-amber-700 leading-none">
-                        {isOwner ? "OWNER" : isTruck ? "TRUCK OWNER" : user.partyName || user.username}
+          {/* Right Side: Auth / User Status Dropdown Menu */}
+          <div className="hidden md:flex items-center gap-2 shrink-0">
+            {user ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3 py-1.5 rounded-xl flex items-center gap-2 transition cursor-pointer group shadow-sm"
+                >
+                  <div className="p-1 bg-amber-100 rounded-lg group-hover:bg-amber-200 transition">
+                    <User className="w-4 h-4 text-amber-700" />
+                  </div>
+                  <div className="text-xs text-left pr-1">
+                    <div className="font-extrabold text-amber-800 leading-none flex items-center gap-1">
+                      <span>{isOwner ? "OWNER" : isTruck ? "TRUCK OWNER" : user.partyName || user.username}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 font-mono font-medium leading-tight mt-0.5">
+                      {user.username}
+                    </div>
+                  </div>
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${userMenuOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {/* User Dropdown Card */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 animate-fadeIn overflow-hidden">
+                    {/* Header info */}
+                    <div className="px-4 py-3 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border-b border-slate-100">
+                      <div className="text-xs font-black text-slate-800 uppercase tracking-wider">Logged In As</div>
+                      <div className="text-sm font-extrabold text-amber-800 mt-0.5">
+                        {isOwner ? "👑 OWNER ADMIN" : isTruck ? "🚛 TRUCK OWNER" : `🏢 ${user.partyName || user.username}`}
                       </div>
-                      <div className="text-[10px] text-slate-500 font-mono font-medium leading-tight">
-                        {user.username}
+                      <div className="text-[11px] text-slate-500 font-mono">User: {user.username}</div>
+                    </div>
+
+                    <div className="p-2 space-y-1">
+                      {/* Theme Picker inside Dropdown */}
+                      <div className="p-2 bg-slate-50 border border-slate-200/60 rounded-xl">
+                        <div className="text-[11px] font-extrabold text-purple-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <Palette className="w-3.5 h-3.5 text-purple-600" />
+                          <span>Color Theme (थीम)</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {THEMES.map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => setTheme(t.id)}
+                              className={`text-left px-2 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                theme === t.id
+                                  ? "bg-amber-500 text-slate-950 font-extrabold shadow"
+                                  : "bg-white hover:bg-slate-200 text-slate-700 border border-slate-200"
+                              }`}
+                            >
+                              <span className="text-sm">{t.icon}</span>
+                              <span className="truncate">{t.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Owner Security Password */}
+                      {isOwner && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            setIsChangeActionPasswordOpen(true);
+                          }}
+                          className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 flex items-center gap-2.5 transition cursor-pointer group"
+                        >
+                          <div className="p-1.5 bg-emerald-100 text-emerald-700 rounded-lg group-hover:bg-emerald-200 transition">
+                            <ShieldCheck className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="font-extrabold text-slate-800 group-hover:text-emerald-800">Security Password</div>
+                            <div className="text-[10px] text-slate-500 font-normal">Action & Debit Passcode</div>
+                          </div>
+                        </button>
+                      )}
+
+                      {/* Change Login Password */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          setIsChangePasswordOpen(true);
+                        }}
+                        className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-800 flex items-center gap-2.5 transition cursor-pointer group"
+                      >
+                        <div className="p-1.5 bg-amber-100 text-amber-700 rounded-lg group-hover:bg-amber-200 transition">
+                          <Key className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="font-extrabold text-slate-800 group-hover:text-amber-800">Change Password</div>
+                          <div className="text-[10px] text-slate-500 font-normal">Login Password</div>
+                        </div>
+                      </button>
+
+                      <div className="pt-1 border-t border-slate-100">
+                        {/* Logout */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            handleLogout();
+                          }}
+                          className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition cursor-pointer group"
+                        >
+                          <div className="p-1.5 bg-rose-100 text-rose-600 rounded-lg group-hover:bg-rose-200 transition">
+                            <LogOut className="w-4 h-4" />
+                          </div>
+                          <span className="font-extrabold">Logout</span>
+                        </button>
                       </div>
                     </div>
                   </div>
-                  {/* Theme Popover Button */}
-                  <div className="relative" ref={desktopThemeRef}>
-                    <button
-                      type="button"
-                      onClick={() => setDesktopThemeOpen(!desktopThemeOpen)}
-                      title="Choose Theme (थीम बदलें)"
-                      className="p-2 bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 rounded-xl transition cursor-pointer flex items-center justify-center"
-                    >
-                      <Palette className="w-4 h-4 text-purple-700" />
-                    </button>
-                    {desktopThemeOpen && (
-                      <div className="absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-2xl py-1 z-50 animate-fadeIn">
-                        <div className="px-3 py-1.5 border-b border-slate-100 text-[11px] font-black text-slate-400 uppercase tracking-wider">
-                          Select Color Theme
-                        </div>
-                        {THEMES.map((t) => (
-                          <button
-                            key={t.id}
-                            type="button"
-                            onClick={() => {
-                              setTheme(t.id);
-                              setDesktopThemeOpen(false);
-                            }}
-                            className={`w-full text-left px-3 py-2 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                              theme === t.id
-                                ? "bg-amber-50 text-amber-900 font-extrabold border-l-4 border-amber-500"
-                                : "text-slate-700 hover:bg-slate-100 hover:text-amber-600"
-                            }`}
-                          >
-                            <span>{t.icon}</span>
-                            <span>{t.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {isOwner && (
-                    <button
-                      onClick={() => setIsChangeActionPasswordOpen(true)}
-                      title="Set / Change Action Security Password (LR Edit/Delete & Truck Debit Passcode)"
-                      className="p-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 rounded-xl transition cursor-pointer flex items-center gap-1 text-xs font-extrabold"
-                    >
-                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setIsChangePasswordOpen(true)}
-                    title="Change Login Password (लॉगिन पासवर्ड बदलें)"
-                    className="p-2 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-xl transition cursor-pointer flex items-center gap-1 text-xs font-bold"
-                  >
-                    <Key className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    title="Logout"
-                    className="p-2 bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-200 rounded-xl transition cursor-pointer"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  to="/login"
-                  className="flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition shadow"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>Login</span>
-                </Link>
-              )}
-            </div>
-          </nav>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition shadow"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Login</span>
+              </Link>
+            )}
+          </div>
 
           {/* Mobile header controls */}
           <div className="md:hidden flex items-center gap-1.5 shrink-0 pr-1 sm:pr-0">
