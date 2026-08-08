@@ -205,12 +205,17 @@ export const formatDateDisplay = (dateVal) => {
       const parts = cleanStr.split("-");
       if (parts.length === 3) {
         const [y, m, d] = parts;
-        return `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
+        const dayStr = String(parseInt(d, 10)).padStart(2, "0");
+        const monthStr = String(parseInt(m, 10)).padStart(2, "0");
+        return `${dayStr}/${monthStr}/${y}`;
       }
     }
   }
   const d = parseLocalDate(dateVal);
-  return isNaN(d.getTime()) ? "-" : `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  if (isNaN(d.getTime())) return "-";
+  const dayStr = String(d.getDate()).padStart(2, "0");
+  const monthStr = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dayStr}/${monthStr}/${d.getFullYear()}`;
 };
 
 // Financial Year Helper (1 April to 31 March)

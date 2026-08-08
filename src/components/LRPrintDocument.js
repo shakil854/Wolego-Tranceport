@@ -83,10 +83,18 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       const parts = dateVal.split("T")[0].split("-");
       if (parts.length === 3) {
         const [y, m, d] = parts;
-        return `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
+        const dayStr = String(parseInt(d, 10)).padStart(2, "0");
+        const monthStr = String(parseInt(m, 10)).padStart(2, "0");
+        return `${dayStr}/${monthStr}/${y}`;
       }
     }
-    return new Date(dateVal).toLocaleDateString("en-IN");
+    const dt = new Date(dateVal);
+    if (!isNaN(dt.getTime())) {
+      const dayStr = String(dt.getDate()).padStart(2, "0");
+      const monthStr = String(dt.getMonth() + 1).padStart(2, "0");
+      return `${dayStr}/${monthStr}/${dt.getFullYear()}`;
+    }
+    return new Date().toLocaleDateString("en-IN");
   };
 
   // Direct Browser Print (Full A4 Page Portrait)
