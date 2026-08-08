@@ -4,7 +4,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import logoImg from "../assets/logo.png";
 import AdobeDigitalSignature from "./AdobeDigitalSignature";
-import { API_URL, API_BASE_URL } from "../config/api";
+import { API_BASE_URL } from "../config/api";
 import axiosInstance from "../api/axiosInstance";
 
 export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, autoAction, initialCopyType = "CONSIGNOR" }) {
@@ -57,18 +57,12 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(autoAction === "pdf" || autoAction === "whatsapp");
   const [backendPdfCache, setBackendPdfCache] = useState(null);
   const [sharePromptFile, setSharePromptFile] = useState(null);
+  const pendingPdfPromiseRef = useRef(null);
 
-  // Background Pre-fetch of Backend Puppeteer PDF Blob so it is ready in memory for instant sharing
+  // Clear cache whenever LR data, signature or copies selection changes
   useEffect(() => {
-    let isMounted = true;
-    fetchLRPdfBlob()
-      .then((blob) => {
-        if (isMounted && blob) setBackendPdfCache(blob);
-      })
-      .catch((e) => console.warn("Backend PDF prefetch error:", e));
-    return () => {
-      isMounted = false;
-    };
+    setBackendPdfCache(null);
+    pendingPdfPromiseRef.current = null;
   }, [lrData, signatureImg, selectedCopies]);
 
   useEffect(() => {
@@ -131,157 +125,50 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     return `LR_${lrNo}_WolegoTransport.pdf`;
   };
 
-  // Helper to fetch in-memory Puppeteer-generated A4 PDF Blob from backend
+  // Helper to fetch in-memory Puppeteer-generated A4 PDF Blob from backend (Strict Single API Hit)
   const fetchLRPdfBlob = async () => {
-    // 1. Try central axiosInstance first (matches mobile & desktop API config)
-    try {
-      const response = await axiosInstance.post(
-        "/lr/generate-pdf",
-        {
-          lrData,
-          signatureImg,
-          selectedCopies,
-        },
-        {
-          responseType: "blob",
-        }
-      );
-      if (response && response.data) {
-        return response.data;
-      }
-    } catch (axiosErr) {
-      console.warn("axiosInstance PDF API failed, trying direct network URLs:", axiosErr?.message);
+    if (backendPdfCache) return backendPdfCache;
+
+    if (pendingPdfPromiseRef.current) {
+      return pendingPdfPromiseRef.current;
     }
 
-    // 2. Fallback to direct network endpoints
-    const hostname = window.location.hostname;
-    const protocol = window.location.protocol;
-    const origin = window.location.origin;
-    const urlsToTry = Array.from(
-      new Set([
-        `${API_URL}/api/lr/generate-pdf`,
-        `${API_BASE_URL}/lr/generate-pdf`,
-        `${origin}/api/lr/generate-pdf`,
-        `${protocol}//${hostname}:8002/api/lr/generate-pdf`,
-        `${protocol}//${hostname}:8002/lr/generate-pdf`,
-        `${protocol}//${hostname}:5000/api/lr/generate-pdf`,
-        `${protocol}//${hostname}:5000/lr/generate-pdf`,
-        "http://localhost:8002/api/lr/generate-pdf",
-        "http://localhost:5000/api/lr/generate-pdf",
-        "/api/lr/generate-pdf",
-      ].filter(Boolean))
-    );
-
-    let lastError = null;
-    for (const url of urlsToTry) {
+    const promise = (async () => {
       try {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        const response = await axiosInstance.post(
+          "/lr/generate-pdf",
+          {
             lrData,
             signatureImg,
             selectedCopies,
-          }),
-        });
+          },
+          {
+            responseType: "blob",
+          }
+        );
 
-        if (response.ok) {
-          return await response.blob();
+        if (response && response.data) {
+          setBackendPdfCache(response.data);
+          return response.data;
         }
-      } catch (err) {
-        lastError = err;
+        throw new Error("Failed to receive PDF stream from backend server.");
+      } catch (axiosErr) {
+        console.error("Backend Puppeteer PDF API failed:", axiosErr?.message);
+        throw axiosErr;
+      } finally {
+        pendingPdfPromiseRef.current = null;
       }
-    }
+    })();
 
-    throw lastError || new Error("Failed to connect to PDF generation server.");
+    pendingPdfPromiseRef.current = promise;
+    return promise;
   };
 
-  // Client-side Canvas PDF Fallback Generator (Page 1: LR, Page 2: Terms and Conditions)
-  const generateClientPDFBlob = async () => {
-    if (!printRef.current) throw new Error("Document print element not found");
-
-    const el1 = printRef.current;
-    const el2 = termsRef.current;
-
-    const prevStyle1 = el1.getAttribute("style") || "";
-    const prevStyle2 = el2 ? el2.getAttribute("style") || "" : "";
-
-    // Force fixed desktop A4 pixel width (794px) during canvas capture so mobile matches PC exactly
-    el1.style.opacity = "1";
-    el1.style.visibility = "visible";
-    el1.style.width = "794px";
-    el1.style.minWidth = "794px";
-    el1.style.maxWidth = "794px";
-
-    if (el2) {
-      el2.style.opacity = "1";
-      el2.style.visibility = "visible";
-      el2.style.width = "794px";
-      el2.style.minWidth = "794px";
-      el2.style.maxWidth = "794px";
-    }
-
-    try {
-      const canvasOptions = {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        windowWidth: 1024,
-      };
-
-      const canvas1 = await html2canvas(el1, canvasOptions);
-      const imgData1 = canvas1.toDataURL("image/jpeg", 0.85);
-
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-        compress: true,
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      pdf.addImage(imgData1, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-
-      if (el2) {
-        try {
-          const canvas2 = await html2canvas(el2, canvasOptions);
-          const imgData2 = canvas2.toDataURL("image/jpeg", 0.85);
-          pdf.addPage();
-          pdf.addImage(imgData2, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-        } catch (e2) {
-          console.warn("Terms page canvas error:", e2);
-        }
-      }
-
-      return pdf.output("blob");
-    } finally {
-      el1.setAttribute("style", prevStyle1);
-      if (el2) {
-        el2.setAttribute("style", prevStyle2);
-      }
-    }
-  };
-
-  // Safe PDF Fetcher (Backend Puppeteer with Client Canvas Fallback)
-  const getOrGenerateLRPdfBlob = async () => {
-    try {
-      return await fetchLRPdfBlob();
-    } catch (err) {
-      console.warn("Backend PDF API unreachable, generating client-side A4 PDF:", err.message);
-      return await generateClientPDFBlob();
-    }
-  };
-
-  // High-Quality Multi-Page PDF Export (Direct File Download - Never calls window.print)
+  // High-Quality Multi-Page PDF Export (Direct Backend Puppeteer File Download)
   const handleExportPDF = async () => {
     setIsGeneratingPdf(true);
     try {
-      const blob = await getOrGenerateLRPdfBlob();
+      const blob = await fetchLRPdfBlob();
       const filename = getLRPdfFilename(lrData);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -293,7 +180,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("PDF export failed:", err);
-      alert("Failed to export PDF file. Please try again.");
+      alert("Failed to export PDF from server. Please check backend connection.");
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -303,7 +190,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
   const handleWhatsApp = async () => {
     setIsGeneratingPdf(true);
     try {
-      const blob = backendPdfCache || (await getOrGenerateLRPdfBlob());
+      const blob = await fetchLRPdfBlob();
       const filename = getLRPdfFilename(lrData);
       const pdfFile = new File([blob], filename, { type: "application/pdf" });
 
@@ -351,7 +238,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     } catch (err) {
       console.error("WhatsApp share error:", err);
       setIsGeneratingPdf(false);
-      window.open("https://api.whatsapp.com/send", "_blank");
+      alert("Failed to generate PDF for WhatsApp share.");
       return true;
     }
   };
