@@ -54,6 +54,8 @@ const getBrowserInstance = async () => {
         "--no-zygote",
         "--disable-extensions",
         "--disable-background-networking",
+        "--disable-background-timer-throttling",
+        "--disable-renderer-backgrounding",
       ],
     };
 
@@ -97,13 +99,19 @@ export const generateLRPdf = async (req, res) => {
       page = await browser.newPage();
     }
 
-    // Set viewport matching exact A4 pixel dimensions (794x1123) with 4x Ultra-HD DPI scale factor
-    await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 4 });
+    // Set viewport matching exact A4 pixel dimensions (794x1123) and keep render stable, fast, and consistent
+    await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 2 });
+    await page.emulateMediaType("print");
 
-    // Load HTML content instantly
+    // Load HTML content and wait for fonts/assets to be ready before conversion
     await page.setContent(htmlContent, {
-      waitUntil: "domcontentloaded",
-      timeout: 30000,
+      waitUntil: "load",
+      timeout: 45000,
+    });
+    await page.evaluate(async () => {
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
     });
 
     // 3. Generate PDF Buffer in memory (NO DISK SAVE)
@@ -112,6 +120,7 @@ export const generateLRPdf = async (req, res) => {
       printBackground: true,
       preferCSSPageSize: true,
       margin: { top: "0mm", right: "0mm", bottom: "0mm", left: "0mm" },
+      scale: 1,
     });
 
     // Helper to format filename: LR_0004_WolegoTransport_GJ28AA2626.pdf
