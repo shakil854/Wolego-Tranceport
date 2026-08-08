@@ -185,6 +185,7 @@ export default function LREntryForm() {
     remarks: "",
     debitAmountTo: "CONSIGNEE",
     tripDays: 5,
+    lrCharge: "",
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -1253,6 +1254,23 @@ export default function LREntryForm() {
                       className="w-14 bg-white text-slate-900 font-mono font-bold text-center px-1.5 py-0.5 border rounded text-[11px]"
                     />
                     <span className="text-[10px] font-bold text-sky-200">DAYS</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-1 pt-1 border-t border-sky-800/80">
+                  <label className="text-[10px] font-bold text-yellow-300 uppercase">LR CHARGE:</label>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="text"
+                      maxLength={3}
+                      value={formData.lrCharge !== undefined ? formData.lrCharge : ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 3);
+                        setFormData({ ...formData, lrCharge: val });
+                      }}
+                      placeholder="000"
+                      className="w-14 bg-white text-slate-900 font-mono font-bold text-center px-1.5 py-0.5 border rounded text-[11px]"
+                    />
                   </div>
                 </div>
               </div>

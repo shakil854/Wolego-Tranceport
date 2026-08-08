@@ -421,7 +421,9 @@ export default function DailyReport() {
                     const driverMobile = getDriverMobile(lr);
                     const consigneeDetails = getConsigneeDetails(lr);
                     const partyConsignorLine = getPartyAndConsignorsLine(lr);
-                    const rateStr = lr.ratePerTon ? `${lr.ratePerTon}+` : "0+";
+                    const baseRate = lr.ratePerTon !== undefined && lr.ratePerTon !== null && lr.ratePerTon !== "" ? lr.ratePerTon : 0;
+                    const chargeStr = lr.lrCharge ? lr.lrCharge : "";
+                    const rateStr = `${baseRate}+${chargeStr}`;
 
                     return (
                       <tr key={lr.id || lr.lrNumber} className="border-b border-slate-950 leading-normal">
