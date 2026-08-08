@@ -71,6 +71,10 @@ const LREntry = sequelize.define("LREntry", {
     type: DataTypes.INTEGER,
     defaultValue: 5,
   },
+  lrCharge: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   truckComingDismissed: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
