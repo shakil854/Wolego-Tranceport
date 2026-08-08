@@ -109,13 +109,20 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
   // Helper to fetch in-memory Puppeteer-generated A4 PDF Blob from backend
   const fetchLRPdfBlob = async () => {
-    const urlsToTry = Array.from(new Set([
-      `${API_URL}/api/lr/generate-pdf`,
-      `${API_BASE_URL}/lr/generate-pdf`,
-      "http://localhost:5000/api/lr/generate-pdf",
-      "http://localhost:8002/api/lr/generate-pdf",
-      "/api/lr/generate-pdf",
-    ]));
+    const hostname = window.location.hostname;
+    const origin = window.location.origin;
+    const urlsToTry = Array.from(
+      new Set([
+        `${API_URL}/api/lr/generate-pdf`,
+        `${API_BASE_URL}/lr/generate-pdf`,
+        `${origin}/api/lr/generate-pdf`,
+        `http://${hostname}:5000/api/lr/generate-pdf`,
+        `http://${hostname}:8002/api/lr/generate-pdf`,
+        "http://localhost:5000/api/lr/generate-pdf",
+        "http://localhost:8002/api/lr/generate-pdf",
+        "/api/lr/generate-pdf",
+      ].filter(Boolean))
+    );
 
     let lastError = null;
     for (const url of urlsToTry) {
@@ -150,17 +157,22 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     const el1 = printRef.current;
     const el2 = termsRef.current;
 
-    const prevOpacity1 = el1.style.opacity;
-    const prevVisibility1 = el1.style.visibility;
+    const prevStyle1 = el1.getAttribute("style") || "";
+    const prevStyle2 = el2 ? el2.getAttribute("style") || "" : "";
+
+    // Force fixed desktop A4 pixel width (794px) during canvas capture so mobile matches PC exactly
     el1.style.opacity = "1";
     el1.style.visibility = "visible";
+    el1.style.width = "794px";
+    el1.style.minWidth = "794px";
+    el1.style.maxWidth = "794px";
 
-    let prevOpacity2, prevVisibility2;
     if (el2) {
-      prevOpacity2 = el2.style.opacity;
-      prevVisibility2 = el2.style.visibility;
       el2.style.opacity = "1";
       el2.style.visibility = "visible";
+      el2.style.width = "794px";
+      el2.style.minWidth = "794px";
+      el2.style.maxWidth = "794px";
     }
 
     try {
@@ -169,6 +181,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
+        windowWidth: 1024,
       };
 
       const canvas1 = await html2canvas(el1, canvasOptions);
@@ -199,11 +212,9 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
       return pdf.output("blob");
     } finally {
-      el1.style.opacity = prevOpacity1;
-      el1.style.visibility = prevVisibility1;
+      el1.setAttribute("style", prevStyle1);
       if (el2) {
-        el2.style.opacity = prevOpacity2;
-        el2.style.visibility = prevVisibility2;
+        el2.setAttribute("style", prevStyle2);
       }
     }
   };
@@ -424,7 +435,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                 <div className="grid grid-cols-12 gap-1 items-center my-1">
                   {/* Left Logo Column */}
                   <div className="col-span-2 flex justify-center items-center">
-                    <img src={logoImg} alt="Wolego Transport Logo" className="h-24 sm:h-28 w-auto object-contain max-w-full" />
+                    <img src={logoImg} alt="Wolego Transport Logo" className="h-28 w-auto object-contain max-w-full" />
                   </div>
 
                   {/* Middle Column: Exact 8-Line Sequence Requested by User */}
@@ -436,24 +447,24 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                     </div>
 
                     {/* Line 2: WOLEGO TRANSPORT (Single Unbroken Line - Exact Logo Green Color) */}
-                    <h1 className="text-2xl sm:text-3xl font-black text-[#009a44] tracking-wider font-serif uppercase leading-none whitespace-nowrap">
+                    <h1 className="text-3xl font-black text-[#009a44] tracking-wider font-serif uppercase leading-none whitespace-nowrap">
                       WOLEGO TRANSPORT
                     </h1>
 
                     {/* Line 3: EVERYTHING IS FAST (Single Unbroken Line) */}
-                    <div className="text-xs sm:text-sm font-black text-amber-900 italic font-serif whitespace-nowrap">
+                    <div className="text-sm font-black text-amber-900 italic font-serif whitespace-nowrap">
                       EVERYTHING IS FAST
                     </div>
 
                     {/* Line 4: TRANSPORT CONTRACTOR AND COMMISSION AGENT (Single Unbroken Line) */}
                     <div className="whitespace-nowrap">
-                      <span className="text-[10.5px] sm:text-xs font-black uppercase tracking-wider bg-blue-900 text-white px-3 py-0.5 inline-block">
+                      <span className="text-xs font-black uppercase tracking-wider bg-blue-900 text-white px-3 py-0.5 inline-block">
                         TRANSPORT CONTRACTOR AND COMMISSION AGENT
                       </span>
                     </div>
 
                     {/* Line 5 & 6: Address (Line by Line) */}
-                    <div className="text-[10px] sm:text-[10.5px] text-red-900 font-black tracking-tight uppercase leading-tight space-y-0.5 whitespace-nowrap text-center">
+                    <div className="text-[10.5px] text-red-900 font-black tracking-tight uppercase leading-tight space-y-0.5 whitespace-nowrap text-center">
                       <div>SURVEY NUMBER NA 178P8, 27 NATIONAL HIGHWAY,</div>
                       <div>CHANDRAPUR, WANKANER-363621 DISTRICT-MORBI ( GUJRAT )</div>
                     </div>
@@ -461,7 +472,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   </div>
 
                   {/* Right Side Column: Mobile Numbers, PAN, GSTIN (Left Aligned for Straight Alignment) */}
-                  <div className="col-span-3 text-left text-[9.5px] sm:text-[10px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-3">
+                  <div className="col-span-3 text-left text-[10px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-3">
                     <div>MOBILE NO. +91 99 79 111 555</div>
                     <div>MOBILE NO. +91 81 41 111 555</div>
                     <div>PAN NO. : DLTPS8567M</div>
@@ -760,10 +771,10 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         <div className="w-full max-w-[210mm] mx-auto bg-white p-[3.5mm] shadow-2xl rounded-sm print-container print:p-0 print:m-0 print:w-[203mm] print:h-[290mm] print:max-w-none print:shadow-none font-sans text-xs box-border mt-6 print:block print:break-before-page">
           <div
             ref={termsRef}
-            className="border-2 border-slate-900 bg-white text-slate-900 h-[290mm] min-h-[290mm] w-full flex flex-col justify-between print-document relative overflow-hidden p-6 sm:p-8 box-border"
+            className="border-2 border-slate-900 bg-white text-slate-900 h-[290mm] min-h-[290mm] w-full flex flex-col justify-between print-document relative overflow-hidden p-8 box-border"
           >
             {/* Inner Rounded Frame matching Photo */}
-            <div className="border border-slate-400 rounded-2xl p-6 sm:p-8 h-full flex flex-col justify-between relative overflow-hidden">
+            <div className="border border-slate-400 rounded-2xl p-8 h-full flex flex-col justify-between relative overflow-hidden">
               {/* Background Watermark Logo */}
               <div className="absolute inset-0 flex items-center justify-center -translate-y-8 pointer-events-none select-none z-0 overflow-hidden">
                 <img
@@ -776,16 +787,16 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
               <div className="relative z-10 flex-1 flex flex-col justify-between mb-4">
                 {/* Header Bar */}
                 <div className="pb-3 mb-2 text-center">
-                  <div className="text-[10px] sm:text-[11px] font-bold text-slate-700 tracking-wider uppercase mb-1.5">
+                  <div className="text-[11px] font-bold text-slate-700 tracking-wider uppercase mb-1.5">
                     :: GOOD BOOKED ON ARE REVERS CARRIED CARRIED SUBJECT TO THE FOLLOWING ::
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-950 uppercase tracking-widest border-b-2 border-slate-900 inline-block pb-1">
+                  <h2 className="text-2xl font-black text-slate-950 uppercase tracking-widest border-b-2 border-slate-900 inline-block pb-1">
                     TERMS AND CONDITIONS
                   </h2>
                 </div>
 
                 {/* 8 Terms & Conditions Points - Stretched Vertically Down */}
-                <div className="flex-1 flex flex-col justify-between py-2 text-[11.5px] sm:text-xs leading-relaxed text-slate-900 font-medium space-y-4 sm:space-y-0">
+                <div className="flex-1 flex flex-col justify-between py-2 text-xs leading-relaxed text-slate-900 font-medium space-y-0">
                   <div className="flex gap-2.5">
                     <span className="font-bold text-slate-950 shrink-0 min-w-[20px]">1)</span>
                     <p>
@@ -850,7 +861,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                   {/* Web App Symbol & Domain */}
                   <div className="flex items-center gap-2.5">
                     <img src={logoImg} alt="Wolego Symbol" className="h-8 w-auto object-contain" />
-                    <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-sm sm:text-base tracking-wide">
+                    <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-base tracking-wide">
                       <span>-</span>
                       <a href="https://www.wolegotransport.com" target="_blank" rel="noopener noreferrer" className="hover:underline text-blue-900 font-black">
                         www.wolegotransport.com
@@ -866,7 +877,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                       </svg>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 text-xs sm:text-sm">Play Store</span>
+                      <span className="font-bold text-slate-900 text-sm">Play Store</span>
                       <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-black px-2.5 py-0.5 rounded-full tracking-wider uppercase">
                         Coming Soon
                       </span>
@@ -875,10 +886,10 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                 </div>
 
                 {/* Right Group: QR Code Section & Logo */}
-                <div className="flex items-center gap-3 sm:gap-4">
+                <div className="flex items-center gap-4">
                   {/* QR Code Section */}
                   <div className="flex flex-col items-center justify-center bg-white border border-slate-300 rounded-xl p-2.5 shadow-sm">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28">
+                    <div className="w-28 h-28">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 31" shapeRendering="crispEdges" className="w-full h-full">
                         <path fill="#ffffff" d="M0 0h31v31H0z" />
                         <path stroke="#000000" d="M1 1.5h7m4 0h1m3 0h2m2 0h2m1 0h7M1 2.5h1m5 0h1m2 0h2m1 0h1m4 0h2m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m2 0h1m3 0h2m1 0h1m2 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h2m2 0h4m3 0h2m1 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h9m1 0h1m1 0h1m1 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h2m1 0h3m1 0h1m2 0h1M1 9.5h1m1 0h5m3 0h2m2 0h2m1 0h1m4 0h5M1 10.5h3m1 0h1m3 0h1m6 0h6m1 0h3m3 0h1M1 11.5h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m4 0h1M1 12.5h2m2 0h2m1 0h3m2 0h1m1 0h1m1 0h1m2 0h1m2 0h2m1 0h1m1 0h1M1 13.5h1m1 0h1m3 0h4m1 0h1m4 0h2m2 0h1m4 0h2M1 14.5h1m1 0h2m1 0h1m2 0h2m1 0h1m1 0h3m3 0h4m1 0h1m3 0h1M1 15.5h2m2 0h1m1 0h2m4 0h7m3 0h2m1 0h2M1 16.5h2m1 0h1m3 0h2m3 0h2m1 0h1m2 0h1m1 0h1m1 0h3m2 0h1M7 17.5h2m1 0h2m1 0h1m1 0h2m1 0h1m2 0h1m2 0h1m1 0h2M1 18.5h4m3 0h3m1 0h2m2 0h2m2 0h6m1 0h1m1 0h1M1 19.5h1m3 0h6m1 0h1m8 0h1m1 0h2m2 0h1M1 20.5h1m2 0h2m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h4m1 0h2m2 0h1M1 21.5h1m1 0h2m2 0h1m3 0h1m6 0h8m1 0h3M9 22.5h4m1 0h3m1 0h2m1 0h1m3 0h5M1 23.5h7m2 0h2m1 0h6m1 0h2m1 0h1m1 0h3M1 24.5h1m5 0h1m1 0h2m2 0h2m1 0h2m1 0h3m3 0h1m3 0h1M1 25.5h1m1 0h3m1 0h1m1 0h2m4 0h1m2 0h1m2 0h5m1 0h1m1 0h1M1 26.5h1m1 0h3m1 0h1m1 0h2m3 0h1m2 0h1m1 0h3m2 0h1m1 0h2M1 27.5h1m1 0h3m1 0h1m1 0h1m3 0h2m1 0h5m1 0h7M1 28.5h1m5 0h1m5 0h1m3 0h1m3 0h1m2 0h1m1 0h1m1 0h1M1 29.5h7m1 0h3m1 0h1m1 0h1m2 0h1m1 0h1m3 0h4" />
@@ -888,7 +899,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
                     <span className="text-[8.5px] font-bold text-blue-900 font-mono">www.wolegotransport.com</span>
                   </div>
 
-                  <img src={logoImg} alt="Wolego Logo" className="h-28 sm:h-32 max-w-[160px] sm:max-w-[200px] object-contain" />
+                  <img src={logoImg} alt="Wolego Logo" className="h-32 max-w-[200px] object-contain" />
                 </div>
               </div>
             </div>
