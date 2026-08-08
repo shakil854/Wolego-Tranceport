@@ -133,54 +133,19 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
   // Helper to fetch in-memory Puppeteer-generated A4 PDF Blob from backend
   const fetchLRPdfBlob = async () => {
-    const payload = {
-      lrData,
-      signatureImg,
-      selectedCopies,
-    };
-
-    const getPdfUrls = () => {
-      const hostname = window.location.hostname;
-      const protocol = window.location.protocol;
-      const origin = window.location.origin;
-      const candidateRoots = Array.from(
-        new Set([
-          API_URL,
-          API_BASE_URL,
-          origin,
-          `${protocol}//${hostname}`,
-          `${protocol}//${hostname}:8002`,
-          `${protocol}//${hostname}:5000`,
-          "http://localhost:8002",
-          "http://localhost:5000",
-          "http://127.0.0.1:8002",
-          "https://wolegotransport.com",
-          "https://www.wolegotransport.com",
-          "",
-        ].filter(Boolean))
-      );
-
-      const urls = [];
-      for (const root of candidateRoots) {
-        const cleanRoot = root.replace(/\/+$/, "");
-        if (!cleanRoot) {
-          urls.push("/api/lr/generate-pdf");
-          urls.push("/lr/generate-pdf");
-          continue;
-        }
-        urls.push(`${cleanRoot}/api/lr/generate-pdf`);
-        urls.push(`${cleanRoot}/lr/generate-pdf`);
-      }
-
-      return Array.from(new Set(urls));
-    };
-
-    // 1. Prefer the same backend API on mobile + desktop to keep the layout and sharing identical
+    // 1. Try central axiosInstance first (matches mobile & desktop API config)
     try {
-      const response = await axiosInstance.post("/lr/generate-pdf", payload, {
-        responseType: "blob",
-        timeout: 45000,
-      });
+      const response = await axiosInstance.post(
+        "/lr/generate-pdf",
+        {
+          lrData,
+          signatureImg,
+          selectedCopies,
+        },
+        {
+          responseType: "blob",
+        }
+      );
       if (response && response.data) {
         return response.data;
       }
@@ -188,30 +153,42 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
       console.warn("axiosInstance PDF API failed, trying direct network URLs:", axiosErr?.message);
     }
 
-    // 2. Fallback to explicit direct endpoints with timeout control
-    let lastError = null;
-    for (const url of getPdfUrls()) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+    // 2. Fallback to direct network endpoints
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    const origin = window.location.origin;
+    const urlsToTry = Array.from(
+      new Set([
+        `${API_URL}/api/lr/generate-pdf`,
+        `${API_BASE_URL}/lr/generate-pdf`,
+        `${origin}/api/lr/generate-pdf`,
+        `${protocol}//${hostname}:8002/api/lr/generate-pdf`,
+        `${protocol}//${hostname}:8002/lr/generate-pdf`,
+        `${protocol}//${hostname}:5000/api/lr/generate-pdf`,
+        `${protocol}//${hostname}:5000/lr/generate-pdf`,
+        "http://localhost:8002/api/lr/generate-pdf",
+        "http://localhost:5000/api/lr/generate-pdf",
+        "/api/lr/generate-pdf",
+      ].filter(Boolean))
+    );
 
+    let lastError = null;
+    for (const url of urlsToTry) {
+      try {
         const response = await fetch(url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(payload),
-          signal: controller.signal,
-          cache: "no-store",
+          body: JSON.stringify({
+            lrData,
+            signatureImg,
+            selectedCopies,
+          }),
         });
 
-        clearTimeout(timeoutId);
-
         if (response.ok) {
-          const blob = await response.blob();
-          if (blob && blob.size > 0) {
-            return blob;
-          }
+          return await response.blob();
         }
       } catch (err) {
         lastError = err;
@@ -327,7 +304,6 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     setIsGeneratingPdf(true);
     try {
       const blob = backendPdfCache || (await getOrGenerateLRPdfBlob());
-      setBackendPdfCache(blob);
       const filename = getLRPdfFilename(lrData);
       const pdfFile = new File([blob], filename, { type: "application/pdf" });
 
