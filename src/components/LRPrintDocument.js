@@ -5,6 +5,7 @@ import html2canvas from "html2canvas";
 import logoImg from "../assets/logo.png";
 import AdobeDigitalSignature from "./AdobeDigitalSignature";
 import { API_URL, API_BASE_URL } from "../config/api";
+import axiosInstance from "../api/axiosInstance";
 
 export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, autoAction, initialCopyType = "CONSIGNOR" }) {
   const printRef = useRef(null);
@@ -54,6 +55,21 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
   };
 
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(autoAction === "pdf" || autoAction === "whatsapp");
+  const [backendPdfCache, setBackendPdfCache] = useState(null);
+  const [sharePromptFile, setSharePromptFile] = useState(null);
+
+  // Background Pre-fetch of Backend Puppeteer PDF Blob so it is ready in memory for instant sharing
+  useEffect(() => {
+    let isMounted = true;
+    fetchLRPdfBlob()
+      .then((blob) => {
+        if (isMounted && blob) setBackendPdfCache(blob);
+      })
+      .catch((e) => console.warn("Backend PDF prefetch error:", e));
+    return () => {
+      isMounted = false;
+    };
+  }, [lrData, signatureImg, selectedCopies]);
 
   useEffect(() => {
     if (!autoAction) return;
@@ -69,8 +85,8 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         await handleExportPDF();
         if (onClose) onClose();
       } else if (autoAction === "whatsapp") {
-        await handleWhatsApp();
-        if (onClose) onClose();
+        const shared = await handleWhatsApp();
+        if (shared && onClose) onClose();
       }
     }, 300);
     return () => clearTimeout(timer);
@@ -117,17 +133,41 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
   // Helper to fetch in-memory Puppeteer-generated A4 PDF Blob from backend
   const fetchLRPdfBlob = async () => {
+    // 1. Try central axiosInstance first (matches mobile & desktop API config)
+    try {
+      const response = await axiosInstance.post(
+        "/lr/generate-pdf",
+        {
+          lrData,
+          signatureImg,
+          selectedCopies,
+        },
+        {
+          responseType: "blob",
+        }
+      );
+      if (response && response.data) {
+        return response.data;
+      }
+    } catch (axiosErr) {
+      console.warn("axiosInstance PDF API failed, trying direct network URLs:", axiosErr?.message);
+    }
+
+    // 2. Fallback to direct network endpoints
     const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
     const origin = window.location.origin;
     const urlsToTry = Array.from(
       new Set([
         `${API_URL}/api/lr/generate-pdf`,
         `${API_BASE_URL}/lr/generate-pdf`,
         `${origin}/api/lr/generate-pdf`,
-        `http://${hostname}:5000/api/lr/generate-pdf`,
-        `http://${hostname}:8002/api/lr/generate-pdf`,
-        "http://localhost:5000/api/lr/generate-pdf",
+        `${protocol}//${hostname}:8002/api/lr/generate-pdf`,
+        `${protocol}//${hostname}:8002/lr/generate-pdf`,
+        `${protocol}//${hostname}:5000/api/lr/generate-pdf`,
+        `${protocol}//${hostname}:5000/lr/generate-pdf`,
         "http://localhost:8002/api/lr/generate-pdf",
+        "http://localhost:5000/api/lr/generate-pdf",
         "/api/lr/generate-pdf",
       ].filter(Boolean))
     );
@@ -259,29 +299,43 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     }
   };
 
-  // Dynamic PDF Generator + WhatsApp Share Function (Shares ONLY PDF File)
+  // Direct WhatsApp PDF Sharing (Backend Puppeteer PDF Generator + Web Share Sheet)
   const handleWhatsApp = async () => {
     setIsGeneratingPdf(true);
     try {
-      const blob = await getOrGenerateLRPdfBlob();
+      const blob = backendPdfCache || (await getOrGenerateLRPdfBlob());
       const filename = getLRPdfFilename(lrData);
       const pdfFile = new File([blob], filename, { type: "application/pdf" });
 
       setIsGeneratingPdf(false);
 
-      // Mobile Web Share API (native share dialog with WhatsApp app & attached PDF ONLY)
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-        await navigator.share({
-          files: [pdfFile],
-          title: filename,
-        });
+        try {
+          await navigator.share({
+            files: [pdfFile],
+            title: filename,
+          });
+          return true;
+        } catch (shareErr) {
+          if (shareErr.name === "AbortError") return true;
+          // Gesture token expired during network fetch -> Show 1-click button to open Share window
+          setSharePromptFile(pdfFile);
+          return false;
+        }
       } else if (navigator.share) {
-        await navigator.share({
-          files: [pdfFile],
-          title: filename,
-        });
+        try {
+          await navigator.share({
+            files: [pdfFile],
+            title: filename,
+          });
+          return true;
+        } catch (shareErr) {
+          if (shareErr.name === "AbortError") return true;
+          setSharePromptFile(pdfFile);
+          return false;
+        }
       } else {
-        // Desktop Fallback: Download PDF file directly & Open Installed WhatsApp App with Contact Selection
+        // Desktop Fallback: Download PDF file & Open WhatsApp Web
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -291,14 +345,14 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        const textMsg = encodeURIComponent(`*WOLEGO TRANSPORT - LR Copy*\n*LR No:* ${lrData?.lrNo || ""}`);
-        window.location.href = `whatsapp://send?text=${textMsg}`;
+        window.open("https://api.whatsapp.com/send", "_blank");
+        return true;
       }
     } catch (err) {
-      console.error("WhatsApp PDF sharing error:", err);
+      console.error("WhatsApp share error:", err);
       setIsGeneratingPdf(false);
-      const textMsg = encodeURIComponent(`*WOLEGO TRANSPORT - LR Copy*\n*LR No:* ${lrData?.lrNo || ""}`);
-      window.location.href = `whatsapp://send?text=${textMsg}`;
+      window.open("https://api.whatsapp.com/send", "_blank");
+      return true;
     }
   };
 
@@ -306,6 +360,47 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
   return (
     <>
+      {/* 1-Click Share Prompt Overlay (Guarantees Native Share Sheet popup on direct click for Backend PDF) */}
+      {sharePromptFile && (
+        <div className="fixed inset-0 z-[999999] flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white p-4 print:hidden">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl flex flex-col items-center gap-4 max-w-sm text-center animate-in fade-in zoom-in duration-200">
+            <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+              <Share2 size={28} />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-lg text-white">LR PDF Ready for WhatsApp</h3>
+              <p className="text-xs text-slate-300 mt-1">Click the button below to open the Windows Share window & send to WhatsApp.</p>
+            </div>
+            <button
+              onClick={async () => {
+                const fileToShare = sharePromptFile;
+                setSharePromptFile(null);
+                if (navigator.share) {
+                  try {
+                    await navigator.share({ files: [fileToShare], title: fileToShare.name });
+                  } catch (e) {
+                    console.warn("Share popup closed:", e);
+                  }
+                }
+                if (onClose) onClose();
+              }}
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Share2 size={18} /> Open WhatsApp Share Window
+            </button>
+            <button
+              onClick={() => {
+                setSharePromptFile(null);
+                if (onClose) onClose();
+              }}
+              className="text-xs text-slate-400 hover:text-white underline font-medium cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Loading Modal / Popup for PDF Generation & WhatsApp Opening (Hidden during print) */}
       {isGeneratingPdf && (
         <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white p-4 pointer-events-auto opacity-100 print:hidden">

@@ -4,6 +4,14 @@ const getRawUrl = () => {
   if (process.env.REACT_APP_API_URL && process.env.REACT_APP_API_URL.trim() !== "") {
     return process.env.REACT_APP_API_URL.trim();
   }
+  if (typeof window !== "undefined" && window.location) {
+    const hostname = window.location.hostname;
+    // If accessed via localhost or local LAN IP (e.g. 192.168.x.x, 10.x.x.x, 172.x.x.x)
+    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.match(/^192\.168\./) || hostname.match(/^10\./) || hostname.match(/^172\./)) {
+      const port = process.env.REACT_APP_BACKEND_PORT || "8002";
+      return `http://${hostname}:${port}/api`;
+    }
+  }
   return "https://wolegotransport.com/api";
 };
 
