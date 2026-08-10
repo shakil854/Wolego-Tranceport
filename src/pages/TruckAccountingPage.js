@@ -72,15 +72,18 @@ export default function TruckAccountingPage() {
   const myTrucks = isOwner
     ? trucks
     : trucks.filter((t) => {
-        if (!t.mobileNo || !userMobile) return false;
-        const nums = String(t.mobileNo).split(/[,/ ]+/).map((n) => n.trim());
-        return nums.includes(userMobile.trim());
-      });
+      if (!t.mobileNo || !userMobile) return false;
+      const nums = String(t.mobileNo).split(/[,/ ]+/).map((n) => n.trim());
+      return nums.includes(userMobile.trim());
+    });
 
   const myTruckNosSet = new Set(myTrucks.map((t) => (t.truckNo || "").toUpperCase().trim()));
 
-  // Filter LR entries strictly for my trucks
+  // Filter LR entries strictly for my trucks (Excluding TO-PAY LRs as TO-PAY posts 0 entries in accounting ledger)
   const filteredLRs = lrEntries.filter((lr) => {
+    const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+    if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
+
     const tNo = (lr.truckNo || "").toUpperCase().trim();
     if (!isOwner) {
       if (!myTruckNosSet.has(tNo)) return false;
@@ -215,7 +218,7 @@ export default function TruckAccountingPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-4 font-sans text-slate-100">
-      
+
       {/* Page Title & Header */}
       <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-4 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="flex items-center gap-3">

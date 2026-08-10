@@ -249,16 +249,43 @@
   main {
     background-color: #ffffff !important;
     background: #ffffff !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
   }
 
   /* Prevent scrollbars and dark background leaks */
   .print-container,
   .print-document,
-  .freight-print-wrapper,
-  .range-print-sheet,
-  [contenteditable] {
-    overflow: hidden !important;
+  .freight-print-wrapper {
+    overflow: visible !important;
     box-shadow: none !important;
+  }
+
+  .range-print-sheet {
+    display: block !important;
+    position: relative !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+    padding: 3.5mm !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    margin: 0 auto !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  .range-print-sheet:last-child,
+  .range-print-sheet:last-of-type {
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 
   header, nav, .print\:hidden {

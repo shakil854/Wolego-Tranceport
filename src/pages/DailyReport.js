@@ -116,7 +116,7 @@ export default function DailyReport() {
   const getPartyMobile = (partyNameVal) => {
     if (!partyNameVal) return "";
     const searchStr = partyNameVal.trim().toLowerCase();
-    
+
     // Exact match or partial match in Party Master
     const matchedParty = parties.find(
       (p) => p.partyName && p.partyName.trim().toLowerCase() === searchStr
@@ -154,40 +154,47 @@ export default function DailyReport() {
     return "D-";
   };
 
-  // Extract Consignee City, Party City, and Weight (toPlace - Party City - LR.weight)
+  // Extract Consignee City, Area, and Weight (CONSINEE city - Area - LR.weight)
   const getConsigneeDetails = (lr) => {
     const consigneeName = lr.consigneeName || "";
-    const toPlace = (lr.toPlace || "").trim().toUpperCase();
-    let partyCity = "";
+    let city = lr.toPlace || "";
+    let area = "";
 
-    // Look up party master for party's city
+    // Look up party master for city & area (address2)
     if (consigneeName) {
       const searchStr = consigneeName.trim().toLowerCase();
       const matchedParty = parties.find(
         (p) => p.partyName && p.partyName.trim().toLowerCase() === searchStr
-      ) || parties.find(
-        (p) => p.partyName && (searchStr.includes(p.partyName.trim().toLowerCase()) || p.partyName.trim().toLowerCase().includes(searchStr))
       );
 
-      if (matchedParty && matchedParty.city) {
-        partyCity = matchedParty.city.trim().toUpperCase();
+      if (matchedParty) {
+        if (matchedParty.city) city = matchedParty.city.trim().toUpperCase();
+        if (matchedParty.address2) area = matchedParty.address2.trim().toUpperCase();
+        else if (matchedParty.district) area = matchedParty.district.trim().toUpperCase();
       }
     }
 
-    const firstPlace = toPlace || partyCity || "DESTINATION";
+    // If city not found in party master, check consigneeAddress or toPlace
+    if (!city && lr.consigneeAddress) {
+      const lines = lr.consigneeAddress.split("\n").map((l) => l.trim()).filter(Boolean);
+      if (lines.length > 0) {
+        city = lines[lines.length - 1].toUpperCase();
+      }
+    }
+
+    city = city || "DESTINATION";
     const weight = lr.weightKgs ? `${lr.weightKgs}` : "0";
 
-    // Only add middle part if Party Master has a city
-    if (partyCity) {
-      return `${firstPlace}-${partyCity}-${weight}`;
+    if (area) {
+      return `${city}-${area}-${weight}`;
     }
-    return `${firstPlace}-${weight}`;
+    return `${city}-${weight}`;
   };
 
   // Helper to parse Consignors into clean list of names
   const parseConsignors = (rawConsignorStr) => {
     if (!rawConsignorStr) return [];
-    
+
     // Split by newlines or numbered list patterns like (1), (2), (3)
     const lines = rawConsignorStr
       .split(/\n|\(\d+\)/)
@@ -392,7 +399,7 @@ export default function DailyReport() {
           </div>
         ) : (
           <div className="bg-white text-slate-950 rounded-xl p-2 sm:p-4 shadow-xl print:p-0 print:shadow-none print:bg-white">
-            
+
             {/* Printable Report Header */}
             <div className="hidden print:block text-center border-b-2 border-black pb-2 mb-2">
               <h2 className="text-lg font-black uppercase tracking-wider text-black">

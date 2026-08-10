@@ -32,7 +32,7 @@ export default function AccountingPage() {
   const [loading, setLoading] = useState(true);
 
   // Owner View state
-  const [activeTab, setActiveTab] = useState("ALL"); // "ALL", "CONSIGNOR", "CONSIGNEE", "TRUCK"
+  const [activeTab, setActiveTab] = useState("CONSIGNOR"); // "CONSIGNOR", "CONSIGNEE", "TRUCK"
   const [selectedFY, setSelectedFY] = useState("ALL"); // Financial Year Filter
   const [fromDate, setFromDate] = useState(""); // From Date Filter (YYYY-MM-DD)
   const [toDate, setToDate] = useState(""); // To Date Filter (YYYY-MM-DD)
@@ -290,35 +290,35 @@ export default function AccountingPage() {
     return "";
   };
 
-  // Extract unique Parties from LRs & Party master
-  const uniqueParties = Array.from(
-    new Set([
-      ...parties.map((p) => p.partyName?.trim()),
-      ...lrEntries.map((lr) => getPartyName(lr)),
-    ])
-  )
-    .filter((p) => p && p !== "-" && p !== "CONSIGNEE" && p !== "CONSIGNOR")
-    .sort();
-
-  // Consignor parties list
+  // Consignor parties list (Parties with PAID LRs or registered as Consignor)
   const consignorPartiesList = Array.from(
     new Set([
       ...parties
         .filter((p) => !p.selectType || p.selectType === "CONSIGNOR" || p.selectType === "BOTH")
         .map((p) => p.partyName?.trim()),
-      ...lrEntries.map((lr) => lr.consignorName?.trim()),
+      ...lrEntries
+        .filter((lr) => {
+          const status = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+          return status === "PAID" || lr.debitAmountTo?.toUpperCase() === "CONSIGNOR";
+        })
+        .map((lr) => lr.consignorName?.trim()),
     ])
   )
     .filter((p) => p && p !== "-")
     .sort();
 
-  // Consignee parties list
+  // Consignee parties list (Parties with TBB LRs or registered as Consignee)
   const consigneePartiesList = Array.from(
     new Set([
       ...parties
         .filter((p) => !p.selectType || p.selectType === "CONSIGNEE" || p.selectType === "CONSIGNE" || p.selectType === "BOTH")
         .map((p) => p.partyName?.trim()),
-      ...lrEntries.map((lr) => lr.consigneeName?.trim()),
+      ...lrEntries
+        .filter((lr) => {
+          const status = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+          return status === "TBB" || lr.debitAmountTo?.toUpperCase() === "CONSIGNEE";
+        })
+        .map((lr) => lr.consigneeName?.trim()),
     ])
   )
     .filter((p) => p && p !== "-")
@@ -337,19 +337,22 @@ export default function AccountingPage() {
         }
 
         const pName = user?.partyName?.toLowerCase()?.trim();
-        const pCalculated = getPartyName(lr).toLowerCase().trim();
+        const status = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+
+        // TO PAY has 0 accounting entries!
+        if (status === "TO PAY" || status === "TOPAY") return false;
+
         const consignor = lr.consignorName?.toLowerCase()?.trim();
         const consignee = lr.consigneeName?.toLowerCase()?.trim();
 
-        const status = (lr.toPayOrPaid || "").trim().toUpperCase();
         if (status === "PAID") {
-          return consignor === pName || pCalculated === pName;
+          return consignor === pName;
         }
         if (status === "TBB") {
-          return consignee === pName || pCalculated === pName;
+          return consignee === pName;
         }
 
-        return pCalculated === pName || consignor === pName || consignee === pName;
+        return consignor === pName || consignee === pName;
       })
     : [];
 
@@ -386,22 +389,33 @@ export default function AccountingPage() {
       if (!matchLr && !matchTruck && !matchParty && !matchConsignor && !matchConsignee) return false;
     }
 
+    const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+    const debitOverride = lr.debitAmountTo?.trim()?.toUpperCase();
+
     // Active Tab filtering: "ALL", "CONSIGNOR", "CONSIGNEE", "TRUCK"
     if (activeTab === "CONSIGNOR") {
+      // Rule: PAID LRs post to Consignor (or debitAmountTo === CONSIGNOR override)
+      if (payStatus !== "PAID" && debitOverride !== "CONSIGNOR") return false;
       if (!lr.consignorName) return false;
       if (selectedPartyName !== "ALL" && lr.consignorName?.trim() !== selectedPartyName) return false;
     } else if (activeTab === "CONSIGNEE") {
+      // Rule: TBB LRs post to Consignee (or debitAmountTo === CONSIGNEE override)
+      if (payStatus !== "TBB" && debitOverride !== "CONSIGNEE") return false;
       if (!lr.consigneeName) return false;
       if (selectedPartyName !== "ALL" && lr.consigneeName?.trim() !== selectedPartyName) return false;
     } else if (activeTab === "ALL" || activeTab === "PARTY") {
+      // Rule: TO-PAY LRs post 0 accounting entries!
+      if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
       if (selectedPartyName !== "ALL") {
         const partyMatch =
           getPartyName(lr) === selectedPartyName ||
-          lr.consignorName?.trim() === selectedPartyName ||
-          lr.consigneeName?.trim() === selectedPartyName;
+          (payStatus === "PAID" && lr.consignorName?.trim() === selectedPartyName) ||
+          (payStatus === "TBB" && lr.consigneeName?.trim() === selectedPartyName);
         if (!partyMatch) return false;
       }
     } else if (activeTab === "TRUCK") {
+      // Rule: TBB & PAID post to Truck. TO-PAY posts 0 accounting entries to Truck!
+      if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
       if (selectedTruckNo !== "ALL") {
         if (lr.truckNo?.trim()?.toUpperCase() !== selectedTruckNo) return false;
       }
@@ -739,25 +753,9 @@ export default function AccountingPage() {
     <>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 font-sans space-y-4 print:hidden">
       
-      {/* Main 4 Tabs: ALL, CONSIGNOR, CONSIGNEE, TRUCK & Search */}
+      {/* Main 3 Tabs: CONSIGNOR, CONSIGNEE, TRUCK & Search */}
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
         <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700 overflow-x-auto">
-          <button
-            onClick={() => {
-              setActiveTab("ALL");
-              setStatusFilter("ALL");
-              setSelectedPartyName("ALL");
-            }}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${
-              activeTab === "ALL"
-                ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>1. All Accounting</span>
-          </button>
-
           <button
             onClick={() => {
               setActiveTab("CONSIGNOR");
@@ -771,7 +769,7 @@ export default function AccountingPage() {
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>2. Consignor (Shipper)</span>
+            <span>1. Consignor (Shipper)</span>
           </button>
 
           <button
@@ -787,7 +785,7 @@ export default function AccountingPage() {
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>3. Consignee (Receiver)</span>
+            <span>2. Consignee (Receiver)</span>
           </button>
 
           <button
@@ -803,7 +801,7 @@ export default function AccountingPage() {
             }`}
           >
             <Truck className="w-3.5 h-3.5" />
-            <span>4. Truck Accounting</span>
+            <span>3. Truck Accounting</span>
           </button>
         </div>
 
@@ -979,21 +977,6 @@ export default function AccountingPage() {
           <div className="flex items-center gap-1.5">
             <Filter className="w-3.5 h-3.5 text-amber-400" />
             <span className="text-xs font-bold text-slate-300 uppercase">Filter:</span>
-
-            {activeTab === "ALL" && (
-              <select
-                value={selectedPartyName}
-                onChange={(e) => setSelectedPartyName(e.target.value)}
-                className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-              >
-                <option value="ALL">All Parties</option>
-                {uniqueParties.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            )}
 
             {activeTab === "CONSIGNOR" && (
               <select

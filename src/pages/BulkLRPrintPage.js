@@ -824,7 +824,7 @@ export default function BulkLRPrintPage() {
       )}
 
       {/* PRINTABLE CONTAINER (Rendered only when browser print triggers) */}
-      <div className="print-document print-container hidden print:block bg-white text-black font-sans m-0 p-0">
+      <div className="print-document print-container hidden print:block bg-white text-black font-sans m-0 p-0 w-full h-auto max-h-none overflow-visible">
         {filteredLRs.map((lr, idx) => (
           <div key={lr.id || idx} className="range-print-sheet">
             {renderLRDocument(lr)}
