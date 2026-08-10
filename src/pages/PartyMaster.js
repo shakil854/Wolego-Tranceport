@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { fetchPartiesFromDB, saveParty } from "../utils/storage";
 import { Search, Plus, Edit, Save, Building2, Eye, X, CheckCircle2 } from "lucide-react";
+import SearchableStateSelect, { getStateCode } from "../components/SearchableStateSelect";
 
 export default function PartyMaster() {
   const [parties, setParties] = useState([]);
@@ -42,33 +43,15 @@ export default function PartyMaster() {
     setParties(data || []);
   };
 
-  // State code mapping helper
-  const getStateCode = (stateName) => {
-    if (!stateName || !stateName.trim()) return "";
-    const stateMap = {
-      GUJARAT: "24",
-      TELANGANA: "36",
-      MAHARASHTRA: "27",
-      RAJASTHAN: "08",
-      DELHI: "07",
-      KARNATAKA: "29",
-      "TAMIL NADU": "33",
-      "MADHYA PRADESH": "23",
-      "UTTAR PRADESH": "09",
-      "ANDHRA PRADESH": "37",
-    };
-    return stateMap[stateName.toUpperCase()] || "";
-  };
-
   // State change handler for Add Form
-  const handleAddStateChange = (stateName) => {
-    const code = getStateCode(stateName);
+  const handleAddStateChange = (stateName, stateCode) => {
+    const code = stateCode !== undefined ? stateCode : getStateCode(stateName);
     setAddFormData((prev) => ({ ...prev, state: stateName, stateCode: code }));
   };
 
   // State change handler for Edit Form
-  const handleEditStateChange = (stateName) => {
-    const code = getStateCode(stateName);
+  const handleEditStateChange = (stateName, stateCode) => {
+    const code = stateCode !== undefined ? stateCode : getStateCode(stateName);
     setEditFormData((prev) => ({ ...prev, state: stateName, stateCode: code }));
   };
 
@@ -264,10 +247,9 @@ export default function PartyMaster() {
                   <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                     State
                   </label>
-                  <input
-                    type="text"
+                  <SearchableStateSelect
                     value={addFormData.state}
-                    onChange={(e) => handleAddStateChange(e.target.value.toUpperCase())}
+                    onChange={(stateName, code) => handleAddStateChange(stateName, code)}
                     placeholder="STATE"
                     className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
@@ -704,11 +686,11 @@ export default function PartyMaster() {
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-2">
                   <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">State</label>
-                  <input
-                    type="text"
+                  <SearchableStateSelect
                     value={editFormData.state}
-                    onChange={(e) => handleEditStateChange(e.target.value.toUpperCase())}
-                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded"
+                    onChange={(stateName, code) => handleEditStateChange(stateName, code)}
+                    placeholder="STATE"
+                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none"
                   />
                 </div>
                 <div>

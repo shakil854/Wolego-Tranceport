@@ -154,41 +154,34 @@ export default function DailyReport() {
     return "D-";
   };
 
-  // Extract Consignee City, Area, and Weight (CONSINEE city - Area - LR.weight)
+  // Extract Consignee City, Party City, and Weight (toPlace - Party City - LR.weight)
   const getConsigneeDetails = (lr) => {
     const consigneeName = lr.consigneeName || "";
-    let city = lr.toPlace || "";
-    let area = "";
+    const toPlace = (lr.toPlace || "").trim().toUpperCase();
+    let partyCity = "";
 
-    // Look up party master for city & area (address2)
+    // Look up party master for party's city
     if (consigneeName) {
       const searchStr = consigneeName.trim().toLowerCase();
       const matchedParty = parties.find(
         (p) => p.partyName && p.partyName.trim().toLowerCase() === searchStr
+      ) || parties.find(
+        (p) => p.partyName && (searchStr.includes(p.partyName.trim().toLowerCase()) || p.partyName.trim().toLowerCase().includes(searchStr))
       );
 
-      if (matchedParty) {
-        if (matchedParty.city) city = matchedParty.city.trim().toUpperCase();
-        if (matchedParty.address2) area = matchedParty.address2.trim().toUpperCase();
-        else if (matchedParty.district) area = matchedParty.district.trim().toUpperCase();
+      if (matchedParty && matchedParty.city) {
+        partyCity = matchedParty.city.trim().toUpperCase();
       }
     }
 
-    // If city not found in party master, check consigneeAddress or toPlace
-    if (!city && lr.consigneeAddress) {
-      const lines = lr.consigneeAddress.split("\n").map((l) => l.trim()).filter(Boolean);
-      if (lines.length > 0) {
-        city = lines[lines.length - 1].toUpperCase();
-      }
-    }
-
-    city = city || "DESTINATION";
+    const firstPlace = toPlace || partyCity || "DESTINATION";
     const weight = lr.weightKgs ? `${lr.weightKgs}` : "0";
 
-    if (area) {
-      return `${city}-${area}-${weight}`;
+    // Only add middle part if Party Master has a city
+    if (partyCity) {
+      return `${firstPlace}-${partyCity}-${weight}`;
     }
-    return `${city}-${weight}`;
+    return `${firstPlace}-${weight}`;
   };
 
   // Helper to parse Consignors into clean list of names
