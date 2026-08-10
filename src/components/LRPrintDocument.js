@@ -757,8 +757,8 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
           </div>
         </div>
 
-        {/* Page 2: Terms and Conditions Document (Included in PDF Export & Print Preview) */}
-        <div className="w-full max-w-[210mm] mx-auto bg-white p-[3.5mm] shadow-2xl rounded-sm print-container print:p-0 print:m-0 print:w-[203mm] print:h-[290mm] print:max-w-none print:shadow-none font-sans text-xs box-border mt-6 print:block print:break-before-page">
+        {/* Page 2: Terms and Conditions Document (Included in PDF Export & WhatsApp Share, Hidden during paper print) */}
+        <div className="w-full max-w-[210mm] mx-auto bg-white p-[3.5mm] shadow-2xl rounded-sm print-container print:p-0 print:m-0 print:w-[203mm] print:h-[290mm] print:max-w-none print:shadow-none font-sans text-xs box-border mt-6 print:hidden">
           <div
             ref={termsRef}
             className="border-2 border-slate-900 bg-white text-slate-900 h-[290mm] min-h-[290mm] w-full flex flex-col justify-between print-document relative overflow-hidden p-8 box-border"
