@@ -154,13 +154,23 @@ export default function DailyReport() {
     return "D-";
   };
 
-  // Extract Consignee City, Area, and Weight (CONSINEE city - Area - LR.weight)
+  // Helper to extract clean city name before '-' from an address line or city string
+  const extractCityFromAddressLine = (str) => {
+    if (!str) return "";
+    const clean = str.trim();
+    if (clean.includes("-")) {
+      return clean.split("-")[0].trim().toUpperCase();
+    }
+    return clean.toUpperCase();
+  };
+
+  // Extract Consignee City, Area/Party City, and Weight (CONSIGNEE city - Party Master City - LR.weight)
   const getConsigneeDetails = (lr) => {
     const consigneeName = lr.consigneeName || "";
-    let city = lr.toPlace || "";
+    let city = "";
     let area = "";
 
-    // Look up party master for city & area (address2)
+    // Look up party master for city (address3 3rd line before '-') & area (party master city field)
     if (consigneeName) {
       const searchStr = consigneeName.trim().toLowerCase();
       const matchedParty = parties.find(
@@ -168,24 +178,46 @@ export default function DailyReport() {
       );
 
       if (matchedParty) {
-        if (matchedParty.city) city = matchedParty.city.trim().toUpperCase();
-        if (matchedParty.address2) area = matchedParty.address2.trim().toUpperCase();
-        else if (matchedParty.district) area = matchedParty.district.trim().toUpperCase();
+        // Priority 1: Extract main city from Party Master address3 (3rd line address before '-')
+        if (matchedParty.address3) {
+          city = extractCityFromAddressLine(matchedParty.address3);
+        }
+
+        // Priority 2: Fallback to matchedParty.city for main city
+        if (!city && matchedParty.city) {
+          city = extractCityFromAddressLine(matchedParty.city);
+        }
+
+        // Area component: Use Party Master city field (or address2 as fallback)
+        if (matchedParty.city) {
+          area = extractCityFromAddressLine(matchedParty.city);
+        } else if (matchedParty.address2) {
+          area = matchedParty.address2.trim().toUpperCase();
+        } else if (matchedParty.district) {
+          area = matchedParty.district.trim().toUpperCase();
+        }
       }
     }
 
-    // If city not found in party master, check consigneeAddress or toPlace
+    // Priority 3: If city not found in party master, check consigneeAddress from LR
     if (!city && lr.consigneeAddress) {
       const lines = lr.consigneeAddress.split("\n").map((l) => l.trim()).filter(Boolean);
-      if (lines.length > 0) {
-        city = lines[lines.length - 1].toUpperCase();
+      if (lines.length >= 3) {
+        city = extractCityFromAddressLine(lines[2]);
+      } else if (lines.length > 0) {
+        city = extractCityFromAddressLine(lines[lines.length - 1]);
       }
+    }
+
+    // Priority 4: Fallback to lr.toPlace
+    if (!city && lr.toPlace) {
+      city = extractCityFromAddressLine(lr.toPlace);
     }
 
     city = city || "DESTINATION";
     const weight = lr.weightKgs ? `${lr.weightKgs}` : "0";
 
-    if (area) {
+    if (area && area !== city) {
       return `${city}-${area}-${weight}`;
     }
     return `${city}-${weight}`;
