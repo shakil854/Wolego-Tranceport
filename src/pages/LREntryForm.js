@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, deleteLREntry, getNextLRNumber, saveParty, fetchTrucksFromDB, saveTruck } from "../utils/storage";
 import LRPrintDocument from "../components/LRPrintDocument";
 import PasswordConfirmModal from "../components/PasswordConfirmModal";
+import SearchableStateSelect, { getStateCode } from "../components/SearchableStateSelect";
 import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2, Truck, Trash2, AlertCircle } from "lucide-react";
 import { API_BASE_URL } from "../config/api";
 
@@ -83,27 +84,9 @@ export default function LREntryForm() {
     flashMsg(`Truck "${addedNo}" Saved & Selected!`);
   };
 
-  // State code mapping helper
-  const getStateCode = (stateName) => {
-    if (!stateName || !stateName.trim()) return "";
-    const stateMap = {
-      GUJARAT: "24",
-      TELANGANA: "36",
-      MAHARASHTRA: "27",
-      RAJASTHAN: "08",
-      DELHI: "07",
-      KARNATAKA: "29",
-      "TAMIL NADU": "33",
-      "MADHYA PRADESH": "23",
-      "UTTAR PRADESH": "09",
-      "ANDHRA PRADESH": "37",
-    };
-    return stateMap[stateName.toUpperCase()] || "";
-  };
-
   // State change handler for Modal Add Form
-  const handleStateChange = (stateName) => {
-    const code = getStateCode(stateName);
+  const handleStateChange = (stateName, stateCode) => {
+    const code = stateCode !== undefined ? stateCode : getStateCode(stateName);
     setNewPartyForm((prev) => ({ ...prev, state: stateName, stateCode: code }));
   };
 
@@ -227,6 +210,14 @@ export default function LREntryForm() {
         const nextNo = getNextLRNumber(defaultDate);
         setFormData((prev) => ({ ...prev, dateTime: defaultDate, lrNumber: nextNo }));
       }
+
+      setTimeout(() => {
+        const lrInput = document.getElementById("lr-number-input");
+        if (lrInput) {
+          lrInput.focus();
+          if (typeof lrInput.select === "function") lrInput.select();
+        }
+      }, 150);
     };
     loadInitData();
   }, [location.state]);
@@ -435,6 +426,13 @@ export default function LREntryForm() {
     const nextNo = getNextLRNumber(today);
     setFormData({ ...initialForm, lrNumber: nextNo, dateTime: today });
     setSelectedConsignors([]);
+    setTimeout(() => {
+      const lrInput = document.getElementById("lr-number-input");
+      if (lrInput) {
+        lrInput.focus();
+        if (typeof lrInput.select === "function") lrInput.select();
+      }
+    }, 100);
   };
 
   const [showDeletePasswordModal, setShowDeletePasswordModal] = useState(false);
@@ -539,32 +537,80 @@ export default function LREntryForm() {
     flashMsg(`Party "${createdName}" Added & Selected!`);
   };
 
-  // Handle Enter key navigation for modals (Quick Party Add)
+  // Handle Enter & Arrow key navigation for modals (Quick Party Add & Add Truck)
   const handleModalFormKeyDown = (e) => {
-    if (e.key === "Enter") {
-      if (e.target.tagName === "BUTTON" || e.target.type === "submit") {
-        return;
-      }
-      e.preventDefault();
-      const form = e.currentTarget;
-      const focusable = Array.from(
-        form.querySelectorAll(
-          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])"
-        )
-      ).filter(
-        (el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0
-      );
+    if (e.target.tagName === "BUTTON" || e.target.type === "submit") {
+      return;
+    }
 
-      const index = focusable.indexOf(e.target);
-      if (index > -1 && index < focusable.length - 1) {
-        focusable[index + 1].focus();
+    const keys = ["Enter", "ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"];
+    if (!keys.includes(e.key)) return;
+
+    const form = e.currentTarget;
+    const focusable = Array.from(
+      form.querySelectorAll(
+        "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])"
+      )
+    ).filter(
+      (el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0
+    );
+
+    const index = focusable.indexOf(e.target);
+    if (index === -1) return;
+
+    const target = e.target;
+    let moveForward = false;
+    let moveBackward = false;
+
+    if (e.key === "Enter") {
+      moveForward = true;
+    } else if (e.key === "ArrowDown") {
+      if (target.tagName !== "SELECT") {
+        moveForward = true;
+      }
+    } else if (e.key === "ArrowUp") {
+      if (target.tagName !== "SELECT") {
+        moveBackward = true;
+      }
+    } else if (e.key === "ArrowRight") {
+      if (
+        target.selectionStart === undefined ||
+        target.selectionStart === null ||
+        target.selectionStart === target.value?.length ||
+        target.selectionStart === target.selectionEnd
+      ) {
+        moveForward = true;
+      }
+    } else if (e.key === "ArrowLeft") {
+      if (
+        target.selectionEnd === undefined ||
+        target.selectionEnd === null ||
+        target.selectionEnd === 0
+      ) {
+        moveBackward = true;
+      }
+    }
+
+    if (moveForward && index < focusable.length - 1) {
+      e.preventDefault();
+      const nextEl = focusable[index + 1];
+      nextEl.focus();
+      if (typeof nextEl.select === "function" && nextEl.tagName === "INPUT") {
+        nextEl.select();
+      }
+    } else if (moveBackward && index > 0) {
+      e.preventDefault();
+      const prevEl = focusable[index - 1];
+      prevEl.focus();
+      if (typeof prevEl.select === "function" && prevEl.tagName === "INPUT") {
+        prevEl.select();
       }
     }
   };
 
   // Fast Data Entry: Keyboard navigation with Enter & Arrow Keys (Up, Down, Left, Right)
   const handleKeyDown = (e) => {
-    const container = document.getElementById("lr-form-container") || e.currentTarget;
+    const container = document.getElementById("main-lr-card-frame") || e.currentTarget;
 
     // Helper to get all visible focusable elements in logical form order
     const getFocusable = () => {
@@ -572,21 +618,90 @@ export default function LREntryForm() {
         container.querySelectorAll(
           "input:not([disabled]):not([type='hidden']), select:not([disabled]), textarea:not([disabled]), button:not([disabled])"
         )
-      ).filter((el) => el.tabIndex !== -1 && el.offsetParent !== null);
+      ).filter(
+        (el) =>
+          el.tabIndex !== -1 &&
+          el.offsetParent !== null &&
+          (el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0)
+      );
     };
 
-    // 1. Handle Enter Key Navigation
+    const target = e.target;
+
+    // 1. Navigation when Focus is on Action Buttons (Save LR, Save & Print, PDF, WhatsApp, Reset)
+    if (target.tagName === "BUTTON") {
+      if (e.key === "Enter") {
+        return; // Execute button action naturally
+      }
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        const focusable = getFocusable();
+        const index = focusable.indexOf(target);
+        if (index > -1 && index < focusable.length - 1) {
+          const nextBtn = focusable[index + 1];
+          nextBtn.focus();
+          if (typeof nextBtn.select === "function" && nextBtn.tagName === "INPUT") {
+            nextBtn.select();
+          }
+          nextBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        return;
+      }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const focusable = getFocusable();
+        const index = focusable.indexOf(target);
+        if (index > 0) {
+          const prevBtn = focusable[index - 1];
+          prevBtn.focus();
+          if (typeof prevBtn.select === "function" && prevBtn.tagName === "INPUT") {
+            prevBtn.select();
+          }
+          prevBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        return;
+      }
+    }
+
+    // 2. Handle Truck No. Search Selection on Enter
+    if (target.name === "truckNo" || target.placeholder === "TRUCK NO.") {
+      if (e.key === "Enter") {
+        const query = (formData.truckNo || "").trim().toUpperCase();
+        const matches = trucks.filter((t) => (t.truckNo || "").toUpperCase().includes(query));
+        if (matches.length > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          const matchedNo = matches[0].truckNo.toUpperCase();
+          setFormData((prev) => ({ ...prev, truckNo: matchedNo }));
+          setShowTruckSearchDropdown(false);
+          setTimeout(() => {
+            const consignorEl = document.getElementById("consignor-name-input");
+            if (consignorEl) consignorEl.focus();
+          }, 100);
+          return;
+        }
+      }
+    }
+
+    // 3. Handle Enter Key Navigation for Inputs & Selects
     if (e.key === "Enter") {
       // Check if user pressed Enter on LR Number field and check if it exists in DB
-      if (e.target.id === "lr-number-input" || e.target.name === "lrNumber") {
-        const val = e.target.value;
+      if (target.id === "lr-number-input" || target.name === "lrNumber") {
+        const val = target.value;
         if (val && val.trim()) {
           e.preventDefault();
           handleCheckAndLoadExistingLR(val).then((isFound) => {
             if (!isFound) {
               const focusable = getFocusable();
-              const index = focusable.indexOf(e.target);
-              const nextInput = focusable.slice(index + 1).find((el) => el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA");
+              const index = focusable.indexOf(target);
+              const nextInput = focusable
+                .slice(index + 1)
+                .find(
+                  (el) =>
+                    el.tagName === "INPUT" ||
+                    el.tagName === "SELECT" ||
+                    el.tagName === "TEXTAREA"
+                );
               if (nextInput) {
                 nextInput.focus();
                 if (typeof nextInput.select === "function" && nextInput.tagName === "INPUT") {
@@ -599,22 +714,18 @@ export default function LREntryForm() {
         }
       }
 
-      // If user is on a button, execute its action naturally
-      if (e.target.tagName === "BUTTON") {
-        return;
-      }
       // Allow Shift+Enter for multiline text in textareas
-      if (e.target.tagName === "TEXTAREA" && e.shiftKey) {
+      if (target.tagName === "TEXTAREA" && e.shiftKey) {
         return;
       }
 
       e.preventDefault();
 
       const focusable = getFocusable();
-      const index = focusable.indexOf(e.target);
+      const index = focusable.indexOf(target);
 
-      // Check if there is another input field after the current one (excluding buttons)
-      const nextInput = focusable.slice(index + 1).find((el) => el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA");
+      // Check if there is another input or button after current one
+      const nextInput = focusable.slice(index + 1).find((el) => el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA" || el.tagName === "BUTTON");
 
       if (nextInput) {
         nextInput.focus();
@@ -623,7 +734,6 @@ export default function LREntryForm() {
         }
         nextInput.scrollIntoView({ behavior: "smooth", block: "center" });
       } else {
-        // All form fields completed -> Move focus directly to Save LR button!
         const saveBtn = document.getElementById("save-lr-btn");
         if (saveBtn) {
           saveBtn.focus();
@@ -633,34 +743,56 @@ export default function LREntryForm() {
       return;
     }
 
-    // 2. Handle Side Arrow Keys (ArrowDown / ArrowRight = Next, ArrowUp / ArrowLeft = Previous)
-    const isDown = e.key === "ArrowDown";
-    const isUp = e.key === "ArrowUp";
-    const isRight = e.key === "ArrowRight" && e.target.tagName !== "TEXTAREA" && e.target.type !== "number";
-    const isLeft = e.key === "ArrowLeft" && e.target.tagName !== "TEXTAREA" && e.target.type !== "number";
+    // 4. Handle Side & Up/Down Arrow Keys
+    const keys = ["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"];
+    if (!keys.includes(e.key)) return;
 
-    const isNext = isDown || isRight;
-    const isPrev = isUp || isLeft;
+    if (target.tagName === "TEXTAREA") return;
 
-    if (isNext || isPrev) {
-      // Allow normal arrow key behavior inside open select options
-      if (e.target.tagName === "SELECT" && (isDown || isUp) && !e.altKey) {
-        return;
+    let moveForward = false;
+    let moveBackward = false;
+
+    if (e.key === "ArrowDown") {
+      if (target.tagName !== "SELECT") {
+        moveForward = true;
       }
+    } else if (e.key === "ArrowUp") {
+      if (target.tagName !== "SELECT") {
+        moveBackward = true;
+      }
+    } else if (e.key === "ArrowRight") {
+      if (
+        target.selectionStart === undefined ||
+        target.selectionStart === null ||
+        target.selectionStart === target.value?.length ||
+        target.selectionStart === target.selectionEnd
+      ) {
+        moveForward = true;
+      }
+    } else if (e.key === "ArrowLeft") {
+      if (
+        target.selectionEnd === undefined ||
+        target.selectionEnd === null ||
+        target.selectionEnd === 0
+      ) {
+        moveBackward = true;
+      }
+    }
 
-      e.preventDefault();
-
+    if (moveForward || moveBackward) {
       const focusable = getFocusable();
-      const index = focusable.indexOf(e.target);
-      let targetIndex = -1;
+      const index = focusable.indexOf(target);
+      if (index === -1) return;
 
-      if (isNext && index < focusable.length - 1) {
+      let targetIndex = -1;
+      if (moveForward && index < focusable.length - 1) {
         targetIndex = index + 1;
-      } else if (isPrev && index > 0) {
+      } else if (moveBackward && index > 0) {
         targetIndex = index - 1;
       }
 
       if (targetIndex !== -1 && focusable[targetIndex]) {
+        e.preventDefault();
         const targetEl = focusable[targetIndex];
         targetEl.focus();
         if (typeof targetEl.select === "function" && targetEl.tagName === "INPUT") {
@@ -693,7 +825,7 @@ export default function LREntryForm() {
       <div className="w-full max-w-full mx-auto flex-1 flex flex-col min-h-0 h-full">
 
         {/* Main Classic Software Card Frame */}
-        <div className="bg-sky-900/90 border-2 border-sky-400 rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm flex-1 flex flex-col min-h-0 h-full">
+        <div id="main-lr-card-frame" onKeyDown={handleKeyDown} className="bg-sky-900/90 border-2 border-sky-400 rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm flex-1 flex flex-col min-h-0 h-full">
 
           {statusMsg && (
             <div className="bg-emerald-500 text-slate-950 px-3 py-1 text-xs font-black text-center shrink-0">
@@ -723,6 +855,7 @@ export default function LREntryForm() {
                     id="lr-number-input"
                     name="lrNumber"
                     type="text"
+                    autoFocus
                     value={formData.lrNumber}
                     onChange={(e) => setFormData({ ...formData, lrNumber: e.target.value })}
                     placeholder="LR NO."
@@ -810,27 +943,17 @@ export default function LREntryForm() {
 
                 return (
                   <div className="col-span-6 sm:col-span-4 md:col-span-2 relative">
-                    <div className="flex items-center justify-between mb-0.5">
+                    <div className="mb-0.5">
                       <label className="text-[10px] font-extrabold text-yellow-300 uppercase block">
                         TRUCK NO.
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setNewTruckForm({ ...newTruckForm, truckNo: formData.truckNo });
-                          setShowAddTruckModal(true);
-                        }}
-                        className="text-[9px] bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-1 py-0.2 rounded font-black uppercase shadow flex items-center gap-0.5 cursor-pointer"
-                        title="Add New Truck to Master"
-                      >
-                        <Plus size={10} /> + Add
-                      </button>
                     </div>
 
                     <div className="flex items-center gap-1">
                       <div className="relative flex-1">
                         <input
                           type="text"
+                          name="truckNo"
                           list="truck-master-list"
                           value={formData.truckNo}
                           onChange={(e) => {
@@ -840,7 +963,21 @@ export default function LREntryForm() {
                           onFocus={() => setShowTruckSearchDropdown(true)}
                           onBlur={() => setTimeout(() => setShowTruckSearchDropdown(false), 200)}
                           onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === "Tab" || e.key === "Escape") {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const query = (formData.truckNo || "").trim().toUpperCase();
+                              const matches = trucks.filter((t) => (t.truckNo || "").toUpperCase().includes(query));
+                              if (matches.length > 0) {
+                                const selectedTruck = matches[0].truckNo.toUpperCase();
+                                setFormData((prev) => ({ ...prev, truckNo: selectedTruck }));
+                              }
+                              setShowTruckSearchDropdown(false);
+                              setTimeout(() => {
+                                setPartySearchQuery("");
+                                setSearchConsignorModal(true);
+                              }, 100);
+                            } else if (e.key === "Escape") {
                               setShowTruckSearchDropdown(false);
                             }
                           }}
@@ -864,6 +1001,10 @@ export default function LREntryForm() {
                                   onMouseDown={() => {
                                     setFormData({ ...formData, truckNo: (t.truckNo || "").toUpperCase() });
                                     setShowTruckSearchDropdown(false);
+                                    setTimeout(() => {
+                                      const consignorEl = document.getElementById("consignor-name-input");
+                                      if (consignorEl) consignorEl.focus();
+                                    }, 100);
                                   }}
                                   className="px-2 py-1.5 hover:bg-sky-700 cursor-pointer text-xs border-b border-slate-800 flex justify-between items-center"
                                 >
@@ -872,19 +1013,8 @@ export default function LREntryForm() {
                                 </div>
                               ))}
                             {trucks.filter((t) => (t.truckNo || "").toUpperCase().includes((formData.truckNo || "").toUpperCase())).length === 0 && (
-                              <div className="p-2 text-center text-xs text-slate-400">
-                                Manual entry enabled.
-                                <button
-                                  type="button"
-                                  onMouseDown={() => {
-                                    setNewTruckForm({ ...newTruckForm, truckNo: formData.truckNo });
-                                    setShowAddTruckModal(true);
-                                    setShowTruckSearchDropdown(false);
-                                  }}
-                                  className="block mx-auto mt-1 px-2 py-0.5 bg-emerald-500 text-slate-950 font-bold rounded text-[10px]"
-                                >
-                                  + Save "{formData.truckNo}" to Master
-                                </button>
+                              <div className="p-2 text-center text-xs text-slate-400 font-mono">
+                                Manual Truck No. Enabled
                               </div>
                             )}
                           </div>
@@ -975,6 +1105,7 @@ export default function LREntryForm() {
                 )}
 
                 <input
+                  id="consignor-name-input"
                   type="text"
                   value={formData.consignorName}
                   onChange={(e) => setFormData({ ...formData, consignorName: e.target.value.toUpperCase() })}
@@ -1033,6 +1164,7 @@ export default function LREntryForm() {
                 </div>
 
                 <input
+                  id="consignee-name-input"
                   type="text"
                   value={formData.consigneeName}
                   onChange={(e) => setFormData({ ...formData, consigneeName: e.target.value.toUpperCase() })}
@@ -1073,6 +1205,7 @@ export default function LREntryForm() {
               <div className="grid grid-cols-12 gap-1.5">
                 <div className="col-span-6 md:col-span-2 flex gap-1">
                   <input
+                    id="no-of-articles-input"
                     type="text"
                     value={formData.noOfArticles}
                     onChange={(e) => setFormData({ ...formData, noOfArticles: e.target.value })}
@@ -1366,7 +1499,7 @@ export default function LREntryForm() {
               id="save-lr-btn"
               type="button"
               onClick={() => handleSave()}
-              className="px-3 sm:px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105 focus:ring-4 focus:ring-amber-300 focus:outline-none"
+              className="px-3 sm:px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
             >
               <Save size={14} /> Save LR
             </button>
@@ -1374,7 +1507,7 @@ export default function LREntryForm() {
             <button
               type="button"
               onClick={handleSaveAndPrint}
-              className="px-3 sm:px-4 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105"
+              className="px-3 sm:px-4 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
             >
               <Printer size={14} /> Save & Print
             </button>
@@ -1385,7 +1518,7 @@ export default function LREntryForm() {
                 const saved = handleSave();
                 if (saved) setShowPrintModal(true);
               }}
-              className="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
             >
               <Download size={14} /> PDF
             </button>
@@ -1396,7 +1529,7 @@ export default function LREntryForm() {
                 const saved = handleSave();
                 if (saved) setShowPrintModal(true);
               }}
-              className="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
             >
               <Share2 size={14} /> WhatsApp
             </button>
@@ -1405,7 +1538,7 @@ export default function LREntryForm() {
               <button
                 type="button"
                 onClick={handleDeleteCurrentLR}
-                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-black rounded text-xs uppercase transition-all flex items-center gap-1.5 cursor-pointer ml-1"
+                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-black rounded text-xs uppercase transition-all flex items-center gap-1.5 cursor-pointer ml-1 transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
               >
                 <Trash2 size={14} /> Delete LR
               </button>
@@ -1414,7 +1547,7 @@ export default function LREntryForm() {
             <button
               type="button"
               onClick={handleReset}
-              className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded text-xs uppercase transition-all flex items-center gap-1.5 cursor-pointer ml-1"
+              className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded text-xs uppercase transition-all flex items-center gap-1.5 cursor-pointer ml-1 transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
             >
               <RotateCcw size={14} /> Reset
             </button>
@@ -1562,7 +1695,26 @@ export default function LREntryForm() {
                   autoFocus
                   value={partySearchQuery}
                   onChange={(e) => setPartySearchQuery(e.target.value)}
-                  placeholder="Type Consignor Name, City, GST No..."
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const filtered = consignorsList.filter(
+                        (p) =>
+                          p.partyName.toLowerCase().includes(partySearchQuery.toLowerCase()) ||
+                          (p.city && p.city.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                          (p.gstNo && p.gstNo.toLowerCase().includes(partySearchQuery.toLowerCase()))
+                      );
+                      if (filtered.length > 0) {
+                        handleAddConsignor(filtered[0].partyName);
+                        setSearchConsignorModal(false);
+                        setTimeout(() => {
+                          setPartySearchQuery("");
+                          setSearchConsigneeModal(true);
+                        }, 100);
+                      }
+                    }
+                  }}
+                  placeholder="Type Consignor Name, City, GST No... (Press Enter to Select)"
                   className="w-full pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-yellow-400"
                 />
               </div>
@@ -1629,7 +1781,13 @@ export default function LREntryForm() {
               <div className="pt-2 border-t border-slate-700 flex justify-end">
                 <button
                   type="button"
-                  onClick={() => setSearchConsignorModal(false)}
+                  onClick={() => {
+                    setSearchConsignorModal(false);
+                    setTimeout(() => {
+                      setPartySearchQuery("");
+                      setSearchConsigneeModal(true);
+                    }, 100);
+                  }}
                   className="px-5 py-2 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded-lg text-xs uppercase shadow"
                 >
                   Done / Apply Selection ({selectedConsignors.length})
@@ -1662,7 +1820,29 @@ export default function LREntryForm() {
                   autoFocus
                   value={partySearchQuery}
                   onChange={(e) => setPartySearchQuery(e.target.value)}
-                  placeholder="Type Consignee Name, City, GST No..."
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const filtered = consigneesList.filter(
+                        (p) =>
+                          p.partyName.toLowerCase().includes(partySearchQuery.toLowerCase()) ||
+                          (p.city && p.city.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                          (p.gstNo && p.gstNo.toLowerCase().includes(partySearchQuery.toLowerCase()))
+                      );
+                      if (filtered.length > 0) {
+                        handleSelectConsignee(filtered[0].partyName);
+                        setSearchConsigneeModal(false);
+                        setTimeout(() => {
+                          const el = document.getElementById("no-of-articles-input");
+                          if (el) {
+                            el.focus();
+                            if (typeof el.select === "function") el.select();
+                          }
+                        }, 100);
+                      }
+                    }
+                  }}
+                  placeholder="Type Consignee Name, City, GST No... (Press Enter to Select)"
                   className="w-full pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-yellow-400"
                 />
               </div>
@@ -1681,6 +1861,13 @@ export default function LREntryForm() {
                       onClick={() => {
                         handleSelectConsignee(p.partyName);
                         setSearchConsigneeModal(false);
+                        setTimeout(() => {
+                          const el = document.getElementById("no-of-articles-input");
+                          if (el) {
+                            el.focus();
+                            if (typeof el.select === "function") el.select();
+                          }
+                        }, 100);
                       }}
                       className="p-3 hover:bg-sky-950/60 cursor-pointer flex justify-between items-center transition-colors"
                     >
@@ -1988,10 +2175,9 @@ export default function LREntryForm() {
                     <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                       STATE
                     </label>
-                    <input
-                      type="text"
+                    <SearchableStateSelect
                       value={newPartyForm.state}
-                      onChange={(e) => handleStateChange(e.target.value.toUpperCase())}
+                      onChange={(stateName, code) => handleStateChange(stateName, code)}
                       placeholder="STATE"
                       className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                     />

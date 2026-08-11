@@ -112,25 +112,72 @@ export default function PartyMaster() {
     setTimeout(() => setStatusMessage(""), 4000);
   };
 
-  // Handle Enter key navigation across form fields
+  // Handle Key navigation (Enter, Up, Down, Left, Right Arrow) across form fields
   const handleFormKeyDown = (e) => {
-    if (e.key === "Enter") {
-      if (e.target.tagName === "BUTTON" || e.target.type === "submit") {
-        return;
-      }
-      e.preventDefault();
-      const form = e.currentTarget;
-      const focusable = Array.from(
-        form.querySelectorAll(
-          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])"
-        )
-      ).filter(
-        (el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0
-      );
+    if (e.target.tagName === "BUTTON" || e.target.type === "submit") {
+      return;
+    }
 
-      const index = focusable.indexOf(e.target);
-      if (index > -1 && index < focusable.length - 1) {
-        focusable[index + 1].focus();
+    const keys = ["Enter", "ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"];
+    if (!keys.includes(e.key)) return;
+
+    const form = e.currentTarget;
+    const focusable = Array.from(
+      form.querySelectorAll(
+        "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])"
+      )
+    ).filter(
+      (el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0
+    );
+
+    const index = focusable.indexOf(e.target);
+    if (index === -1) return;
+
+    const target = e.target;
+    let moveForward = false;
+    let moveBackward = false;
+
+    if (e.key === "Enter") {
+      moveForward = true;
+    } else if (e.key === "ArrowDown") {
+      if (target.tagName !== "SELECT") {
+        moveForward = true;
+      }
+    } else if (e.key === "ArrowUp") {
+      if (target.tagName !== "SELECT") {
+        moveBackward = true;
+      }
+    } else if (e.key === "ArrowRight") {
+      if (
+        target.selectionStart === undefined ||
+        target.selectionStart === null ||
+        target.selectionStart === target.value?.length
+      ) {
+        moveForward = true;
+      }
+    } else if (e.key === "ArrowLeft") {
+      if (
+        target.selectionEnd === undefined ||
+        target.selectionEnd === null ||
+        target.selectionEnd === 0
+      ) {
+        moveBackward = true;
+      }
+    }
+
+    if (moveForward && index < focusable.length - 1) {
+      e.preventDefault();
+      const nextEl = focusable[index + 1];
+      nextEl.focus();
+      if (typeof nextEl.select === "function" && nextEl.tagName === "INPUT") {
+        nextEl.select();
+      }
+    } else if (moveBackward && index > 0) {
+      e.preventDefault();
+      const prevEl = focusable[index - 1];
+      prevEl.focus();
+      if (typeof prevEl.select === "function" && prevEl.tagName === "INPUT") {
+        prevEl.select();
       }
     }
   };

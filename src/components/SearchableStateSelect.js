@@ -57,7 +57,10 @@ export default function SearchableStateSelect({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(value || "");
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const containerRef = useRef(null);
+  const inputRef = useRef(null);
+  const itemRefs = useRef([]);
 
   useEffect(() => {
     setSearchTerm(value || "");
@@ -80,6 +83,39 @@ export default function SearchableStateSelect({
     return s.name.includes(query) || s.code.includes(query);
   });
 
+  // Whenever searchTerm changes, reset highlighted index to 0
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [searchTerm]);
+
+  // Auto-scroll highlighted item into view
+  useEffect(() => {
+    if (isOpen && itemRefs.current[highlightedIndex]) {
+      itemRefs.current[highlightedIndex]?.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+    }
+  }, [highlightedIndex, isOpen]);
+
+  const focusNextInput = () => {
+    if (!inputRef.current) return;
+    const form = inputRef.current.form;
+    if (!form) return;
+    const focusable = Array.from(
+      form.querySelectorAll(
+        "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])"
+      )
+    ).filter(
+      (el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0
+    );
+
+    const index = focusable.indexOf(inputRef.current);
+    if (index > -1 && index < focusable.length - 1) {
+      focusable[index + 1].focus();
+    }
+  };
+
   const handleSelectState = (stateObj) => {
     setSearchTerm(stateObj.name);
     setIsOpen(false);
@@ -98,14 +134,54 @@ export default function SearchableStateSelect({
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      if (isOpen) {
+        e.preventDefault();
+        e.stopPropagation();
+        setHighlightedIndex((prev) =>
+          filteredStates.length === 0 ? 0 : (prev + 1) % filteredStates.length
+        );
+      }
+    } else if (e.key === "ArrowUp") {
+      if (isOpen) {
+        e.preventDefault();
+        e.stopPropagation();
+        setHighlightedIndex((prev) =>
+          filteredStates.length === 0
+            ? 0
+            : (prev - 1 + filteredStates.length) % filteredStates.length
+        );
+      }
+    } else if (e.key === "Enter") {
+      if (isOpen && filteredStates.length > 0 && highlightedIndex >= 0 && highlightedIndex < filteredStates.length) {
+        e.preventDefault();
+        e.stopPropagation();
+        const selected = filteredStates[highlightedIndex];
+        handleSelectState(selected);
+        setTimeout(focusNextInput, 50);
+      }
+    } else if (e.key === "Escape") {
+      setIsOpen(false);
+    } else if (e.key === "Tab") {
+      if (isOpen && filteredStates.length > 0 && highlightedIndex >= 0 && highlightedIndex < filteredStates.length) {
+        const selected = filteredStates[highlightedIndex];
+        handleSelectState(selected);
+      }
+      setIsOpen(false);
+    }
+  };
+
   return (
     <div className="relative w-full" ref={containerRef}>
       <div className="relative">
         <input
+          ref={inputRef}
           type="text"
           value={searchTerm}
           onFocus={() => setIsOpen(true)}
           onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={className}
         />
@@ -132,20 +208,32 @@ export default function SearchableStateSelect({
       {isOpen && (
         <div className="absolute left-0 right-0 top-full mt-1 bg-slate-900 border-2 border-yellow-400 rounded-md shadow-2xl z-50 max-h-48 overflow-y-auto divide-y divide-slate-800">
           {filteredStates.length > 0 ? (
-            filteredStates.map((st) => {
+            filteredStates.map((st, idx) => {
               const isSelected = searchTerm && searchTerm.toUpperCase() === st.name;
+              const isHighlighted = idx === highlightedIndex;
               return (
                 <div
                   key={st.code + st.name}
-                  onClick={() => handleSelectState(st)}
+                  ref={(el) => (itemRefs.current[idx] = el)}
+                  onClick={() => {
+                    handleSelectState(st);
+                    setTimeout(focusNextInput, 50);
+                  }}
+                  onMouseEnter={() => setHighlightedIndex(idx)}
                   className={`px-2.5 py-1.5 cursor-pointer text-xs flex justify-between items-center transition-colors ${
-                    isSelected
+                    isHighlighted
+                      ? "bg-amber-400 text-slate-950 font-black border-l-4 border-amber-600"
+                      : isSelected
                       ? "bg-sky-900 text-yellow-300 font-black border-l-4 border-yellow-400"
                       : "text-slate-100 hover:bg-slate-800 hover:text-yellow-300"
                   }`}
                 >
                   <span className="font-bold">{st.name}</span>
-                  <span className="px-1.5 py-0.5 bg-yellow-400/20 text-yellow-300 rounded text-[10px] font-mono font-bold">
+                  <span
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
+                      isHighlighted ? "bg-slate-900/30 text-slate-950" : "bg-yellow-400/20 text-yellow-300"
+                    }`}
+                  >
                     Code: {st.code}
                   </span>
                 </div>
@@ -161,3 +249,4 @@ export default function SearchableStateSelect({
     </div>
   );
 }
+
