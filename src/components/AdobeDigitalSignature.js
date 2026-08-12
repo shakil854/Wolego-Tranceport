@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
 
+const formatAdobeTimestamp = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+  return `${year}.${month}.${day} ${hours}:${minutes}:${seconds} +05'30'`;
+};
+
 export default function AdobeDigitalSignature({
   signatoryName = "MOHMADSIRAJ YUNUSH SHERASIYA",
   className = "",
@@ -8,19 +19,9 @@ export default function AdobeDigitalSignature({
     return localStorage.getItem("wolego_digital_signature") || null;
   });
 
-  const [currentTimestamp, setCurrentTimestamp] = useState("");
+  const [currentTimestamp, setCurrentTimestamp] = useState(() => formatAdobeTimestamp());
 
   useEffect(() => {
-    const formatAdobeTimestamp = () => {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const seconds = String(now.getSeconds()).padStart(2, "0");
-      return `${year}.${month}.${day} ${hours}:${minutes}:${seconds} +05'30'`;
-    };
     setCurrentTimestamp(formatAdobeTimestamp());
   }, []);
 

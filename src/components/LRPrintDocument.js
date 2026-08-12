@@ -69,9 +69,11 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
     if (!autoAction) return;
     if (autoAction === "print") {
       setIsGeneratingPdf(false);
-      handlePrint();
-      if (onClose) onClose();
-      return;
+      const timer = setTimeout(() => {
+        handlePrint();
+        if (onClose) onClose();
+      }, 300);
+      return () => clearTimeout(timer);
     }
     setIsGeneratingPdf(true);
     const timer = setTimeout(async () => {
