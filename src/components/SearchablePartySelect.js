@@ -33,6 +33,8 @@ export default function SearchablePartySelect({
     (p) =>
       p.partyName.toLowerCase().includes((filterQuery || "").toLowerCase()) ||
       (p.city && p.city.toLowerCase().includes((filterQuery || "").toLowerCase())) ||
+      (p.district && p.district.toLowerCase().includes((filterQuery || "").toLowerCase())) ||
+      (p.state && p.state.toLowerCase().includes((filterQuery || "").toLowerCase())) ||
       (p.gstNo && p.gstNo.toLowerCase().includes((filterQuery || "").toLowerCase()))
   );
 
@@ -102,7 +104,7 @@ export default function SearchablePartySelect({
                     <div>
                       <div className="font-bold text-sm uppercase">{p.partyName}</div>
                       <div className="text-[11px] text-slate-400">
-                        {p.city || p.district || p.state} {p.gstNo ? `| GST: ${p.gstNo}` : ""}
+                        {[p.city, p.district, p.state].filter(Boolean).join(", ") || "-"} {p.gstNo ? `| GST: ${p.gstNo}` : ""}
                       </div>
                     </div>
                     {isSelected && <Check size={16} className="text-yellow-400" />}

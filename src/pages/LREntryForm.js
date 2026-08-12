@@ -724,8 +724,18 @@ export default function LREntryForm() {
       const focusable = getFocusable();
       const index = focusable.indexOf(target);
 
-      // Check if there is another input or button after current one
-      const nextInput = focusable.slice(index + 1).find((el) => el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA" || el.tagName === "BUTTON");
+      // Check if there is another input or button after current one (prefer form inputs over action buttons)
+      let nextInput;
+      if (target.tagName === "INPUT" || target.tagName === "SELECT" || target.tagName === "TEXTAREA") {
+        nextInput = focusable
+          .slice(index + 1)
+          .find((el) => el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA");
+      }
+      if (!nextInput) {
+        nextInput = focusable
+          .slice(index + 1)
+          .find((el) => el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA" || el.tagName === "BUTTON");
+      }
 
       if (nextInput) {
         nextInput.focus();
@@ -937,8 +947,8 @@ export default function LREntryForm() {
                 const currentTruckNoClean = (formData.truckNo || "").trim().toUpperCase();
                 const currentTruckDue = currentTruckNoClean && Array.isArray(truckPayments)
                   ? truckPayments
-                      .filter((rec) => (rec.truckNo || "").trim().toUpperCase() === currentTruckNoClean && rec.status !== "PAID")
-                      .reduce((sum, rec) => sum + (Number(rec.amount) || 0), 0)
+                    .filter((rec) => (rec.truckNo || "").trim().toUpperCase() === currentTruckNoClean && rec.status !== "PAID")
+                    .reduce((sum, rec) => sum + (Number(rec.amount) || 0), 0)
                   : 0;
 
                 return (
@@ -974,8 +984,11 @@ export default function LREntryForm() {
                               }
                               setShowTruckSearchDropdown(false);
                               setTimeout(() => {
-                                setPartySearchQuery("");
-                                setSearchConsignorModal(true);
+                                const consignorEl = document.getElementById("consignor-name-input");
+                                if (consignorEl) {
+                                  consignorEl.focus();
+                                  if (typeof consignorEl.select === "function") consignorEl.select();
+                                }
                               }, 100);
                             } else if (e.key === "Escape") {
                               setShowTruckSearchDropdown(false);
@@ -1024,11 +1037,10 @@ export default function LREntryForm() {
                       {/* TRUCK DEBIT DUE LIVE BADGE */}
                       <div
                         title={currentTruckDue > 0 ? `Truck Debit Pending Due: ₹${currentTruckDue.toLocaleString("en-IN")}` : "No Truck Debit Due"}
-                        className={`shrink-0 px-2 py-0.5 border-2 rounded-lg font-mono text-center transition-all ${
-                          currentTruckDue > 0
+                        className={`shrink-0 px-2 py-0.5 border-2 rounded-lg font-mono text-center transition-all ${currentTruckDue > 0
                             ? "bg-rose-100 border-rose-500 text-rose-700 shadow-md animate-pulse"
                             : "bg-slate-100 border-slate-300 text-slate-400"
-                        }`}
+                          }`}
                       >
                         <div className="text-[8px] font-black uppercase leading-none tracking-tight text-slate-500">
                           DUE
@@ -1109,7 +1121,14 @@ export default function LREntryForm() {
                   type="text"
                   value={formData.consignorName}
                   onChange={(e) => setFormData({ ...formData, consignorName: e.target.value.toUpperCase() })}
-                  placeholder="CONSIGNOR NAME"
+                  onKeyDown={(e) => {
+                    if ((e.key === "s" || e.key === "S") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                      e.preventDefault();
+                      setPartySearchQuery("");
+                      setSearchConsignorModal(true);
+                    }
+                  }}
+                  placeholder="CONSIGNOR NAME (Press 'S' to Search)"
                   className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase font-mono"
                 />
 
@@ -1168,7 +1187,14 @@ export default function LREntryForm() {
                   type="text"
                   value={formData.consigneeName}
                   onChange={(e) => setFormData({ ...formData, consigneeName: e.target.value.toUpperCase() })}
-                  placeholder="CONSIGNEE NAME"
+                  onKeyDown={(e) => {
+                    if ((e.key === "s" || e.key === "S") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                      e.preventDefault();
+                      setPartySearchQuery("");
+                      setSearchConsigneeModal(true);
+                    }
+                  }}
+                  placeholder="CONSIGNEE NAME (Press 'S' to Search)"
                   className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase"
                 />
 
@@ -1587,8 +1613,8 @@ export default function LREntryForm() {
                       key={c.id}
                       onClick={() => setSelectedCopyForPrint(c.id)}
                       className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border cursor-pointer transition-all ${selectedCopyForPrint === c.id
-                          ? "bg-amber-400 text-slate-950 border-amber-400 font-black shadow"
-                          : "bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
+                        ? "bg-amber-400 text-slate-950 border-amber-400 font-black shadow"
+                        : "bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
                         }`}
                     >
                       <input
@@ -1702,6 +1728,8 @@ export default function LREntryForm() {
                         (p) =>
                           p.partyName.toLowerCase().includes(partySearchQuery.toLowerCase()) ||
                           (p.city && p.city.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                          (p.district && p.district.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                          (p.state && p.state.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
                           (p.gstNo && p.gstNo.toLowerCase().includes(partySearchQuery.toLowerCase()))
                       );
                       if (filtered.length > 0) {
@@ -1709,7 +1737,11 @@ export default function LREntryForm() {
                         setSearchConsignorModal(false);
                         setTimeout(() => {
                           setPartySearchQuery("");
-                          setSearchConsigneeModal(true);
+                          const consigneeEl = document.getElementById("consignee-name-input");
+                          if (consigneeEl) {
+                            consigneeEl.focus();
+                            if (typeof consigneeEl.select === "function") consigneeEl.select();
+                          }
                         }, 100);
                       }
                     }
@@ -1725,6 +1757,8 @@ export default function LREntryForm() {
                     (p) =>
                       p.partyName.toLowerCase().includes(partySearchQuery.toLowerCase()) ||
                       (p.city && p.city.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                      (p.district && p.district.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                      (p.state && p.state.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
                       (p.gstNo && p.gstNo.toLowerCase().includes(partySearchQuery.toLowerCase()))
                   )
                   .map((p) => {
@@ -1753,7 +1787,7 @@ export default function LREntryForm() {
                             {p.partyName}
                           </div>
                           <div className="text-xs text-slate-400">
-                            {p.city || p.district || p.state} | GST: {p.gstNo || "N/A"}
+                            {[p.city, p.district, p.state].filter(Boolean).join(", ") || "-"} | GST: {p.gstNo || "N/A"}
                           </div>
                         </div>
                         <button
@@ -1770,6 +1804,8 @@ export default function LREntryForm() {
                   (p) =>
                     p.partyName.toLowerCase().includes(partySearchQuery.toLowerCase()) ||
                     (p.city && p.city.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                    (p.district && p.district.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                    (p.state && p.state.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
                     (p.gstNo && p.gstNo.toLowerCase().includes(partySearchQuery.toLowerCase()))
                 ).length === 0 && (
                     <div className="p-4 text-center text-slate-400 text-xs">
@@ -1785,7 +1821,11 @@ export default function LREntryForm() {
                     setSearchConsignorModal(false);
                     setTimeout(() => {
                       setPartySearchQuery("");
-                      setSearchConsigneeModal(true);
+                      const consigneeEl = document.getElementById("consignee-name-input");
+                      if (consigneeEl) {
+                        consigneeEl.focus();
+                        if (typeof consigneeEl.select === "function") consigneeEl.select();
+                      }
                     }, 100);
                   }}
                   className="px-5 py-2 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black rounded-lg text-xs uppercase shadow"
@@ -1827,6 +1867,8 @@ export default function LREntryForm() {
                         (p) =>
                           p.partyName.toLowerCase().includes(partySearchQuery.toLowerCase()) ||
                           (p.city && p.city.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                          (p.district && p.district.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                          (p.state && p.state.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
                           (p.gstNo && p.gstNo.toLowerCase().includes(partySearchQuery.toLowerCase()))
                       );
                       if (filtered.length > 0) {
@@ -1853,6 +1895,8 @@ export default function LREntryForm() {
                     (p) =>
                       p.partyName.toLowerCase().includes(partySearchQuery.toLowerCase()) ||
                       (p.city && p.city.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                      (p.district && p.district.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                      (p.state && p.state.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
                       (p.gstNo && p.gstNo.toLowerCase().includes(partySearchQuery.toLowerCase()))
                   )
                   .map((p) => (
@@ -1874,7 +1918,7 @@ export default function LREntryForm() {
                       <div>
                         <div className="font-extrabold text-white text-sm">{p.partyName}</div>
                         <div className="text-xs text-slate-400">
-                          {p.city || p.district || p.state} | GST: {p.gstNo || "N/A"}
+                          {[p.city, p.district, p.state].filter(Boolean).join(", ") || "-"} | GST: {p.gstNo || "N/A"}
                         </div>
                       </div>
                       <button className="px-3 py-1 bg-yellow-400 text-slate-950 font-bold rounded text-xs">
@@ -1886,6 +1930,8 @@ export default function LREntryForm() {
                   (p) =>
                     p.partyName.toLowerCase().includes(partySearchQuery.toLowerCase()) ||
                     (p.city && p.city.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                    (p.district && p.district.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
+                    (p.state && p.state.toLowerCase().includes(partySearchQuery.toLowerCase())) ||
                     (p.gstNo && p.gstNo.toLowerCase().includes(partySearchQuery.toLowerCase()))
                 ).length === 0 && (
                     <div className="p-4 text-center text-slate-400 text-xs">
