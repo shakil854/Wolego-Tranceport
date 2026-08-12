@@ -39,6 +39,8 @@ export default function LoginPage() {
         navigate("/accounting");
       } else if (data.user.role === "TRUCK") {
         navigate("/truck-accounting");
+      } else if (data.user.role === "OFFICE") {
+        navigate("/lr-entry");
       } else {
         navigate("/dashboard");
       }

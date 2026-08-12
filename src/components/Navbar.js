@@ -32,7 +32,7 @@ import logoImg from "../assets/logo.png";
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, isOwner, isParty, isTruck } = useAuth();
+  const { user, logout, isOwner, isOffice, isParty, isTruck } = useAuth();
   const { theme, setTheme, THEMES } = useTheme();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -53,6 +53,13 @@ export default function Navbar() {
     { name: "Freight Receipt", path: "/freight-receipt", icon: Receipt },
   ];
 
+  // Primary Navigation Items for Office Role
+  const officePrimaryItems = [
+    { name: "L/R Entry", path: "/lr-entry", icon: Truck },
+    { name: "LR Records", path: "/lr-list", icon: FileText },
+    { name: "Freight Receipt", path: "/freight-receipt", icon: Receipt },
+  ];
+
   // Primary Navigation Items for Party
   const partyPrimaryItems = [
     { name: "My Accounting", path: "/accounting", icon: Calculator },
@@ -66,7 +73,7 @@ export default function Navbar() {
     { name: "Truck Orders", path: "/truck-orders", icon: Truck },
   ];
 
-  const primaryItems = isTruck ? truckPrimaryItems : isParty ? partyPrimaryItems : ownerPrimaryItems;
+  const primaryItems = isTruck ? truckPrimaryItems : isParty ? partyPrimaryItems : isOffice ? officePrimaryItems : ownerPrimaryItems;
 
   // Dropdown Items (Owner only)
   const dropdownItems = [
@@ -127,7 +134,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14 sm:h-16 gap-3">
 
           {/* Left Side: Logo / Brand */}
-          <Link to={isParty ? "/accounting" : isTruck ? "/truck-accounting" : "/"} className="flex items-center space-x-2.5 shrink-0 group">
+          <Link to={isParty ? "/accounting" : isTruck ? "/truck-accounting" : isOffice ? "/lr-entry" : "/"} className="flex items-center space-x-2.5 shrink-0 group">
             {/* Crown & W Logo */}
             <div className="h-9 sm:h-11 w-9 sm:w-11 overflow-hidden flex items-start justify-center shrink-0">
               <img
@@ -225,14 +232,14 @@ export default function Navbar() {
                   <div className="p-1 bg-amber-100 rounded-lg group-hover:bg-amber-200 transition">
                     <User className="w-4 h-4 text-amber-700" />
                   </div>
-                  <div className="text-xs text-left pr-1">
-                    <div className="font-extrabold text-amber-800 leading-none flex items-center gap-1">
-                      <span>{isOwner ? "OWNER" : isTruck ? "TRUCK OWNER" : user.partyName || user.username}</span>
+                    <div className="text-xs text-left pr-1">
+                      <div className="font-extrabold text-amber-800 leading-none flex items-center gap-1">
+                        <span>{isOwner ? "OWNER" : isOffice ? "OFFICE" : isTruck ? "TRUCK OWNER" : user.partyName || user.username}</span>
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-mono font-medium leading-tight mt-0.5">
+                        {user.username}
+                      </div>
                     </div>
-                    <div className="text-[10px] text-slate-500 font-mono font-medium leading-tight mt-0.5">
-                      {user.username}
-                    </div>
-                  </div>
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${userMenuOpen ? "rotate-180" : ""}`} />
                 </button>
 
@@ -243,7 +250,7 @@ export default function Navbar() {
                     <div className="px-4 py-3 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border-b border-slate-100">
                       <div className="text-xs font-black text-slate-800 uppercase tracking-wider">Logged In As</div>
                       <div className="text-sm font-extrabold text-amber-800 mt-0.5">
-                        {isOwner ? "👑 OWNER ADMIN" : isTruck ? "🚛 TRUCK OWNER" : `🏢 ${user.partyName || user.username}`}
+                        {isOwner ? "👑 OWNER ADMIN" : isOffice ? "🏢 OFFICE USER" : isTruck ? "🚛 TRUCK OWNER" : `🏢 ${user.partyName || user.username}`}
                       </div>
                       <div className="text-[11px] text-slate-500 font-mono">User: {user.username}</div>
                     </div>
@@ -420,7 +427,7 @@ export default function Navbar() {
             <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg mb-2 flex justify-between items-center">
               <div>
                 <div className="text-xs font-bold text-amber-700">
-                  {isOwner ? "👑 OWNER ADMIN" : `🏢 ${user.partyName}`}
+                  {isOwner ? "👑 OWNER ADMIN" : isOffice ? "🏢 OFFICE USER" : isTruck ? "🚛 TRUCK OWNER" : `🏢 ${user.partyName || user.username}`}
                 </div>
                 <div className="text-[11px] text-slate-500 font-mono">Mobile: {user.username}</div>
               </div>

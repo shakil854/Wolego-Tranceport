@@ -33,6 +33,7 @@ function ProtectedRoute({ children, allowedRoles }) {
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     if (user.role === "TRUCK") return <Navigate to="/truck-accounting" replace />;
     if (user.role === "PARTY") return <Navigate to="/accounting" replace />;
+    if (user.role === "OFFICE") return <Navigate to="/lr-entry" replace />;
     return <Navigate to="/dashboard" replace />;
   }
   return children;
@@ -44,6 +45,7 @@ function AppRoutes() {
   const getHomeRedirect = (role) => {
     if (role === "TRUCK") return "/truck-accounting";
     if (role === "PARTY") return "/accounting";
+    if (role === "OFFICE") return "/lr-entry";
     return "/dashboard";
   };
 
@@ -121,11 +123,11 @@ function AppRoutes() {
         }
       />
 
-      {/* Owner Only Routes */}
+      {/* Routes Accessible by Owner & Office */}
       <Route
         path="/lr-entry"
         element={
-          <ProtectedRoute allowedRoles={["OWNER"]}>
+          <ProtectedRoute allowedRoles={["OWNER", "OFFICE"]}>
             <LREntryForm />
           </ProtectedRoute>
         }
@@ -149,7 +151,7 @@ function AppRoutes() {
       <Route
         path="/freight-receipt"
         element={
-          <ProtectedRoute allowedRoles={["OWNER"]}>
+          <ProtectedRoute allowedRoles={["OWNER", "OFFICE"]}>
             <FreightReceipt />
           </ProtectedRoute>
         }
@@ -179,11 +181,11 @@ function AppRoutes() {
         }
       />
 
-      {/* Owner Only Records & Statements */}
+      {/* Records & Statements */}
       <Route
         path="/lr-list"
         element={
-          <ProtectedRoute allowedRoles={["OWNER"]}>
+          <ProtectedRoute allowedRoles={["OWNER", "OFFICE"]}>
             <LRList />
           </ProtectedRoute>
         }
@@ -232,7 +234,22 @@ function AppRoutes() {
       {/* Fallback */}
       <Route
         path="*"
-        element={<Navigate to={user ? (user.role === "PARTY" ? "/accounting" : "/lr-entry") : "/login"} replace />}
+        element={
+          <Navigate
+            to={
+              user
+                ? user.role === "PARTY"
+                  ? "/accounting"
+                  : user.role === "TRUCK"
+                  ? "/truck-accounting"
+                  : user.role === "OFFICE"
+                  ? "/lr-entry"
+                  : "/dashboard"
+                : "/login"
+            }
+            replace
+          />
+        }
       />
     </Routes>
   );
@@ -248,7 +265,14 @@ function GlobalEscapeHandler() {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" || e.key === "Esc") {
         if (!user) return;
-        const targetRoute = user.role === "TRUCK" ? "/truck-accounting" : user.role === "PARTY" ? "/accounting" : "/dashboard";
+        const targetRoute =
+          user.role === "TRUCK"
+            ? "/truck-accounting"
+            : user.role === "PARTY"
+            ? "/accounting"
+            : user.role === "OFFICE"
+            ? "/lr-entry"
+            : "/dashboard";
 
         if (location.pathname !== targetRoute) {
           navigate(targetRoute);

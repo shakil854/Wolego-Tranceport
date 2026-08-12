@@ -31,11 +31,12 @@ export function AuthProvider({ children }) {
   };
 
   const isOwner = user?.role === "OWNER";
+  const isOffice = user?.role === "OFFICE";
   const isParty = user?.role === "PARTY";
   const isTruck = user?.role === "TRUCK";
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isOwner, isParty, isTruck }}>
+    <AuthContext.Provider value={{ user, login, logout, isOwner, isOffice, isParty, isTruck }}>
       {children}
     </AuthContext.Provider>
   );
