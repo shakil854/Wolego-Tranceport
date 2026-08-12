@@ -953,10 +953,31 @@ export default function LREntryForm() {
 
                 return (
                   <div className="col-span-6 sm:col-span-4 md:col-span-2 relative">
-                    <div className="mb-0.5">
+                    <div className="flex items-center justify-between mb-0.5">
                       <label className="text-[10px] font-extrabold text-yellow-300 uppercase block">
                         TRUCK NO.
                       </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewTruckForm({
+                            truckNo: (formData.truckNo || "").trim().toUpperCase(),
+                            ownerName: "",
+                            mobileNo: "",
+                            address: "",
+                            bankName: "",
+                            accountName: "",
+                            accountNo: "",
+                            ifscCode: "",
+                            branch: "",
+                          });
+                          setShowAddTruckModal(true);
+                        }}
+                        className="px-1.5 py-0.2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[9px] font-extrabold rounded flex items-center gap-0.5 shadow transition cursor-pointer uppercase"
+                        title="Add New Truck to Master"
+                      >
+                        <Plus size={10} /> + Add
+                      </button>
                     </div>
 
                     <div className="flex items-center gap-1">
@@ -1025,11 +1046,31 @@ export default function LREntryForm() {
                                   <span className="text-[10px] text-slate-400">{t.ownerName || "No Owner"}</span>
                                 </div>
                               ))}
-                            {trucks.filter((t) => (t.truckNo || "").toUpperCase().includes((formData.truckNo || "").toUpperCase())).length === 0 && (
-                              <div className="p-2 text-center text-xs text-slate-400 font-mono">
-                                Manual Truck No. Enabled
-                              </div>
-                            )}
+                            <div
+                              onMouseDown={() => {
+                                setNewTruckForm({
+                                  truckNo: (formData.truckNo || "").trim().toUpperCase(),
+                                  ownerName: "",
+                                  mobileNo: "",
+                                  address: "",
+                                  bankName: "",
+                                  accountName: "",
+                                  accountNo: "",
+                                  ifscCode: "",
+                                  branch: "",
+                                });
+                                setShowAddTruckModal(true);
+                                setShowTruckSearchDropdown(false);
+                              }}
+                              className="px-2 py-1.5 bg-emerald-900/80 hover:bg-emerald-800 cursor-pointer text-xs flex justify-between items-center text-emerald-300 font-extrabold border-t border-emerald-700/60"
+                            >
+                              <span className="flex items-center gap-1">
+                                <Plus size={12} className="text-emerald-400" />
+                                {formData.truckNo && formData.truckNo.trim()
+                                  ? `+ Add "${formData.truckNo.trim().toUpperCase()}" to Master`
+                                  : "+ Add New Truck to Master"}
+                              </span>
+                            </div>
                           </div>
                         )}
                       </div>
