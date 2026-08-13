@@ -448,18 +448,16 @@ export default function AccountingPage() {
   // Status button badges counts
   const ownerAllCount = baseOwnerEntries.length;
   const ownerPaidCount = baseOwnerEntries.filter((lr) =>
-    activeTab === "PARTY" ? lr.partyPaymentStatus === "PAID" : lr.truckPaymentStatus === "PAID"
+    activeTab !== "TRUCK" ? lr.partyPaymentStatus === "PAID" : lr.truckPaymentStatus === "PAID"
   ).length;
   const ownerUnpaidCount = ownerAllCount - ownerPaidCount;
 
   // 3. Final Table Filtered LRs (Applies PAID / UNPAID status filter for list view)
   const filteredOwnerEntries = baseOwnerEntries.filter((lr) => {
-    if (activeTab === "PARTY") {
+    if (activeTab !== "TRUCK") {
       if (statusFilter === "PAID" && lr.partyPaymentStatus !== "PAID") return false;
       if (statusFilter === "UNPAID" && lr.partyPaymentStatus === "PAID") return false;
-    }
-
-    if (activeTab === "TRUCK") {
+    } else if (activeTab === "TRUCK") {
       if (statusFilter === "PAID" && lr.truckPaymentStatus !== "PAID") return false;
       if (statusFilter === "UNPAID" && lr.truckPaymentStatus === "PAID") return false;
     }
@@ -1125,7 +1123,7 @@ export default function AccountingPage() {
 
                       {/* Status Column */}
                       <td className="py-2.5 px-3 text-center">
-                        {activeTab === "PARTY" ? (
+                        {activeTab !== "TRUCK" ? (
                           partyPaid ? (
                             <div className="flex flex-col items-center">
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
@@ -1178,7 +1176,7 @@ export default function AccountingPage() {
                       <td className="py-2.5 px-3 text-center">
                         {updatingId === lr.id ? (
                           <span className="text-[10px] text-amber-400 animate-pulse">Updating...</span>
-                        ) : activeTab === "PARTY" ? (
+                        ) : activeTab !== "TRUCK" ? (
                           partyPaid ? (
                             <span className="text-[11px] font-bold text-emerald-400 opacity-80">
                               ✓ Completed
