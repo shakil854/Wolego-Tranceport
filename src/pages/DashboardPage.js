@@ -23,6 +23,8 @@ import {
   PackagePlus,
 } from "lucide-react";
 
+import { getFinancialYear } from "../utils/storage";
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -66,26 +68,97 @@ export default function DashboardPage() {
     }).format(amount);
   };
 
+  // Latest Financial Year (matching AccountingPage default)
+  const latestFY = React.useMemo(() => {
+    if (!lrEntries || lrEntries.length === 0) return "";
+    const years = Array.from(
+      new Set(
+        lrEntries
+          .map((lr) => {
+            const d = lr.dateTime || lr.date || lr.createdAt;
+            return d ? getFinancialYear(d).label : null;
+          })
+          .filter(Boolean)
+      )
+    ).sort((a, b) => b.localeCompare(a));
+    return years[0] || "";
+  }, [lrEntries]);
+
+  const matchFY = (lrFY, targetFY) => {
+    if (!targetFY || targetFY === "ALL") return true;
+    if (!lrFY) return false;
+    if (lrFY === targetFY) return true;
+    if (targetFY.length === 5 && lrFY.endsWith(targetFY)) return true;
+    if (lrFY.length === 5 && targetFY.endsWith(lrFY)) return true;
+    return false;
+  };
+
+  const getLRDate = (lr) => lr?.dateTime || lr?.date || lr?.createdAt || null;
+  const getLRFYLabel = (lr) => {
+    const d = getLRDate(lr);
+    return d ? getFinancialYear(d).label : "";
+  };
+
+  // Helper to accurately extract freight amount from LR record matching AccountingPage.js
+  const getLRFreightAmount = (lr) => {
+    if (!lr) return 0;
+    const net = parseFloat(lr.netTotalAmount);
+    if (!isNaN(net) && net > 0) return net;
+
+    const totalGst = parseFloat(lr.totalWithGst);
+    if (!isNaN(totalGst) && totalGst > 0) return totalGst;
+
+    const freight = parseFloat(lr.freightAmount);
+    if (!isNaN(freight) && freight > 0) return freight;
+
+    const w = parseFloat(lr.weightKgs) || 0;
+    const r = parseFloat(lr.ratePerTon) || 0;
+    if (w > 0 && r > 0) {
+      return w > 1000 ? Math.round((w / 1000) * r) : Math.round(w * r);
+    }
+    return net || 0;
+  };
+
   // Calculations
   const totalLrs = lrEntries.length;
 
-  // Party Pending Calculation
-  const totalPartyBilled = lrEntries.reduce((sum, item) => sum + (Number(item.netTotalAmount) || 0), 0);
-  const totalPartyReceived = lrEntries.reduce((sum, item) => {
-    if (item.partyPaymentStatus === "PAID") return sum + (Number(item.netTotalAmount) || 0);
+  // 1. CONSIGNEE PENDING (Matching AccountingPage "2. Consignee (Receiver)" tab)
+  const consigneeLRs = lrEntries.filter((lr) => {
+    const lrFY = getLRFYLabel(lr);
+    if (!matchFY(lrFY, latestFY)) return false;
+
+    const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+    const debitOverride = lr.debitAmountTo?.trim()?.toUpperCase();
+
+    // Rule: TBB LRs post to Consignee (or debitAmountTo === CONSIGNEE override)
+    if (payStatus !== "TBB" && debitOverride !== "CONSIGNEE") return false;
+    return true;
+  });
+  const totalPartyBilled = consigneeLRs.reduce((sum, item) => sum + getLRFreightAmount(item), 0);
+  const totalPartyReceived = consigneeLRs.reduce((sum, item) => {
+    if (item.partyPaymentStatus === "PAID") return sum + getLRFreightAmount(item);
     return sum + (Number(item.partyPaidAmount) || 0);
   }, 0);
   const partyPendingAmount = totalPartyBilled - totalPartyReceived;
-  const unpaidPartyLrsCount = lrEntries.filter((lr) => lr.partyPaymentStatus !== "PAID").length;
+  const unpaidPartyLrsCount = consigneeLRs.filter((lr) => lr.partyPaymentStatus !== "PAID").length;
 
-  // Truck Pending Calculation
-  const totalTruckPayable = lrEntries.reduce((sum, item) => sum + (Number(item.netTotalAmount) || 0), 0);
-  const totalTruckPaid = lrEntries.reduce((sum, item) => {
-    if (item.truckPaymentStatus === "PAID") return sum + (Number(item.netTotalAmount) || 0);
+  // 2. TRUCK PAYABLE PENDING (Matching AccountingPage "3. Truck Accounting" tab)
+  const truckLRs = lrEntries.filter((lr) => {
+    const lrFY = getLRFYLabel(lr);
+    if (!matchFY(lrFY, latestFY)) return false;
+
+    const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+    // Rule: TBB & PAID post to Truck. TO-PAY posts 0 accounting entries!
+    if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
+    return true;
+  });
+  const totalTruckPayable = truckLRs.reduce((sum, item) => sum + getLRFreightAmount(item), 0);
+  const totalTruckPaid = truckLRs.reduce((sum, item) => {
+    if (item.truckPaymentStatus === "PAID") return sum + getLRFreightAmount(item);
     return sum + (Number(item.truckPaidAmount) || 0);
   }, 0);
   const truckPendingAmount = totalTruckPayable - totalTruckPaid;
-  const unpaidTruckLrsCount = lrEntries.filter((lr) => lr.truckPaymentStatus !== "PAID").length;
+  const unpaidTruckLrsCount = truckLRs.filter((lr) => lr.truckPaymentStatus !== "PAID").length;
 
   // Shortcuts Page Configuration
   const allAppPages = [
