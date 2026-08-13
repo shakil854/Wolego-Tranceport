@@ -57,6 +57,12 @@ router.delete("/:id", async (req, res) => {
     }
     await order.destroy();
     res.json({ message: "Office order deleted successfully.", id });
+  } catch (error) {
+    console.error("Error deleting office order:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // UPDATE/CONFIRM office order status
 router.put("/:id/confirm", async (req, res) => {
   try {
