@@ -58,6 +58,7 @@ export default function Navbar() {
     { name: "L/R Entry", path: "/lr-entry", icon: Truck },
     { name: "LR Records", path: "/lr-list", icon: FileText },
     { name: "Freight Receipt", path: "/freight-receipt", icon: Receipt },
+    { name: "Office Orders", path: "/office-orders", icon: FileText },
   ];
 
   // Primary Navigation Items for Party
@@ -77,6 +78,7 @@ export default function Navbar() {
 
   // Dropdown Items (Owner only)
   const dropdownItems = [
+    { name: "Office Orders", path: "/office-orders", icon: FileText },
     { name: "Party Orders", path: "/party-orders", icon: FileText },
     { name: "Truck Orders", path: "/truck-orders", icon: Truck },
     { name: "Daily Report", path: "/daily-report", icon: FileText },

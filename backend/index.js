@@ -11,6 +11,8 @@ import truckRoutes from "./routes/truckRoutes.js";
 import truckPaymentRoutes from "./routes/truckPaymentRoutes.js";
 import partyOrderRoutes from "./routes/partyOrderRoutes.js";
 import truckOrderRoutes from "./routes/truckOrderRoutes.js";
+import officeOrderRoutes from "./routes/officeOrderRoutes.js";
+import OfficeOrder from "./models/OfficeOrder.js";
 
 dotenv.config();
 
@@ -55,29 +57,33 @@ app.use("/party-orders", partyOrderRoutes);
 app.use("/api/truck-orders", truckOrderRoutes);
 app.use("/truck-orders", truckOrderRoutes);
 
+app.use("/api/office-orders", officeOrderRoutes);
+app.use("/office-orders", officeOrderRoutes);
+
+
 app.get("/", (req, res) => {
   res.send("Wolego Transport Billing Server is Running!");
 });
 
 // Sync database models if connected (Tries alter: true first, falls back smoothly if 64 keys limit is hit)
-// (async () => {
-//   try {
-//     await sequelize.sync({ alter: true });
-//     console.log("Database models synchronized successfully with alter.");
-//   } catch (error) {
-//     if (error?.message?.includes("Too many keys")) {
-//       console.warn("MySQL 64-keys index limit reached. Synchronizing safely with standard sync...");
-//       try {
-//         await sequelize.sync();
-//         console.log("Database models synchronized successfully.");
-//       } catch (fallbackErr) {
-//         console.error("Database connection error:", fallbackErr.message);
-//       }
-//     } else {
-//       console.error("Database connection error:", error.message);
-//     }
-//   }
-// })();
+(async () => {
+  try {
+    await sequelize.sync({ alter: true });
+    console.log("Database models synchronized successfully with alter.");
+  } catch (error) {
+    if (error?.message?.includes("Too many keys")) {
+      console.warn("MySQL 64-keys index limit reached. Synchronizing safely with standard sync...");
+      try {
+        await sequelize.sync();
+        console.log("Database models synchronized successfully.");
+      } catch (fallbackErr) {
+        console.error("Database connection error:", fallbackErr.message);
+      }
+    } else {
+      console.error("Database connection error:", error.message);
+    }
+  }
+})();
 
 // Start Server
 const PORT = process.env.PORT || 8002;
