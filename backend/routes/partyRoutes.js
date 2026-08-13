@@ -8,7 +8,7 @@ const router = express.Router();
 // Get all parties
 router.get("/", async (req, res) => {
   try {
-    const parties = await Party.findAll({ order: [["createdAt", "DESC"]] });
+    const parties = await Party.findAll({ order: [["partyName", "ASC"]] });
     res.json(parties);
   } catch (err) {
     res.status(500).json({ error: err.message });

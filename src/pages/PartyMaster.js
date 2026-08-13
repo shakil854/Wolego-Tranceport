@@ -182,12 +182,14 @@ export default function PartyMaster() {
     }
   };
 
-  const filteredParties = parties.filter(
-    (p) =>
-      p.partyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.gstNo && p.gstNo.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (p.mobileNos && p.mobileNos.includes(searchQuery))
-  );
+  const filteredParties = parties
+    .filter(
+      (p) =>
+        (p.partyName && p.partyName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.gstNo && p.gstNo.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.mobileNos && p.mobileNos.includes(searchQuery))
+    )
+    .sort((a, b) => (a.partyName || "").localeCompare(b.partyName || "", undefined, { numeric: true, sensitivity: "base" }));
 
   return (
     <div className="min-h-[calc(100vh-68px)] lg:h-[calc(100vh-68px)] overflow-y-auto lg:overflow-hidden bg-slate-900 p-2 sm:p-3 text-slate-100 font-sans flex flex-col pb-8 lg:pb-2">
