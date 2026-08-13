@@ -60,24 +60,24 @@ app.get("/", (req, res) => {
 });
 
 // Sync database models if connected (Tries alter: true first, falls back smoothly if 64 keys limit is hit)
-(async () => {
-  try {
-    await sequelize.sync({ alter: true });
-    console.log("Database models synchronized successfully with alter.");
-  } catch (error) {
-    if (error?.message?.includes("Too many keys")) {
-      console.warn("MySQL 64-keys index limit reached. Synchronizing safely with standard sync...");
-      try {
-        await sequelize.sync();
-        console.log("Database models synchronized successfully.");
-      } catch (fallbackErr) {
-        console.error("Database connection error:", fallbackErr.message);
-      }
-    } else {
-      console.error("Database connection error:", error.message);
-    }
-  }
-})();
+// (async () => {
+//   try {
+//     await sequelize.sync({ alter: true });
+//     console.log("Database models synchronized successfully with alter.");
+//   } catch (error) {
+//     if (error?.message?.includes("Too many keys")) {
+//       console.warn("MySQL 64-keys index limit reached. Synchronizing safely with standard sync...");
+//       try {
+//         await sequelize.sync();
+//         console.log("Database models synchronized successfully.");
+//       } catch (fallbackErr) {
+//         console.error("Database connection error:", fallbackErr.message);
+//       }
+//     } else {
+//       console.error("Database connection error:", error.message);
+//     }
+//   }
+// })();
 
 // Start Server
 const PORT = process.env.PORT || 8002;
