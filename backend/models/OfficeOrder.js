@@ -43,6 +43,10 @@ const OfficeOrder = sequelize.define("OfficeOrder", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  status: {
+    type: DataTypes.STRING,
+    defaultValue: "PENDING",
+  },
 });
 
 export default OfficeOrder;

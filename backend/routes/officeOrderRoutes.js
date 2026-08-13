@@ -57,8 +57,20 @@ router.delete("/:id", async (req, res) => {
     }
     await order.destroy();
     res.json({ message: "Office order deleted successfully.", id });
+// UPDATE/CONFIRM office order status
+router.put("/:id/confirm", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await OfficeOrder.findByPk(id);
+    if (!order) {
+      return res.status(404).json({ error: "Office Order not found." });
+    }
+    const newStatus = order.status === "CONFIRMED" ? "PENDING" : "CONFIRMED";
+    order.status = newStatus;
+    await order.save();
+    res.json({ message: `Office Order ${newStatus.toLowerCase()} successfully.`, order });
   } catch (error) {
-    console.error("Error deleting office order:", error);
+    console.error("Error confirming office order:", error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -14,6 +14,7 @@ export default function OfficeOrdersPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
+  const [orderToConfirm, setOrderToConfirm] = useState(null);
   const [orderToPrint, setOrderToPrint] = useState(null);
 
   // Form Fields
@@ -118,6 +119,25 @@ export default function OfficeOrdersPage() {
     }
   };
 
+  // Handle Confirm Order Status Toggle
+  const handleConfirmOrderAction = async () => {
+    if (!orderToConfirm) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/office-orders/${orderToConfirm.id}/confirm`, {
+        method: "PUT",
+      });
+      if (res.ok) {
+        setOrderToConfirm(null);
+        fetchOrders();
+      } else {
+        alert("Failed to update Office Order status!");
+      }
+    } catch (err) {
+      console.error("Confirm order error:", err);
+      alert("Error confirming order: " + err.message);
+    }
+  };
+
   // Handle Print Individual Order
   const handlePrintOrder = (order) => {
     setOrderToPrint(order);
@@ -172,6 +192,15 @@ export default function OfficeOrdersPage() {
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-1.5 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-400"
               />
             </div>
+
+            {/* Print Table List Button */}
+            <button
+              onClick={() => window.print()}
+              className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase rounded-xl shadow-lg flex items-center gap-1.5 transition-all transform hover:scale-105 cursor-pointer whitespace-nowrap"
+              title="Print Office Orders Table List"
+            >
+              <Printer size={16} /> Print List (A4)
+            </button>
 
             {/* Create New Order Button */}
             <button
@@ -246,6 +275,25 @@ export default function OfficeOrdersPage() {
                       </td>
                       <td className="py-2.5 px-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-1.5">
+                          {/* Confirm Action Button */}
+                          {ord.status === "CONFIRMED" ? (
+                            <button
+                              onClick={() => setOrderToConfirm(ord)}
+                              className="px-2 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/40 rounded-lg text-[10px] font-black uppercase flex items-center gap-1 transition cursor-pointer"
+                              title="Click to toggle status"
+                            >
+                              <CheckCircle size={12} /> Confirmed
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setOrderToConfirm(ord)}
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase rounded-lg shadow flex items-center gap-1 transition cursor-pointer"
+                              title="Confirm Order"
+                            >
+                              <CheckCircle size={13} /> Confirm
+                            </button>
+                          )}
+
                           {/* Print Slip Button */}
                           <button
                             onClick={() => handlePrintOrder(ord)}
@@ -551,10 +599,66 @@ export default function OfficeOrdersPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* PRINT SLIP TEMPLATE (Only visible during print) */}
+      {/* CONFIRM ORDER ACTION POPUP */}
       {/* ========================================================================= */}
-      <div className="hidden print:block fixed inset-0 bg-white text-black p-6 font-sans">
-        {orderToPrint && (
+      {orderToConfirm && (
+        <div className="fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
+          <div className="bg-slate-800 border-2 border-emerald-500 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/40">
+                <CheckCircle size={24} />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-white uppercase tracking-wide">
+                  Confirm Office Order
+                </h3>
+                <p className="text-xs text-emerald-300 font-bold mt-0.5">
+                  Are you sure you want to {orderToConfirm.status === "CONFIRMED" ? "un-confirm" : "confirm"} Office Order #{orderToConfirm.orderNo}?
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-900 p-3 rounded-xl border border-slate-700 text-xs space-y-1 font-mono">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Truck No:</span>
+                <span className="text-white font-bold">{orderToConfirm.truckNo}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Consignor:</span>
+                <span className="text-white font-bold">{orderToConfirm.consignor}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Consignee:</span>
+                <span className="text-white font-bold">{orderToConfirm.consignee}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-700">
+              <button
+                type="button"
+                onClick={() => setOrderToConfirm(null)}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs uppercase rounded-xl cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmOrderAction}
+                className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase rounded-xl shadow-lg flex items-center gap-1.5 cursor-pointer"
+              >
+                <CheckCircle size={16} /> Yes, Confirm Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* PRINT TEMPLATE (Only visible during print) */}
+      {/* ========================================================================= */}
+      <div className="hidden print:block fixed inset-0 bg-white text-black p-4 font-sans">
+        {orderToPrint ? (
+          /* 1. INDIVIDUAL ORDER SLIP */
           <div ref={printRef} className="max-w-[185mm] mx-auto border-2 border-black p-4 space-y-4 bg-white text-black">
             
             {/* Header */}
@@ -626,6 +730,60 @@ export default function OfficeOrdersPage() {
               <div>AUTHORIZED SIGNATURE</div>
             </div>
 
+          </div>
+        ) : (
+          /* 2. FULL OFFICE ORDERS TABLE STATEMENT PRINT */
+          <div ref={printRef} className="w-full max-w-[210mm] mx-auto bg-white text-black">
+            {/* Complete Office Orders Table */}
+            <table className="w-full border-collapse border border-black text-[10px] font-semibold">
+              <thead className="bg-gray-200 border-b-2 border-black text-black font-black uppercase tracking-wider">
+                <tr>
+                  <th className="border border-black py-1.5 px-2 text-center">#</th>
+                  <th className="border border-black py-1.5 px-2 text-center">Order No</th>
+                  <th className="border border-black py-1.5 px-2 text-center">Date</th>
+                  <th className="border border-black py-1.5 px-2">Consignor</th>
+                  <th className="border border-black py-1.5 px-2">Consignee</th>
+                  <th className="border border-black py-1.5 px-2 text-center">Truck No</th>
+                  <th className="border border-black py-1.5 px-2 text-center">Driver No</th>
+                  <th className="border border-black py-1.5 px-2 text-center">Center</th>
+                  <th className="border border-black py-1.5 px-2 text-right">LR Charge (₹)</th>
+                  <th className="border border-black py-1.5 px-2">Remark</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black">
+                {filteredOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan="10" className="border border-black py-4 text-center font-bold">
+                      No Office Orders found.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredOrders.map((ord, idx) => (
+                    <tr key={ord.id || idx} className="border-b border-gray-400">
+                      <td className="border border-black py-1 px-1.5 text-center font-mono font-bold">{idx + 1}</td>
+                      <td className="border border-black py-1 px-1.5 text-center font-mono font-black">{ord.orderNo || "-"}</td>
+                      <td className="border border-black py-1 px-1.5 text-center font-mono">{ord.createdAt ? new Date(ord.createdAt).toLocaleDateString("en-IN") : "-"}</td>
+                      <td className="border border-black py-1 px-1.5 uppercase font-bold">{ord.consignor || "-"}</td>
+                      <td className="border border-black py-1 px-1.5 uppercase font-bold">{ord.consignee || "-"}</td>
+                      <td className="border border-black py-1 px-1.5 text-center font-mono font-black">{ord.truckNo || "-"}</td>
+                      <td className="border border-black py-1 px-1.5 text-center font-mono">{ord.driverNo || "-"}</td>
+                      <td className="border border-black py-1 px-1.5 text-center uppercase">{ord.center || "-"}</td>
+                      <td className="border border-black py-1 px-1.5 text-right font-mono font-bold">₹ {(ord.lrCharge || 0).toLocaleString("en-IN")}</td>
+                      <td className="border border-black py-1 px-1.5">{ord.remark || "-"}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+              <tfoot className="bg-gray-100 font-black border-t-2 border-black">
+                <tr>
+                  <td colSpan="8" className="border border-black py-1.5 px-2 text-right uppercase">TOTAL LR CHARGE:</td>
+                  <td className="border border-black py-1.5 px-2 text-right font-mono text-xs">
+                    ₹ {filteredOrders.reduce((sum, o) => sum + (Number(o.lrCharge) || 0), 0).toLocaleString("en-IN")}
+                  </td>
+                  <td className="border border-black py-1.5 px-2"></td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
         )}
       </div>
