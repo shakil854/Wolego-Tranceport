@@ -3,16 +3,18 @@ import { Lock, X, KeyRound, AlertCircle, ShieldCheck } from "lucide-react";
 import { API_BASE_URL } from "../config/api";
 import { useAuth } from "../context/AuthContext";
 
-export default function PasswordConfirmModal({ actionTitle, onConfirm, onClose }) {
+export default function PasswordConfirmModal({ actionTitle, onConfirm, onClose, passwordType = "action" }) {
   const { user } = useAuth();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isLogin = passwordType === "login";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!password) {
-      setError("Please enter password!");
+      setError(isLogin ? "Please enter login password!" : "Please enter security password!");
       return;
     }
     setError("");
@@ -26,12 +28,13 @@ export default function PasswordConfirmModal({ actionTitle, onConfirm, onClose }
           password,
           id: user?.id,
           username: user?.username,
+          passwordType,
         }),
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Incorrect Password! Access Denied.");
+        throw new Error(data.error || (isLogin ? "Incorrect Login Password! Access Denied." : "Incorrect Security Password! Access Denied."));
       }
 
       // Password verified successfully
@@ -45,20 +48,20 @@ export default function PasswordConfirmModal({ actionTitle, onConfirm, onClose }
 
   return (
     <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-800 border-2 border-rose-500/80 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
+      <div className={`bg-slate-800 border-2 ${isLogin ? "border-sky-500/80" : "border-rose-500/80"} rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200`}>
         
         {/* Header */}
         <div className="flex justify-between items-center border-b border-slate-700 pb-3">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-rose-500/20 text-rose-400 rounded-lg border border-rose-500/40">
+            <div className="p-2 rounded-lg border bg-rose-500/20 text-rose-400 border-rose-500/40">
               <Lock size={20} />
             </div>
             <div>
               <h3 className="text-base font-black text-white uppercase tracking-wide">
                 Action Security Password Required
               </h3>
-              <p className="text-[11px] text-rose-300 font-bold">
-                {actionTitle || "Enter action security password to proceed"}
+              <p className="text-[11px] font-bold text-rose-300">
+                {actionTitle || "Enter security password to proceed"}
               </p>
             </div>
           </div>
@@ -71,7 +74,7 @@ export default function PasswordConfirmModal({ actionTitle, onConfirm, onClose }
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
-              Enter Action Security Password (सिक्योरिटी पासवर्ड):
+              Enter Security Password (सिक्योरिटी पासवर्ड):
             </label>
             <div className="relative">
               <KeyRound className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
@@ -79,7 +82,7 @@ export default function PasswordConfirmModal({ actionTitle, onConfirm, onClose }
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter Action Security Password..."
+                placeholder="Enter Security Password..."
                 autoFocus
                 className="w-full bg-slate-900 border-2 border-rose-500/60 rounded-xl pl-9 pr-3 py-2 text-sm text-white font-mono placeholder-slate-500 focus:outline-none focus:border-rose-400"
               />

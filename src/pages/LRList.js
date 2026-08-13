@@ -326,6 +326,7 @@ export default function LRList() {
         {/* Password Confirmation Security Modal */}
         {pendingAction && (
           <PasswordConfirmModal
+            passwordType={pendingAction.type === "EDIT" ? "login" : "action"}
             actionTitle={
               pendingAction.type === "EDIT"
                 ? `Enter password to Edit LR #${pendingAction.lr?.lrNumber}`

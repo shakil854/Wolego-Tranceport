@@ -242,9 +242,9 @@ router.post("/change-action-password", async (req, res) => {
 // Verify password endpoint for security-protected actions (Edit/Delete LR, Truck Debit)
 router.post("/verify-password", async (req, res) => {
   try {
-    const { password, id, username } = req.body;
+    const { password, id, username, passwordType } = req.body;
     if (!password) {
-      return res.status(400).json({ success: false, error: "Action Password is required." });
+      return res.status(400).json({ success: false, error: "Password is required." });
     }
 
     let user = null;
@@ -266,17 +266,26 @@ router.post("/verify-password", async (req, res) => {
       return res.status(404).json({ success: false, error: "No user account found." });
     }
 
-    const isMatch = await verifyAndUpgradeActionPassword(user, password);
+    let isMatch = false;
+    if (passwordType === "login") {
+      isMatch = await verifyAndUpgradePassword(user, password);
+    } else {
+      isMatch = await verifyAndUpgradeActionPassword(user, password);
+    }
+
     if (!isMatch) {
-      return res.status(401).json({ success: false, error: "Incorrect Action Security Password! Access Denied." });
+      const errorMsg = passwordType === "login"
+        ? "Incorrect Login Password! Access Denied."
+        : "Incorrect Action Security Password! Access Denied.";
+      return res.status(401).json({ success: false, error: errorMsg });
     }
 
     return res.json({
       success: true,
-      message: "Action Password verified successfully!",
+      message: "Password verified successfully!",
     });
   } catch (err) {
-    console.error("Verify action password error:", err);
+    console.error("Verify password error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

@@ -2374,6 +2374,7 @@ export default function LREntryForm() {
         {/* Delete LR Password Confirmation Modal */}
         {showDeletePasswordModal && (
           <PasswordConfirmModal
+            passwordType="action"
             actionTitle={`Enter password to Delete LR #${formData.lrNumber}`}
             onConfirm={confirmDeleteCurrentLR}
             onClose={() => setShowDeletePasswordModal(false)}
@@ -2383,6 +2384,7 @@ export default function LREntryForm() {
         {/* Edit / Load Existing LR Password Confirmation Modal */}
         {showEditLoadPasswordModal && pendingLoadLR && (
           <PasswordConfirmModal
+            passwordType="login"
             actionTitle={`Enter password to Edit LR #${pendingLoadLR.lrNumber}`}
             onConfirm={confirmLoadExistingLR}
             onClose={() => {
