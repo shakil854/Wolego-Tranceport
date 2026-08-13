@@ -347,8 +347,8 @@ export default function FreightReceipt() {
               type="button"
               onClick={() => setReceiptType("CHEQUE")}
               className={`py-2 px-2 sm:px-3 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${receiptType === "CHEQUE"
-                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
-                  : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
+                : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
                 }`}
             >
               <CheckCircle2 size={15} /> Cheque + Cash
@@ -358,8 +358,8 @@ export default function FreightReceipt() {
               type="button"
               onClick={() => setReceiptType("CASH")}
               className={`py-2 px-2 sm:px-3 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${receiptType === "CASH"
-                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
-                  : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
+                : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
                 }`}
             >
               <DollarSign size={15} /> Cash Only
@@ -369,8 +369,8 @@ export default function FreightReceipt() {
               type="button"
               onClick={() => setReceiptType("ADVANCE_CHEQUE")}
               className={`py-2 px-2 sm:px-3 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${receiptType === "ADVANCE_CHEQUE"
-                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
-                  : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
+                : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
                 }`}
             >
               <CheckCircle2 size={15} /> Advance Cheque
@@ -380,8 +380,8 @@ export default function FreightReceipt() {
               type="button"
               onClick={() => setReceiptType("ADVANCE_CASH")}
               className={`py-2 px-2 sm:px-3 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${receiptType === "ADVANCE_CASH"
-                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
-                  : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg scale-105"
+                : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
                 }`}
             >
               <DollarSign size={15} /> Advance Cash
@@ -716,52 +716,10 @@ export default function FreightReceipt() {
           className="freight-print-wrapper bg-white text-black max-w-[185mm] w-full mx-auto font-sans border-2 border-black shadow-none rounded-none box-border p-0"
           style={{ width: "185mm", backgroundColor: "#ffffff", color: "#000000" }}
         >
-          {/* 1. Top Jurisdiction Bar (Wall to wall with 2px bottom border) */}
-          <div className="text-center font-extrabold uppercase tracking-wide text-[10px] sm:text-[10.5px] py-1 border-b-2 border-black text-black bg-white whitespace-nowrap">
-            <u>SUBJECT TO WANKANER JURISDICTION</u>
-          </div>
 
-          {/* 2. 3-Column Company Header Row (Wall to wall with 2px black dividers) */}
-          <div className="grid grid-cols-12 items-center border-b-2 border-black bg-white text-black py-1.5 px-0">
-            {/* Left Logo Column (Col 2 with 2px black right border) */}
-            <div className="col-span-2 flex flex-col items-center justify-center border-r-2 border-black pr-1 h-full">
-              <img
-                src={logoImg}
-                alt="Wolego Transport Logo"
-                className="h-20 sm:h-24 w-auto max-w-full object-contain mix-blend-multiply"
-              />
-            </div>
-
-            {/* Center Title & Details Column (Col 7 - Clean Natural Spacing) */}
-            <div className="col-span-7 border-r-2 border-black text-center flex flex-col items-center justify-center space-y-1 py-1 px-1">
-              <h1 className="text-xl sm:text-2xl font-black text-[#009a44] font-serif tracking-wider uppercase leading-tight whitespace-nowrap">
-                WOLEGO TRANSPORT
-              </h1>
-              <p className="text-[11px] sm:text-xs font-black italic text-[#800000] font-serif tracking-wide leading-tight whitespace-nowrap">
-                EVERYTHING IS FAST
-              </p>
-              <div className="whitespace-nowrap flex justify-center items-center">
-                <div className="bg-[#1e3a8a] text-white font-black text-[9px] sm:text-[10px] px-3 py-1 rounded-xs uppercase tracking-wider inline-flex items-center justify-center text-center leading-normal">
-                  TRANSPORT CONTRACTOR AND COMMISSION AGENT
-                </div>
-              </div>
-              <div className="text-[8.5px] sm:text-[9.5px] font-black text-[#800000] leading-snug text-center uppercase whitespace-nowrap">
-                <div>SURVEY NUMBER NA 178P8, 27 NATIONAL HIGHWAY,</div>
-                <div>CHANDRAPUR, WANKANER-363621 DISTRICT-MORBI ( GUJRAT )</div>
-              </div>
-            </div>
-
-            {/* Right Contact Details Column (Col 3) */}
-            <div className="col-span-3 pl-2 space-y-0.5 text-[8.5px] sm:text-[9.5px] font-black text-black text-left flex flex-col justify-center h-full whitespace-nowrap">
-              <div>MOBILE NO. +91 99 79 111 555</div>
-              <div>MOBILE NO. +91 81 41 111 555</div>
-              <div>PAN NO. : DLTPS8567M</div>
-              <div>GSTIN NO. : 24DLTPS8567M1ZT</div>
-            </div>
-          </div>
 
           {/* 3. Freight Receipt Title Banner (Wall to wall with 2px bottom border) */}
-          <div className="bg-slate-900 text-white font-black text-xs sm:text-sm py-1 text-center uppercase tracking-widest border-b-2 border-black">
+          <div className="bg-blue-900 text-white font-black text-xs sm:text-sm py-1 text-center uppercase tracking-widest border-b-2 border-black">
             FREIGHT RECEIPT
           </div>
 
