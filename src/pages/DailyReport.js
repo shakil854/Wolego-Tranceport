@@ -188,13 +188,9 @@ export default function DailyReport() {
           city = extractCityFromAddressLine(matchedParty.city);
         }
 
-        // Area component: Use Party Master city field (or address2 as fallback)
-        if (matchedParty.city) {
+        // Area component: Only use Party Master city field if present
+        if (matchedParty.city && matchedParty.city.trim()) {
           area = extractCityFromAddressLine(matchedParty.city);
-        } else if (matchedParty.address2) {
-          area = matchedParty.address2.trim().toUpperCase();
-        } else if (matchedParty.district) {
-          area = matchedParty.district.trim().toUpperCase();
         }
       }
     }
