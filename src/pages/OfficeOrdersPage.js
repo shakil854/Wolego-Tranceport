@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, Printer, Trash2, Search, X, CheckCircle, AlertTriangle, FileText, Phone, Truck, MapPin, DollarSign, Building } from "lucide-react";
+import { Plus, Printer, Trash2, Search, X, CheckCircle, AlertTriangle, FileText, Phone, Truck, MapPin, DollarSign, Building, Edit2, ChevronDown, Check } from "lucide-react";
 import { API_BASE_URL } from "../config/api";
 import { useAuth } from "../context/AuthContext";
+import { fetchPartiesFromDB, fetchTrucksFromDB } from "../utils/storage";
 import logoImg from "../assets/logo.png";
 
 export default function OfficeOrdersPage() {
@@ -10,12 +11,32 @@ export default function OfficeOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Master Data
+  const [parties, setParties] = useState([]);
+  const [trucks, setTrucks] = useState([]);
+
   // Modal States
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingOrder, setEditingOrder] = useState(null);
   const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [orderToConfirm, setOrderToConfirm] = useState(null);
   const [orderToPrint, setOrderToPrint] = useState(null);
+
+  // Dropdown & Search States for Modal
+  const [selectedConsignors, setSelectedConsignors] = useState([]);
+  const [consignorSearch, setConsignorSearch] = useState("");
+  const [showConsignorDropdown, setShowConsignorDropdown] = useState(false);
+
+  const [consigneeSearch, setConsigneeSearch] = useState("");
+  const [showConsigneeDropdown, setShowConsigneeDropdown] = useState(false);
+
+  const [truckSearch, setTruckSearch] = useState("");
+  const [showTruckDropdown, setShowTruckDropdown] = useState(false);
+
+  const consignorDropdownRef = useRef(null);
+  const consigneeDropdownRef = useRef(null);
+  const truckDropdownRef = useRef(null);
 
   // Form Fields
   const [formData, setFormData] = useState({
@@ -46,9 +67,154 @@ export default function OfficeOrdersPage() {
     }
   };
 
+  const loadMasterData = async () => {
+    try {
+      const [pts, trks] = await Promise.all([
+        fetchPartiesFromDB(),
+        fetchTrucksFromDB(),
+      ]);
+      setParties(pts || []);
+      setTrucks(trks || []);
+    } catch (e) {
+      console.error("Failed to load master data:", e);
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
+    loadMasterData();
   }, []);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (consignorDropdownRef.current && !consignorDropdownRef.current.contains(e.target)) {
+        setShowConsignorDropdown(false);
+      }
+      if (consigneeDropdownRef.current && !consigneeDropdownRef.current.contains(e.target)) {
+        setShowConsigneeDropdown(false);
+      }
+      if (truckDropdownRef.current && !truckDropdownRef.current.contains(e.target)) {
+        setShowTruckDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Master Filter Lists
+  const consignorsList = parties.filter((p) => p.selectType === "CONSIGNOR" || p.selectType === "BOTH");
+  const consigneesList = parties.filter((p) => p.selectType === "CONSIGNEE" || p.selectType === "BOTH");
+
+  const filteredConsignorsList = consignorsList.filter((p) =>
+    (p.partyName || "").toLowerCase().includes(consignorSearch.toLowerCase()) ||
+    (p.city || "").toLowerCase().includes(consignorSearch.toLowerCase()) ||
+    (p.district || "").toLowerCase().includes(consignorSearch.toLowerCase())
+  );
+
+  const filteredConsigneesList = consigneesList.filter((p) =>
+    (p.partyName || "").toLowerCase().includes(consigneeSearch.toLowerCase()) ||
+    (p.city || "").toLowerCase().includes(consigneeSearch.toLowerCase()) ||
+    (p.district || "").toLowerCase().includes(consigneeSearch.toLowerCase())
+  );
+
+  const filteredTrucksList = trucks.filter((t) =>
+    (t.truckNo || "").toLowerCase().includes(truckSearch.toLowerCase()) ||
+    (t.ownerName || "").toLowerCase().includes(truckSearch.toLowerCase()) ||
+    (t.mobileNo || "").toLowerCase().includes(truckSearch.toLowerCase())
+  );
+
+  // Consignor Toggle Handler (Multiple selection)
+  const handleToggleConsignor = (partyName) => {
+    if (!partyName) return;
+    let updated;
+    if (selectedConsignors.includes(partyName)) {
+      updated = selectedConsignors.filter((c) => c !== partyName);
+    } else {
+      updated = [...selectedConsignors, partyName];
+    }
+    setSelectedConsignors(updated);
+    setFormData((prev) => ({
+      ...prev,
+      consignor: updated.join(" + "),
+    }));
+    setConsignorSearch("");
+  };
+
+  const handleRemoveConsignor = (partyName) => {
+    const updated = selectedConsignors.filter((c) => c !== partyName);
+    setSelectedConsignors(updated);
+    setFormData((prev) => ({
+      ...prev,
+      consignor: updated.join(" + "),
+    }));
+  };
+
+  // Consignee Select Handler
+  const handleSelectConsignee = (partyName) => {
+    setFormData((prev) => ({
+      ...prev,
+      consignee: partyName,
+    }));
+    setConsigneeSearch(partyName);
+    setShowConsigneeDropdown(false);
+  };
+
+  // Truck Select Handler
+  const handleSelectTruck = (trkW) => {
+    const tNo = trkW.truckNo || "";
+    setFormData((prev) => ({
+      ...prev,
+      truckNo: tNo.toUpperCase(),
+    }));
+    setTruckSearch(tNo.toUpperCase());
+    setShowTruckDropdown(false);
+  };
+
+  const handleOpenAddModal = () => {
+    setEditingOrder(null);
+    setSelectedConsignors([]);
+    setConsignorSearch("");
+    setConsigneeSearch("");
+    setTruckSearch("");
+    setFormData({
+      consignor: "",
+      consignee: "",
+      truckNo: "",
+      driverNo: "",
+      center: "",
+      lrCharge: "",
+      remark: "",
+    });
+    setShowAddModal(true);
+  };
+
+  const handleOpenEditModal = (ord) => {
+    setEditingOrder(ord);
+    // Parse consignor(s)
+    let parsedConsignors = [];
+    if (ord.consignor) {
+      parsedConsignors = ord.consignor
+        .split(/\+|\n|,/)
+        .map((s) => s.replace(/^\(\d+\)\s*/, "").trim().toUpperCase())
+        .filter(Boolean);
+    }
+    setSelectedConsignors(parsedConsignors);
+    setConsignorSearch("");
+    setConsigneeSearch(ord.consignee || "");
+    setTruckSearch(ord.truckNo || "");
+
+    setFormData({
+      consignor: ord.consignor || "",
+      consignee: ord.consignee || "",
+      truckNo: ord.truckNo || "",
+      driverNo: ord.driverNo || "",
+      center: ord.center || "",
+      lrCharge: ord.lrCharge || "",
+      remark: ord.remark || "",
+    });
+    setShowAddModal(true);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,37 +227,75 @@ export default function OfficeOrdersPage() {
   // Submit Handler -> Triggers Save Confirmation Popup
   const handlePreSave = (e) => {
     e.preventDefault();
+    if (selectedConsignors.length === 0 && !formData.consignor) {
+      alert("Please select at least one Consignor from Party Master!");
+      return;
+    }
+    if (!formData.consignee) {
+      alert("Please select a Consignee from Party Master!");
+      return;
+    }
+    if (!formData.truckNo) {
+      alert("Please select a Truck No. from Truck Master!");
+      return;
+    }
     setShowSaveConfirmModal(true);
   };
 
-  // Confirmed Save Handler
+  // Confirmed Save / Update Handler
   const handleConfirmSave = async () => {
     setShowSaveConfirmModal(false);
     try {
-      const res = await fetch(`${API_BASE_URL}/office-orders`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          createdBy: user?.username || "OFFICE",
-        }),
-      });
-
-      if (res.ok) {
-        // Reset form & close modal
-        setFormData({
-          consignor: "",
-          consignee: "",
-          truckNo: "",
-          driverNo: "",
-          center: "",
-          lrCharge: "",
-          remark: "",
+      if (editingOrder) {
+        // Update existing order
+        const res = await fetch(`${API_BASE_URL}/office-orders/${editingOrder.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
         });
-        setShowAddModal(false);
-        fetchOrders();
+
+        if (res.ok) {
+          setEditingOrder(null);
+          setFormData({
+            consignor: "",
+            consignee: "",
+            truckNo: "",
+            driverNo: "",
+            center: "",
+            lrCharge: "",
+            remark: "",
+          });
+          setShowAddModal(false);
+          fetchOrders();
+        } else {
+          alert("Failed to update Office Order!");
+        }
       } else {
-        alert("Failed to save Office Order!");
+        // Create new order
+        const res = await fetch(`${API_BASE_URL}/office-orders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...formData,
+            createdBy: user?.username || "OFFICE",
+          }),
+        });
+
+        if (res.ok) {
+          setFormData({
+            consignor: "",
+            consignee: "",
+            truckNo: "",
+            driverNo: "",
+            center: "",
+            lrCharge: "",
+            remark: "",
+          });
+          setShowAddModal(false);
+          fetchOrders();
+        } else {
+          alert("Failed to save Office Order!");
+        }
       }
     } catch (err) {
       console.error("Save order error:", err);
@@ -204,7 +408,7 @@ export default function OfficeOrdersPage() {
 
             {/* Create New Order Button */}
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={handleOpenAddModal}
               className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase rounded-xl shadow-lg flex items-center gap-1.5 transition-all transform hover:scale-105 cursor-pointer whitespace-nowrap"
             >
               <Plus size={16} /> Add Office Order
@@ -294,13 +498,13 @@ export default function OfficeOrdersPage() {
                             </button>
                           )}
 
-                          {/* Print Slip Button */}
+                          {/* Edit Order Button */}
                           <button
-                            onClick={() => handlePrintOrder(ord)}
-                            className="p-1.5 bg-sky-500/20 hover:bg-sky-500 text-sky-300 hover:text-slate-950 rounded-lg border border-sky-500/40 transition-all cursor-pointer"
-                            title="Print Slip"
+                            onClick={() => handleOpenEditModal(ord)}
+                            className="p-1.5 bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 rounded-lg border border-amber-500/40 transition-all cursor-pointer"
+                            title="Edit Order"
                           >
-                            <Printer size={14} />
+                            <Edit2 size={14} />
                           </button>
 
                           {/* Delete Button */}
@@ -324,24 +528,24 @@ export default function OfficeOrdersPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* ADD NEW OFFICE ORDER MODAL FORM */}
+      {/* ADD / EDIT OFFICE ORDER MODAL FORM */}
       {/* ========================================================================= */}
       {showAddModal && (
         <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 print:hidden">
-          <div className="bg-slate-800 border-2 border-amber-500/80 rounded-2xl max-w-lg w-full p-4 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
+          <div className="bg-slate-800 border-2 border-amber-500/80 rounded-2xl max-w-xl w-full p-4 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
             
             {/* Header */}
             <div className="flex justify-between items-center border-b border-slate-700 pb-3">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-amber-500/20 text-amber-400 rounded-lg border border-amber-500/40">
-                  <Plus size={20} />
+                  {editingOrder ? <Edit2 size={20} /> : <Plus size={20} />}
                 </div>
                 <div>
                   <h3 className="text-base font-black text-white uppercase tracking-wide">
-                    Create New Office Order
+                    {editingOrder ? `Edit Office Order (#${editingOrder.orderNo || ""})` : "Create New Office Order"}
                   </h3>
                   <p className="text-[11px] text-amber-300 font-bold">
-                    Enter office order details below
+                    {editingOrder ? "Modify office order details below" : "Enter office order details below"}
                   </p>
                 </div>
               </div>
@@ -353,52 +557,221 @@ export default function OfficeOrdersPage() {
             {/* Form */}
             <form onSubmit={handlePreSave} className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Consignor */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                    Consignor Name
-                  </label>
-                  <input
-                    type="text"
-                    name="consignor"
-                    value={formData.consignor}
-                    onChange={handleChange}
-                    placeholder="CONSIGNOR NAME"
-                    required
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white uppercase focus:outline-none focus:border-amber-400"
-                  />
+                {/* Consignor (Multi-Select from Party Master) */}
+                <div className="sm:col-span-2 relative" ref={consignorDropdownRef}>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-[11px] font-bold text-amber-300 uppercase">
+                      Consignor Name(s) <span className="text-slate-400 font-normal">(From Party Master - Can select multiple)</span>
+                    </label>
+                    {selectedConsignors.length > 0 && (
+                      <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/40">
+                        {selectedConsignors.length} Selected
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Selected Consignor Badges / Chips */}
+                  {selectedConsignors.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2 p-2 bg-slate-900/90 rounded-xl border border-amber-500/30">
+                      {selectedConsignors.map((cName, idx) => (
+                        <span
+                          key={cName + idx}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/20 border border-amber-500/50 text-amber-200 font-bold text-xs rounded-lg"
+                        >
+                          <span className="text-[10px] text-amber-400 font-mono">({idx + 1})</span>
+                          <span>{cName}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveConsignor(cName)}
+                            className="text-slate-400 hover:text-rose-400 p-0.5 rounded transition cursor-pointer"
+                          >
+                            <X size={13} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Search Input for Consignor */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={consignorSearch}
+                      onFocus={() => setShowConsignorDropdown(true)}
+                      onChange={(e) => {
+                        setConsignorSearch(e.target.value);
+                        setShowConsignorDropdown(true);
+                      }}
+                      placeholder="Click or search to select Consignor(s)..."
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-3 pr-8 py-2 text-xs text-white uppercase focus:outline-none focus:border-amber-400"
+                    />
+                    <ChevronDown
+                      size={16}
+                      onClick={() => setShowConsignorDropdown(!showConsignorDropdown)}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Consignors Dropdown Menu */}
+                  {showConsignorDropdown && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-slate-900 border-2 border-amber-500/80 rounded-xl shadow-2xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-800">
+                      {filteredConsignorsList.map((p) => {
+                        const isSelected = selectedConsignors.includes(p.partyName);
+                        return (
+                          <div
+                            key={p.id}
+                            onClick={() => handleToggleConsignor(p.partyName)}
+                            className={`p-2.5 cursor-pointer text-xs flex justify-between items-center transition-colors ${
+                              isSelected
+                                ? "bg-amber-500/20 text-amber-300 font-bold border-l-4 border-amber-400"
+                                : "text-slate-200 hover:bg-slate-800 hover:text-amber-300"
+                            }`}
+                          >
+                            <div>
+                              <div className="font-bold text-xs uppercase">{p.partyName}</div>
+                              <div className="text-[10px] text-slate-400">
+                                {[p.city, p.district, p.state].filter(Boolean).join(", ") || "-"}
+                              </div>
+                            </div>
+                            {isSelected ? (
+                              <span className="flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded">
+                                <Check size={13} /> Selected
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 border border-slate-700 px-2 py-0.5 rounded hover:border-amber-400">
+                                + Add
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {filteredConsignorsList.length === 0 && (
+                        <div className="p-3 text-center text-xs text-slate-400 italic">
+                          No Consignor found in Party Master.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* Consignee */}
-                <div>
+                {/* Consignee (From Party Master) */}
+                <div className="relative" ref={consigneeDropdownRef}>
                   <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                    Consignee Name
+                    Consignee Name <span className="text-slate-400 font-normal">(From Party Master)</span>
                   </label>
-                  <input
-                    type="text"
-                    name="consignee"
-                    value={formData.consignee}
-                    onChange={handleChange}
-                    placeholder="CONSIGNEE NAME"
-                    required
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white uppercase focus:outline-none focus:border-amber-400"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={consigneeSearch || formData.consignee}
+                      onFocus={() => setShowConsigneeDropdown(true)}
+                      onChange={(e) => {
+                        setConsigneeSearch(e.target.value);
+                        setFormData((prev) => ({ ...prev, consignee: e.target.value.toUpperCase() }));
+                        setShowConsigneeDropdown(true);
+                      }}
+                      placeholder="Search Consignee..."
+                      required
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-3 pr-8 py-2 text-xs text-white uppercase focus:outline-none focus:border-amber-400"
+                    />
+                    <ChevronDown
+                      size={16}
+                      onClick={() => setShowConsigneeDropdown(!showConsigneeDropdown)}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Consignees Dropdown */}
+                  {showConsigneeDropdown && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-slate-900 border-2 border-amber-500/80 rounded-xl shadow-2xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-800">
+                      {filteredConsigneesList.map((p) => {
+                        const isSelected = formData.consignee.toUpperCase() === p.partyName.toUpperCase();
+                        return (
+                          <div
+                            key={p.id}
+                            onClick={() => handleSelectConsignee(p.partyName)}
+                            className={`p-2.5 cursor-pointer text-xs flex justify-between items-center transition-colors ${
+                              isSelected
+                                ? "bg-amber-500/20 text-amber-300 font-bold border-l-4 border-amber-400"
+                                : "text-slate-200 hover:bg-slate-800 hover:text-amber-300"
+                            }`}
+                          >
+                            <div>
+                              <div className="font-bold text-xs uppercase">{p.partyName}</div>
+                              <div className="text-[10px] text-slate-400">
+                                {[p.city, p.district, p.state].filter(Boolean).join(", ") || "-"}
+                              </div>
+                            </div>
+                            {isSelected && <Check size={14} className="text-amber-400" />}
+                          </div>
+                        );
+                      })}
+                      {filteredConsigneesList.length === 0 && (
+                        <div className="p-3 text-center text-xs text-slate-400 italic">
+                          No Consignee found in Party Master.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* Truck No */}
-                <div>
+                {/* Truck No (From Truck Master) */}
+                <div className="relative" ref={truckDropdownRef}>
                   <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                    Truck No.
+                    Truck No. <span className="text-slate-400 font-normal">(From Truck Master)</span>
                   </label>
-                  <input
-                    type="text"
-                    name="truckNo"
-                    value={formData.truckNo}
-                    onChange={handleChange}
-                    placeholder="GJ 36 X 1234"
-                    required
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-emerald-400 font-mono font-bold uppercase focus:outline-none focus:border-amber-400"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={truckSearch || formData.truckNo}
+                      onFocus={() => setShowTruckDropdown(true)}
+                      onChange={(e) => {
+                        setTruckSearch(e.target.value.toUpperCase());
+                        setFormData((prev) => ({ ...prev, truckNo: e.target.value.toUpperCase() }));
+                        setShowTruckDropdown(true);
+                      }}
+                      placeholder="GJ 36 X 1234"
+                      required
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-3 pr-8 py-2 text-xs text-emerald-400 font-mono font-bold uppercase focus:outline-none focus:border-amber-400"
+                    />
+                    <ChevronDown
+                      size={16}
+                      onClick={() => setShowTruckDropdown(!showTruckDropdown)}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Trucks Dropdown */}
+                  {showTruckDropdown && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-slate-900 border-2 border-amber-500/80 rounded-xl shadow-2xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-800">
+                      {filteredTrucksList.map((t) => {
+                        const isSelected = formData.truckNo.toUpperCase() === (t.truckNo || "").toUpperCase();
+                        return (
+                          <div
+                            key={t.id || t.truckNo}
+                            onClick={() => handleSelectTruck(t)}
+                            className={`p-2.5 cursor-pointer text-xs flex justify-between items-center transition-colors ${
+                              isSelected
+                                ? "bg-emerald-500/20 text-emerald-300 font-bold border-l-4 border-emerald-400"
+                                : "text-slate-200 hover:bg-slate-800 hover:text-emerald-300"
+                            }`}
+                          >
+                            <div>
+                              <div className="font-mono font-bold text-xs text-emerald-400 uppercase">{t.truckNo}</div>
+                              <div className="text-[10px] text-slate-400">
+                                {t.ownerName ? `Owner: ${t.ownerName}` : ""} {t.mobileNo ? `| Mob: ${t.mobileNo}` : ""}
+                              </div>
+                            </div>
+                            {isSelected && <Check size={14} className="text-emerald-400" />}
+                          </div>
+                        );
+                      })}
+                      {filteredTrucksList.length === 0 && (
+                        <div className="p-3 text-center text-xs text-slate-400 italic">
+                          No Truck found in Truck Master.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Driver Mobile No */}
@@ -475,7 +848,7 @@ export default function OfficeOrdersPage() {
                   type="submit"
                   className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase rounded-xl shadow-lg flex items-center gap-1.5 cursor-pointer"
                 >
-                  <CheckCircle size={16} /> Save Order
+                  <CheckCircle size={16} /> {editingOrder ? "Update Order" : "Save Order"}
                 </button>
               </div>
             </form>
@@ -485,7 +858,7 @@ export default function OfficeOrdersPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* SAVE CONFIRMATION POPUP */}
+      {/* SAVE / UPDATE CONFIRMATION POPUP */}
       {/* ========================================================================= */}
       {showSaveConfirmModal && (
         <div className="fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
@@ -496,10 +869,10 @@ export default function OfficeOrdersPage() {
               </div>
               <div>
                 <h3 className="text-base font-black text-white uppercase tracking-wide">
-                  Confirm Office Order Creation
+                  {editingOrder ? "Confirm Office Order Update" : "Confirm Office Order Creation"}
                 </h3>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  Are you sure you want to save this new Office Order entry?
+                  {editingOrder ? "Are you sure you want to update this Office Order entry?" : "Are you sure you want to save this new Office Order entry?"}
                 </p>
               </div>
             </div>
@@ -536,7 +909,7 @@ export default function OfficeOrdersPage() {
                 onClick={handleConfirmSave}
                 className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase rounded-xl shadow-lg flex items-center gap-1.5 cursor-pointer"
               >
-                <CheckCircle size={16} /> Yes, Confirm & Save
+                <CheckCircle size={16} /> {editingOrder ? "Yes, Confirm & Update" : "Yes, Confirm & Save"}
               </button>
             </div>
           </div>

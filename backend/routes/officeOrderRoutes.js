@@ -47,6 +47,31 @@ router.post("/", async (req, res) => {
   }
 });
 
+// UPDATE office order details
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await OfficeOrder.findByPk(id);
+    if (!order) {
+      return res.status(404).json({ error: "Office Order not found." });
+    }
+    const { consignor, consignee, truckNo, driverNo, center, lrCharge, remark } = req.body;
+    order.consignor = consignor !== undefined ? consignor : order.consignor;
+    order.consignee = consignee !== undefined ? consignee : order.consignee;
+    order.truckNo = truckNo !== undefined ? String(truckNo).toUpperCase().trim() : order.truckNo;
+    order.driverNo = driverNo !== undefined ? driverNo : order.driverNo;
+    order.center = center !== undefined ? center : order.center;
+    order.lrCharge = lrCharge !== undefined ? parseFloat(lrCharge) || 0 : order.lrCharge;
+    order.remark = remark !== undefined ? remark : order.remark;
+
+    await order.save();
+    res.json({ message: "Office order updated successfully.", order });
+  } catch (error) {
+    console.error("Error updating office order:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // DELETE office order
 router.delete("/:id", async (req, res) => {
   try {
