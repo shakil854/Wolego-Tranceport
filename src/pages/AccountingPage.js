@@ -299,6 +299,7 @@ export default function AccountingPage() {
       ...lrEntries
         .filter((lr) => {
           const status = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+          if (status === "TO PAY" || status === "TOPAY") return false;
           return status === "PAID" || lr.debitAmountTo?.toUpperCase() === "CONSIGNOR";
         })
         .map((lr) => lr.consignorName?.trim()),
@@ -316,6 +317,7 @@ export default function AccountingPage() {
       ...lrEntries
         .filter((lr) => {
           const status = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+          if (status === "TO PAY" || status === "TOPAY") return false;
           return status === "TBB" || lr.debitAmountTo?.toUpperCase() === "CONSIGNEE";
         })
         .map((lr) => lr.consigneeName?.trim()),
@@ -392,6 +394,9 @@ export default function AccountingPage() {
     const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
     const debitOverride = lr.debitAmountTo?.trim()?.toUpperCase();
 
+    // TO PAY has 0 accounting entries across all tabs!
+    if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
+
     // Active Tab filtering: "ALL", "CONSIGNOR", "CONSIGNEE", "TRUCK"
     if (activeTab === "CONSIGNOR") {
       // Rule: PAID LRs post to Consignor (or debitAmountTo === CONSIGNOR override)
@@ -404,8 +409,6 @@ export default function AccountingPage() {
       if (!lr.consigneeName) return false;
       if (selectedPartyName !== "ALL" && lr.consigneeName?.trim() !== selectedPartyName) return false;
     } else if (activeTab === "ALL" || activeTab === "PARTY") {
-      // Rule: TO-PAY LRs post 0 accounting entries!
-      if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
       if (selectedPartyName !== "ALL") {
         const partyMatch =
           getPartyName(lr) === selectedPartyName ||
@@ -414,8 +417,6 @@ export default function AccountingPage() {
         if (!partyMatch) return false;
       }
     } else if (activeTab === "TRUCK") {
-      // Rule: TBB & PAID post to Truck. TO-PAY posts 0 accounting entries to Truck!
-      if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
       if (selectedTruckNo !== "ALL") {
         if (lr.truckNo?.trim()?.toUpperCase() !== selectedTruckNo) return false;
       }

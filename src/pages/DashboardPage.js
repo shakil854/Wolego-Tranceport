@@ -130,6 +130,9 @@ export default function DashboardPage() {
     const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
     const debitOverride = lr.debitAmountTo?.trim()?.toUpperCase();
 
+    // TO PAY has 0 accounting entries!
+    if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
+
     // Rule: TBB LRs post to Consignee (or debitAmountTo === CONSIGNEE override)
     if (payStatus !== "TBB" && debitOverride !== "CONSIGNEE") return false;
     return true;

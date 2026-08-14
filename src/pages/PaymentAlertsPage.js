@@ -108,7 +108,11 @@ export default function PaymentAlertsPage() {
   today.setHours(0, 0, 0, 0);
 
   const processedAlerts = lrEntries
-    .filter((lr) => lr.partyPaymentStatus !== "PAID") // Only unpaid/pending
+    .filter((lr) => {
+      const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+      if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
+      return lr.partyPaymentStatus !== "PAID";
+    }) // Only unpaid/pending (excluding TO-PAY)
     .map((lr) => {
       const partyName = (
         lr.consigneeName ||
