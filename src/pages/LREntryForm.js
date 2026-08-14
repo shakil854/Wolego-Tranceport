@@ -4,7 +4,7 @@ import { fetchPartiesFromDB, fetchLREntriesFromDB, saveLREntry, deleteLREntry, g
 import LRPrintDocument from "../components/LRPrintDocument";
 import PasswordConfirmModal from "../components/PasswordConfirmModal";
 import SearchableStateSelect, { getStateCode } from "../components/SearchableStateSelect";
-import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2, Truck, Trash2, AlertCircle } from "lucide-react";
+import { Save, Printer, Download, Share2, Plus, RotateCcw, Search, X, Building2, Truck, Trash2, AlertCircle, FileText, Eye } from "lucide-react";
 import { API_BASE_URL } from "../config/api";
 
 export default function LREntryForm() {
@@ -13,13 +13,29 @@ export default function LREntryForm() {
   const [selectedConsignors, setSelectedConsignors] = useState([]);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [activeAutoAction, setActiveAutoAction] = useState(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showCopySelectModal, setShowCopySelectModal] = useState(false);
+  const [selectedCopies, setSelectedCopies] = useState(["CONSIGNOR"]);
   const [searchConsignorModal, setSearchConsignorModal] = useState(false);
   const [searchConsigneeModal, setSearchConsigneeModal] = useState(false);
   const [partySearchQuery, setPartySearchQuery] = useState("");
   const [activeLR, setActiveLR] = useState(null);
   const [statusMsg, setStatusMsg] = useState("");
-  const [selectedCopyForPrint, setSelectedCopyForPrint] = useState("CONSIGNOR");
+
+  const toggleCopySelection = (copyType) => {
+    setSelectedCopies((prev) => {
+      if (prev.includes(copyType)) {
+        return prev.length > 1 ? prev.filter((c) => c !== copyType) : prev;
+      } else {
+        return [...prev, copyType];
+      }
+    });
+  };
+
+  const confirmCopySelectionAndProceed = (action) => {
+    setActiveAutoAction(action);
+    setShowCopySelectModal(false);
+    setShowPrintModal(true);
+  };
 
   const initialBlankPartyForm = {
     partyName: "",
@@ -416,8 +432,7 @@ export default function LREntryForm() {
   const handleSaveAndPrint = async (e) => {
     const saved = await handleSave(e);
     if (saved) {
-      setActiveAutoAction("print");
-      setShowPrintModal(true);
+      setShowCopySelectModal(true);
     }
   };
 
@@ -820,7 +835,7 @@ export default function LREntryForm() {
     return (
       <LRPrintDocument
         lrData={activeLR}
-        initialCopyType={selectedCopyForPrint}
+        initialCopyType={selectedCopies}
         autoAction={activeAutoAction}
         onClose={() => {
           setShowPrintModal(false);
@@ -1587,7 +1602,9 @@ export default function LREntryForm() {
               type="button"
               onClick={async () => {
                 const saved = await handleSave();
-                if (saved) setShowPrintModal(true);
+                if (saved) {
+                  confirmCopySelectionAndProceed("pdf");
+                }
               }}
               className="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
             >
@@ -1598,7 +1615,9 @@ export default function LREntryForm() {
               type="button"
               onClick={async () => {
                 const saved = await handleSave();
-                if (saved) setShowPrintModal(true);
+                if (saved) {
+                  confirmCopySelectionAndProceed("whatsapp");
+                }
               }}
               className="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
             >
@@ -1625,114 +1644,100 @@ export default function LREntryForm() {
           </div>
         </div>
 
-        {/* LR Saved Successfully Pop-up Modal */}
-        {showSuccessModal && activeLR && (
-          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-800 border-2 border-amber-400 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
-              <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl font-black">
-                ✓
+        {/* Copy Selection Selector Modal */}
+        {showCopySelectModal && activeLR && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-amber-400" />
+                  <h3 className="text-base font-black text-amber-400">
+                    Select Copies for LR #{activeLR.lrNumber}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowCopySelectModal(false)}
+                  className="text-slate-400 hover:text-white text-lg font-bold px-1"
+                >
+                  ✕
+                </button>
               </div>
 
-              <div>
-                <h2 className="text-xl font-black text-white uppercase tracking-wide">
-                  L/R #{activeLR.lrNumber} Saved Successfully!
-                </h2>
-                <p className="text-xs text-slate-300 mt-1">
-                  Lorry Receipt record has been saved safely into database.
-                </p>
-              </div>
+              <p className="text-xs text-slate-300 font-medium">
+                Select which copy types to include (Consignor, Consignee, Truck or Office):
+              </p>
 
-              {/* Copy Selection Option */}
-              <div className="bg-slate-900/90 p-2.5 rounded-xl border border-amber-400/40 text-left space-y-1.5">
-                <label className="text-[10px] font-black text-yellow-300 uppercase tracking-wide block">
-                  Select Copy to Tick (किस कॉपी पर टिक लगाना है):
-                </label>
-                <div className="grid grid-cols-2 gap-1.5 text-xs font-bold">
-                  {[
-                    { id: "CONSIGNEE", label: "CONSIGNEE COPY" },
-                    { id: "CONSIGNOR", label: "CONSIGNOR COPY" },
-                    { id: "TRUCK", label: "TRUCK COPY" },
-                    { id: "OFFICE", label: "OFFICE COPY" },
-                  ].map((c) => (
+              {/* Copy Checkboxes Grid */}
+              <div className="grid grid-cols-2 gap-2.5 bg-slate-900/80 p-3 rounded-lg border border-slate-700/60">
+                {[
+                  { id: "CONSIGNOR", label: "Consignor Copy" },
+                  { id: "CONSIGNEE", label: "Consignee Copy" },
+                  { id: "TRUCK", label: "Truck Copy" },
+                  { id: "OFFICE", label: "Office Copy" },
+                ].map((copy) => {
+                  const isChecked = selectedCopies.includes(copy.id);
+                  return (
                     <label
-                      key={c.id}
-                      onClick={() => setSelectedCopyForPrint(c.id)}
-                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border cursor-pointer transition-all ${selectedCopyForPrint === c.id
-                        ? "bg-amber-400 text-slate-950 border-amber-400 font-black shadow"
-                        : "bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
-                        }`}
+                      key={copy.id}
+                      onClick={() => toggleCopySelection(copy.id)}
+                      className={`flex items-center gap-2.5 p-2.5 rounded-lg border cursor-pointer select-none transition-all ${
+                        isChecked
+                          ? "bg-amber-500/15 border-amber-500/60 text-amber-300 font-bold"
+                          : "bg-slate-800/80 border-slate-700 text-slate-400 hover:text-slate-200"
+                      }`}
                     >
                       <input
-                        type="radio"
-                        name="printCopyType"
-                        value={c.id}
-                        checked={selectedCopyForPrint === c.id}
-                        onChange={() => setSelectedCopyForPrint(c.id)}
-                        className="accent-slate-900"
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {}}
+                        className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                       />
-                      <span className="text-[10px] uppercase font-bold">{c.label}</span>
+                      <span className="text-xs uppercase font-extrabold">{copy.label}</span>
                     </label>
-                  ))}
+                  );
+                })}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => confirmCopySelectionAndProceed("print")}
+                    className="py-2 px-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-lg shadow flex items-center justify-center gap-1 transition-all"
+                  >
+                    <Printer size={15} /> Print
+                  </button>
+
+                  <button
+                    onClick={() => confirmCopySelectionAndProceed("pdf")}
+                    className="py-2 px-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-lg shadow flex items-center justify-center gap-1 transition-all"
+                  >
+                    <Download size={15} /> Export PDF
+                  </button>
+
+                  <button
+                    onClick={() => confirmCopySelectionAndProceed("whatsapp")}
+                    className="py-2 px-2.5 bg-green-600 hover:bg-green-500 text-white font-black text-xs rounded-lg shadow flex items-center justify-center gap-1 transition-all"
+                  >
+                    <Share2 size={15} /> WhatsApp
+                  </button>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSuccessModal(false);
-                    setActiveAutoAction("print");
-                    setShowPrintModal(true);
-                  }}
-                  className="px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs uppercase flex items-center justify-center gap-1.5 shadow"
-                >
-                  <Printer size={14} /> Print A4
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => confirmCopySelectionAndProceed(null)}
+                    className="flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold text-xs rounded-lg border border-slate-600 transition-all flex items-center justify-center gap-1"
+                  >
+                    <Eye size={14} /> Document Preview
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSuccessModal(false);
-                    setActiveAutoAction("pdf");
-                    setShowPrintModal(true);
-                  }}
-                  className="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs uppercase flex items-center justify-center gap-1.5 shadow"
-                >
-                  <Download size={14} /> Export PDF
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSuccessModal(false);
-                    setActiveAutoAction("whatsapp");
-                    setShowPrintModal(true);
-                  }}
-                  className="px-3 py-2 bg-green-600 hover:bg-green-500 text-white font-black rounded-lg text-xs uppercase flex items-center justify-center gap-1.5 shadow"
-                >
-                  <Share2 size={14} /> WhatsApp
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSuccessModal(false);
-                    handleReset();
-                  }}
-                  className="px-3 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded-lg text-xs uppercase flex items-center justify-center gap-1.5 shadow"
-                >
-                  <Plus size={14} /> New LR
-                </button>
-              </div>
-
-              <div className="pt-2 border-t border-slate-700">
-                <button
-                  type="button"
-                  onClick={() => setShowSuccessModal(false)}
-                  className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold rounded-lg text-xs uppercase"
-                >
-                  Close / Continue Editing
-                </button>
+                  <button
+                    onClick={() => setShowCopySelectModal(false)}
+                    className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold rounded-lg border border-slate-700"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
