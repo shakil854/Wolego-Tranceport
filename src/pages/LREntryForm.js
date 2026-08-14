@@ -398,16 +398,16 @@ export default function LREntryForm() {
     const saved = await saveLREntry(formData);
     setActiveLR(saved);
 
+    // Revert back to fresh new running LR number after saving (both for new and edited LRs)
+    const today = getTodayDateStr();
+    const nextNo = getNextLRNumber(today);
+    setFormData({ ...initialForm, lrNumber: nextNo, dateTime: today });
+    setSelectedConsignors([]);
+
     if (isEditing) {
-      // Revert back to current running LR number after saving edits
-      const today = getTodayDateStr();
-      const nextNo = getNextLRNumber(today);
-      setFormData({ ...initialForm, lrNumber: nextNo, dateTime: today });
-      setSelectedConsignors([]);
-      flashMsg(`LR #${editedLRNo} Updated & Saved! Returned to Next LR #${nextNo}`);
+      flashMsg(`LR #${editedLRNo} Updated & Saved! Prepared Next LR #${nextNo}`);
     } else {
-      setFormData(saved);
-      flashMsg(`LR #${saved.lrNumber} Saved Successfully!`);
+      flashMsg(`LR #${saved.lrNumber} Saved Successfully! Prepared Next LR #${nextNo}`);
     }
 
     return saved;
@@ -1585,8 +1585,8 @@ export default function LREntryForm() {
 
             <button
               type="button"
-              onClick={() => {
-                const saved = handleSave();
+              onClick={async () => {
+                const saved = await handleSave();
                 if (saved) setShowPrintModal(true);
               }}
               className="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
@@ -1596,8 +1596,8 @@ export default function LREntryForm() {
 
             <button
               type="button"
-              onClick={() => {
-                const saved = handleSave();
+              onClick={async () => {
+                const saved = await handleSave();
                 if (saved) setShowPrintModal(true);
               }}
               className="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white font-black rounded text-xs uppercase shadow flex items-center gap-1.5 transition-all cursor-pointer transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
