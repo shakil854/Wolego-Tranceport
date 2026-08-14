@@ -300,6 +300,7 @@ export default function AccountingPage() {
         .filter((lr) => {
           const status = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
           if (status === "TO PAY" || status === "TOPAY") return false;
+          if (status === "TBB" && lr.debitAmountTo?.toUpperCase() !== "CONSIGNOR") return false;
           return status === "PAID" || lr.debitAmountTo?.toUpperCase() === "CONSIGNOR";
         })
         .map((lr) => lr.consignorName?.trim()),
@@ -318,6 +319,7 @@ export default function AccountingPage() {
         .filter((lr) => {
           const status = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
           if (status === "TO PAY" || status === "TOPAY") return false;
+          if (status === "PAID" && lr.debitAmountTo?.toUpperCase() !== "CONSIGNEE") return false;
           return status === "TBB" || lr.debitAmountTo?.toUpperCase() === "CONSIGNEE";
         })
         .map((lr) => lr.consigneeName?.trim()),
@@ -400,11 +402,13 @@ export default function AccountingPage() {
     // Active Tab filtering: "ALL", "CONSIGNOR", "CONSIGNEE", "TRUCK"
     if (activeTab === "CONSIGNOR") {
       // Rule: PAID LRs post to Consignor (or debitAmountTo === CONSIGNOR override)
+      if (payStatus === "TBB" && debitOverride !== "CONSIGNOR") return false;
       if (payStatus !== "PAID" && debitOverride !== "CONSIGNOR") return false;
       if (!lr.consignorName) return false;
       if (selectedPartyName !== "ALL" && lr.consignorName?.trim() !== selectedPartyName) return false;
     } else if (activeTab === "CONSIGNEE") {
-      // Rule: TBB LRs post to Consignee (or debitAmountTo === CONSIGNEE override)
+      // Rule: TBB LRs post to Consignee (PAID LRs NEVER post to Consignee unless debitAmountTo === CONSIGNEE explicitly)
+      if (payStatus === "PAID" && debitOverride !== "CONSIGNEE") return false;
       if (payStatus !== "TBB" && debitOverride !== "CONSIGNEE") return false;
       if (!lr.consigneeName) return false;
       if (selectedPartyName !== "ALL" && lr.consigneeName?.trim() !== selectedPartyName) return false;

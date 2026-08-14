@@ -1321,7 +1321,11 @@ export default function LREntryForm() {
                 <div className="col-span-4 md:col-span-2">
                   <select
                     value={formData.toPayOrPaid}
-                    onChange={(e) => setFormData({ ...formData, toPayOrPaid: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const newDebit = val === "PAID" ? "CONSIGNOR" : val === "TBB" ? "CONSIGNEE" : "TO-PAY";
+                      setFormData({ ...formData, toPayOrPaid: val, debitAmountTo: newDebit });
+                    }}
                     className="w-full bg-yellow-400 text-slate-950 font-black px-1 py-0.5 border rounded text-xs uppercase cursor-pointer"
                   >
                     <option value="TBB">TBB</option>
