@@ -21,6 +21,16 @@ export default function LREntryForm() {
   const [activeLR, setActiveLR] = useState(null);
   const [statusMsg, setStatusMsg] = useState("");
 
+  const focusLRNumberInput = () => {
+    setTimeout(() => {
+      const lrInput = document.getElementById("lr-number-input");
+      if (lrInput) {
+        lrInput.focus();
+        if (typeof lrInput.select === "function") lrInput.select();
+      }
+    }, 100);
+  };
+
   const toggleCopySelection = (copyType) => {
     setSelectedCopies((prev) => {
       if (prev.includes(copyType)) {
@@ -227,13 +237,8 @@ export default function LREntryForm() {
         setFormData((prev) => ({ ...prev, dateTime: defaultDate, lrNumber: nextNo }));
       }
 
-      setTimeout(() => {
-        const lrInput = document.getElementById("lr-number-input");
-        if (lrInput) {
-          lrInput.focus();
-          if (typeof lrInput.select === "function") lrInput.select();
-        }
-      }, 150);
+      focusLRNumberInput();
+      setTimeout(focusLRNumberInput, 300);
     };
     loadInitData();
   }, [location.state]);
@@ -426,6 +431,7 @@ export default function LREntryForm() {
       flashMsg(`LR #${saved.lrNumber} Saved Successfully! Prepared Next LR #${nextNo}`);
     }
 
+    focusLRNumberInput();
     return saved;
   };
 
@@ -441,13 +447,7 @@ export default function LREntryForm() {
     const nextNo = getNextLRNumber(today);
     setFormData({ ...initialForm, lrNumber: nextNo, dateTime: today });
     setSelectedConsignors([]);
-    setTimeout(() => {
-      const lrInput = document.getElementById("lr-number-input");
-      if (lrInput) {
-        lrInput.focus();
-        if (typeof lrInput.select === "function") lrInput.select();
-      }
-    }, 100);
+    focusLRNumberInput();
   };
 
   const [showDeletePasswordModal, setShowDeletePasswordModal] = useState(false);
@@ -840,6 +840,7 @@ export default function LREntryForm() {
         onClose={() => {
           setShowPrintModal(false);
           setActiveAutoAction(null);
+          focusLRNumberInput();
         }}
       />
     );
@@ -1656,7 +1657,10 @@ export default function LREntryForm() {
                   </h3>
                 </div>
                 <button
-                  onClick={() => setShowCopySelectModal(false)}
+                  onClick={() => {
+                    setShowCopySelectModal(false);
+                    focusLRNumberInput();
+                  }}
                   className="text-slate-400 hover:text-white text-lg font-bold px-1"
                 >
                   ✕
@@ -1732,7 +1736,10 @@ export default function LREntryForm() {
                   </button>
 
                   <button
-                    onClick={() => setShowCopySelectModal(false)}
+                    onClick={() => {
+                      setShowCopySelectModal(false);
+                      focusLRNumberInput();
+                    }}
                     className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold rounded-lg border border-slate-700"
                   >
                     Close
