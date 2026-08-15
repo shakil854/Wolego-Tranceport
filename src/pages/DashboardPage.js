@@ -21,6 +21,7 @@ import {
   Zap,
   Bell,
   PackagePlus,
+  Building2,
 } from "lucide-react";
 
 import { getFinancialYear } from "../utils/storage";
@@ -184,6 +185,15 @@ export default function DashboardPage() {
       borderColor: "border-blue-500/30 hover:border-blue-400",
     },
     {
+      title: "Office Orders",
+      path: "/office-orders",
+      icon: Building2,
+      badge: "Orders",
+      color: "from-indigo-500 to-purple-700",
+      textColor: "text-purple-400",
+      borderColor: "border-purple-500/30 hover:border-purple-400",
+    },
+    {
       title: "New L/R Entry",
       path: "/lr-entry",
       icon: PlusCircle,
@@ -313,7 +323,7 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 font-sans space-y-3">
-      
+
       {/* Compact Header Banner */}
       <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 px-4 shadow-md flex justify-between items-center gap-3">
         <div className="flex items-center gap-2.5">
@@ -342,7 +352,7 @@ export default function DashboardPage() {
 
       {/* 4 Compact Metric Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-        
+
         {/* 1. Party Pending */}
         <div
           onClick={() => navigate("/accounting?tab=PARTY")}
