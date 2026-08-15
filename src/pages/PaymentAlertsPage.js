@@ -16,14 +16,18 @@ import {
   Calculator,
   ArrowRight,
   TrendingDown,
+  Eye,
+  X,
 } from "lucide-react";
 
 export default function PaymentAlertsPage() {
   const navigate = useNavigate();
 
   const [lrEntries, setLrEntries] = useState([]);
+  const [parties, setParties] = useState([]);
   const [partiesMap, setPartiesMap] = useState({});
   const [loading, setLoading] = useState(true);
+  const [viewPartyModal, setViewPartyModal] = useState(null);
 
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,28 +43,51 @@ export default function PaymentAlertsPage() {
       ]);
 
       let lrs = [];
-      let parties = [];
+      let partiesData = [];
 
       if (lrRes.ok) lrs = await lrRes.json();
-      if (partyRes.ok) parties = await partyRes.json();
+      if (partyRes.ok) partiesData = await partyRes.json();
 
-      // Create party map for fast lookup of paymentDays
-      const pMap = {};
-      if (Array.isArray(parties)) {
-        parties.forEach((p) => {
+      if (Array.isArray(partiesData)) {
+        setParties(partiesData);
+        // Create party map for fast lookup of paymentDays
+        const pMap = {};
+        partiesData.forEach((p) => {
           if (p.partyName) {
             const key = p.partyName.toUpperCase().trim();
             pMap[key] = p.paymentDays !== undefined ? Number(p.paymentDays) : 30;
           }
         });
+        setPartiesMap(pMap);
       }
-      setPartiesMap(pMap);
 
       if (Array.isArray(lrs)) setLrEntries(lrs);
     } catch (err) {
       console.error("Error fetching payment alerts data:", err);
-    } fontally: {
+    } finally {
       setLoading(false);
+    }
+  };
+
+  // Helper to open Party Master Details popup
+  const handleOpenPartyDetails = (partyNameVal, e) => {
+    if (e) e.stopPropagation();
+    if (!partyNameVal || partyNameVal === "-") return;
+    const cleanSearch = partyNameVal.trim().toLowerCase();
+    const matched = parties.find(
+      (p) => p.partyName && p.partyName.trim().toLowerCase() === cleanSearch
+    ) || parties.find(
+      (p) => p.partyName && (cleanSearch.includes(p.partyName.trim().toLowerCase()) || p.partyName.trim().toLowerCase().includes(cleanSearch))
+    );
+
+    if (matched) {
+      setViewPartyModal(matched);
+    } else {
+      setViewPartyModal({
+        partyName: partyNameVal,
+        selectType: "PARTY",
+        address1: "Not found in Party Master",
+      });
     }
   };
 
@@ -371,9 +398,15 @@ export default function PaymentAlertsPage() {
 
                       {/* Party Name */}
                       <td className="py-2.5 px-3 font-bold text-white max-w-[200px] truncate">
-                        <div className="truncate" title={item.partyName}>
-                          {item.partyName}
-                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => handleOpenPartyDetails(item.partyName, e)}
+                          title="Click to view Party Master details"
+                          className="hover:text-amber-400 hover:underline cursor-pointer text-left truncate max-w-full font-bold transition-colors inline-flex items-center gap-1 group"
+                        >
+                          <span className="truncate">{item.partyName}</span>
+                          <Eye size={12} className="opacity-0 group-hover:opacity-100 text-amber-400 shrink-0 transition-opacity" />
+                        </button>
                         <div className="text-[10px] text-slate-400 font-mono">
                           Truck: {item.truckNo}
                         </div>
@@ -433,6 +466,103 @@ export default function PaymentAlertsPage() {
           </table>
         </div>
       </div>
+
+      {/* VIEW PARTY MASTER DETAILS MODAL (Clean Crisp White Theme) */}
+      {viewPartyModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-fadeIn">
+            {/* Modal Header */}
+            <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-amber-600" /> Party Master Details
+              </h3>
+              <button
+                onClick={() => setViewPartyModal(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-3.5 text-xs text-slate-800">
+              <div className="bg-amber-50/70 p-4 rounded-xl border border-amber-200/80 space-y-1">
+                <div className="flex justify-between items-start gap-2">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-amber-800 uppercase tracking-wider block">
+                      Party Name
+                    </span>
+                    <h4 className="text-base font-black text-slate-900">{viewPartyModal.partyName}</h4>
+                  </div>
+                  <span className="px-2.5 py-0.5 bg-amber-500 text-slate-950 font-black rounded text-[10px] uppercase shrink-0 shadow-sm">
+                    {viewPartyModal.selectType || "PARTY"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">GST No</span>
+                  <span className="font-mono font-black text-amber-700 text-xs">
+                    {viewPartyModal.gstNo || "N/A"}
+                  </span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">PAN No</span>
+                  <span className="font-mono font-black text-slate-900 text-xs">
+                    {viewPartyModal.panNo || "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Full Address</span>
+                <p className="font-semibold text-slate-900 text-xs whitespace-pre-line leading-relaxed">
+                  {[viewPartyModal.address1, viewPartyModal.address2, viewPartyModal.address3]
+                    .filter(Boolean)
+                    .join(", ") || "No address specified in Party Master"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">City / State</span>
+                  <span className="font-bold text-slate-900 text-xs block">
+                    {[
+                      viewPartyModal.city,
+                      viewPartyModal.district,
+                      viewPartyModal.stateCode ? `(${viewPartyModal.stateCode})` : "",
+                      viewPartyModal.state,
+                    ].filter(Boolean).join(", ") || "N/A"}
+                  </span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">Contact Person</span>
+                  <span className="font-bold text-slate-900 text-xs block">{viewPartyModal.contactName || "N/A"}</span>
+                  <div className="font-mono text-emerald-700 text-xs font-bold mt-1">
+                    📱 {viewPartyModal.mobileNos || "N/A"}
+                  </div>
+                  {viewPartyModal.secondaryMobile && (
+                    <div className="font-mono text-slate-600 text-[11px] mt-0.5">
+                      📞 2nd: {viewPartyModal.secondaryMobile}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 px-5 py-3 border-t border-slate-200 flex justify-end">
+              <button
+                onClick={() => setViewPartyModal(null)}
+                className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow transition cursor-pointer"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
