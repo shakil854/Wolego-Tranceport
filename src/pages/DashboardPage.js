@@ -32,22 +32,33 @@ export default function DashboardPage() {
 
   const [lrEntries, setLrEntries] = useState([]);
   const [parties, setParties] = useState([]);
+  const [officeOrders, setOfficeOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch LRs and Parties
+  // Fetch LRs, Parties and Office Orders
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [lrRes, partyRes] = await Promise.all([
+      const [lrRes, partyRes, officeOrdersRes] = await Promise.all([
         fetch(`${API_BASE_URL}/lr-entries`),
         fetch(`${API_BASE_URL}/parties`),
+        fetch(`${API_BASE_URL}/office-orders`),
       ]);
 
       const lrData = await lrRes.json();
       const partyData = await partyRes.json();
+      let officeOrdersData = [];
+      try {
+        if (officeOrdersRes && officeOrdersRes.ok) {
+          officeOrdersData = await officeOrdersRes.json();
+        }
+      } catch (e) {
+        console.error("Error parsing office orders:", e);
+      }
 
       if (Array.isArray(lrData)) setLrEntries(lrData);
       if (Array.isArray(partyData)) setParties(partyData);
+      if (Array.isArray(officeOrdersData)) setOfficeOrders(officeOrdersData);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
     } finally {
@@ -164,6 +175,12 @@ export default function DashboardPage() {
   const truckPendingAmount = totalTruckPayable - totalTruckPaid;
   const unpaidTruckLrsCount = truckLRs.filter((lr) => lr.truckPaymentStatus !== "PAID").length;
 
+  // Unconfirmed Office Orders Count
+  const unconfirmedOfficeOrdersCount = React.useMemo(() => {
+    if (!Array.isArray(officeOrders)) return 0;
+    return officeOrders.filter((ord) => ord.status !== "CONFIRMED").length;
+  }, [officeOrders]);
+
   // Shortcuts Page Configuration
   const allAppPages = [
     {
@@ -188,10 +205,11 @@ export default function DashboardPage() {
       title: "Office Orders",
       path: "/office-orders",
       icon: Building2,
-      badge: "Orders",
+      badge: unconfirmedOfficeOrdersCount > 0 ? `${unconfirmedOfficeOrdersCount} Unconfirmed` : "Orders",
+      unconfirmedCount: unconfirmedOfficeOrdersCount,
       color: "from-indigo-500 to-purple-700",
       textColor: "text-purple-400",
-      borderColor: "border-purple-500/30 hover:border-purple-400",
+      borderColor: unconfirmedOfficeOrdersCount > 0 ? "border-rose-500/80 hover:border-rose-400 ring-2 ring-rose-500/40" : "border-purple-500/30 hover:border-purple-400",
     },
     {
       title: "New L/R Entry",
@@ -489,21 +507,34 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
           {allAppPages.map((page) => {
             const Icon = page.icon;
+            const hasNotification = page.unconfirmedCount > 0;
             return (
               <div
                 key={page.title}
                 onClick={() => navigate(page.path)}
-                className={`group bg-slate-900/90 hover:bg-slate-900 rounded-lg p-2.5 border ${page.borderColor} shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between gap-2`}
+                className={`group bg-slate-900/90 hover:bg-slate-900 rounded-lg p-2.5 border ${page.borderColor} shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between gap-2 relative overflow-hidden`}
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className={`p-1.5 rounded-md bg-gradient-to-br ${page.color} text-white shrink-0 shadow`}>
+                  <div className={`p-1.5 rounded-md bg-gradient-to-br ${page.color} text-white shrink-0 shadow relative`}>
                     <Icon className="w-3.5 h-3.5" />
+                    {hasNotification && (
+                      <span className="absolute -top-1.5 -right-1.5 px-1 min-w-[15px] h-3.5 rounded-full bg-rose-600 text-white text-[8.5px] font-black flex items-center justify-center border border-slate-900 animate-pulse shadow">
+                        {page.unconfirmedCount}
+                      </span>
+                    )}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-bold text-xs text-slate-200 group-hover:text-amber-400 transition-colors truncate">
-                      {page.title}
-                    </h3>
-                    <span className="text-[9px] font-semibold text-slate-400 block truncate">
+                    <div className="flex items-center gap-1">
+                      <h3 className="font-bold text-xs text-slate-200 group-hover:text-amber-400 transition-colors truncate">
+                        {page.title}
+                      </h3>
+                      {hasNotification && (
+                        <span className="text-[10.5px] font-black text-rose-400 shrink-0">
+                          ({page.unconfirmedCount})
+                        </span>
+                      )}
+                    </div>
+                    <span className={`text-[9px] font-semibold block truncate ${hasNotification ? "text-rose-400 font-extrabold" : "text-slate-400"}`}>
                       {page.badge}
                     </span>
                   </div>
