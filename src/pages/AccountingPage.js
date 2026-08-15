@@ -21,6 +21,8 @@ import {
   Calendar,
   Download,
   Printer,
+  Eye,
+  Landmark,
 } from "lucide-react";
 
 export default function AccountingPage() {
@@ -29,7 +31,12 @@ export default function AccountingPage() {
 
   const [lrEntries, setLrEntries] = useState([]);
   const [parties, setParties] = useState([]);
+  const [trucks, setTrucks] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Modals for viewing Master Details
+  const [viewPartyModal, setViewPartyModal] = useState(null);
+  const [viewTruckModal, setViewTruckModal] = useState(null);
 
   // Owner View state
   const [activeTab, setActiveTab] = useState("CONSIGNOR"); // "CONSIGNOR", "CONSIGNEE", "TRUCK"
@@ -76,17 +83,24 @@ export default function AccountingPage() {
     chequeNo: "",
   });
 
-  // Fetch LRs and Parties
+  // Fetch LRs, Parties and Trucks
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [lrRes, partyRes] = await Promise.all([
+      const [lrRes, partyRes, truckRes] = await Promise.all([
         fetch(`${API_BASE_URL}/lr-entries`),
         fetch(`${API_BASE_URL}/parties`),
+        fetch(`${API_BASE_URL}/trucks`),
       ]);
 
       const lrData = await lrRes.json();
       const partyData = await partyRes.json();
+      let truckData = [];
+      try {
+        if (truckRes && truckRes.ok) truckData = await truckRes.json();
+      } catch (e) {
+        console.error("Error parsing trucks:", e);
+      }
 
       if (Array.isArray(lrData)) {
         setLrEntries(lrData);
@@ -109,10 +123,52 @@ export default function AccountingPage() {
         }
       }
       if (Array.isArray(partyData)) setParties(partyData);
+      if (Array.isArray(truckData)) setTrucks(truckData);
     } catch (err) {
       console.error("Error fetching accounting data:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Helper to open Party Master Details popup
+  const handleOpenPartyDetails = (partyNameVal, e) => {
+    if (e) e.stopPropagation();
+    if (!partyNameVal || partyNameVal === "-") return;
+    const cleanSearch = partyNameVal.trim().toLowerCase();
+    const matched = parties.find(
+      (p) => p.partyName && p.partyName.trim().toLowerCase() === cleanSearch
+    ) || parties.find(
+      (p) => p.partyName && (cleanSearch.includes(p.partyName.trim().toLowerCase()) || p.partyName.trim().toLowerCase().includes(cleanSearch))
+    );
+
+    if (matched) {
+      setViewPartyModal(matched);
+    } else {
+      setViewPartyModal({
+        partyName: partyNameVal,
+        selectType: activeTab === "CONSIGNOR" ? "CONSIGNOR" : "CONSIGNEE",
+        address1: "Not found in Party Master",
+      });
+    }
+  };
+
+  // Helper to open Truck Master Details popup
+  const handleOpenTruckDetails = (truckNoVal, e) => {
+    if (e) e.stopPropagation();
+    if (!truckNoVal || truckNoVal === "-" || truckNoVal === "N/A") return;
+    const cleanSearch = truckNoVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    const matched = trucks.find(
+      (t) => t.truckNo && t.truckNo.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === cleanSearch
+    );
+
+    if (matched) {
+      setViewTruckModal(matched);
+    } else {
+      setViewTruckModal({
+        truckNo: truckNoVal,
+        ownerName: "Not found in Truck Master",
+      });
     }
   };
 
@@ -692,7 +748,17 @@ export default function AccountingPage() {
                           {lr.dateTime || "-"}
                         </td>
                         <td className="py-2.5 px-3 font-mono font-semibold text-white">
-                          {lr.truckNo || "-"}
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenTruckDetails(lr.truckNo, e)}
+                            title="Click to view Truck Master details"
+                            className="hover:text-amber-400 hover:underline cursor-pointer font-mono font-bold transition-colors inline-flex items-center gap-1 group"
+                          >
+                            <span>{lr.truckNo || "-"}</span>
+                            {lr.truckNo && lr.truckNo !== "-" && (
+                              <Eye size={12} className="opacity-0 group-hover:opacity-100 text-amber-400 shrink-0 transition-opacity" />
+                            )}
+                          </button>
                         </td>
                         <td className="py-2.5 px-3 text-slate-300">
                           {lr.fromPlace} &rarr; {lr.toPlace}
@@ -1117,10 +1183,28 @@ export default function AccountingPage() {
                         {lr.dateTime || "-"}
                       </td>
                       <td className="py-2.5 px-3 font-semibold text-white max-w-[180px] truncate">
-                        {partyName}
+                        <button
+                          type="button"
+                          onClick={(e) => handleOpenPartyDetails(partyName, e)}
+                          title="Click to view Party Master details"
+                          className="hover:text-amber-400 hover:underline cursor-pointer text-left truncate max-w-full font-bold transition-colors inline-flex items-center gap-1 group"
+                        >
+                          <span className="truncate">{partyName}</span>
+                          <Eye size={12} className="opacity-0 group-hover:opacity-100 text-amber-400 shrink-0 transition-opacity" />
+                        </button>
                       </td>
                       <td className="py-2.5 px-3 font-mono font-semibold text-white">
-                        {lr.truckNo || "-"}
+                        <button
+                          type="button"
+                          onClick={(e) => handleOpenTruckDetails(lr.truckNo, e)}
+                          title="Click to view Truck Master details"
+                          className="hover:text-amber-400 hover:underline cursor-pointer font-mono font-bold transition-colors inline-flex items-center gap-1 group"
+                        >
+                          <span>{lr.truckNo || "-"}</span>
+                          {lr.truckNo && lr.truckNo !== "-" && (
+                            <Eye size={12} className="opacity-0 group-hover:opacity-100 text-amber-400 shrink-0 transition-opacity" />
+                          )}
+                        </button>
                       </td>
                       <td className="py-2.5 px-3 text-right font-mono font-bold text-white text-sm">
                         ₹ {amount.toLocaleString("en-IN")}
@@ -1310,6 +1394,204 @@ export default function AccountingPage() {
       )}
 
       </div>
+
+      {/* VIEW PARTY MASTER DETAILS MODAL (Clean Crisp White Theme) */}
+      {viewPartyModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-fadeIn">
+            {/* Modal Header */}
+            <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-amber-600" /> Party Master Details
+              </h3>
+              <button
+                onClick={() => setViewPartyModal(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-3.5 text-xs text-slate-800">
+              <div className="bg-amber-50/70 p-4 rounded-xl border border-amber-200/80 space-y-1">
+                <div className="flex justify-between items-start gap-2">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-amber-800 uppercase tracking-wider block">
+                      Party Name
+                    </span>
+                    <h4 className="text-base font-black text-slate-900">{viewPartyModal.partyName}</h4>
+                  </div>
+                  <span className="px-2.5 py-0.5 bg-amber-500 text-slate-950 font-black rounded text-[10px] uppercase shrink-0 shadow-sm">
+                    {viewPartyModal.selectType || "PARTY"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">GST No</span>
+                  <span className="font-mono font-black text-amber-700 text-xs">
+                    {viewPartyModal.gstNo || "N/A"}
+                  </span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">PAN No</span>
+                  <span className="font-mono font-black text-slate-900 text-xs">
+                    {viewPartyModal.panNo || "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Full Address</span>
+                <p className="font-semibold text-slate-900 text-xs whitespace-pre-line leading-relaxed">
+                  {[viewPartyModal.address1, viewPartyModal.address2, viewPartyModal.address3]
+                    .filter(Boolean)
+                    .join(", ") || "No address specified in Party Master"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">City / State</span>
+                  <span className="font-bold text-slate-900 text-xs block">
+                    {[
+                      viewPartyModal.city,
+                      viewPartyModal.district,
+                      viewPartyModal.stateCode ? `(${viewPartyModal.stateCode})` : "",
+                      viewPartyModal.state,
+                    ].filter(Boolean).join(", ") || "N/A"}
+                  </span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">Contact Person</span>
+                  <span className="font-bold text-slate-900 text-xs block">{viewPartyModal.contactName || "N/A"}</span>
+                  <div className="font-mono text-emerald-700 text-xs font-bold mt-1">
+                    📱 {viewPartyModal.mobileNos || "N/A"}
+                  </div>
+                  {viewPartyModal.secondaryMobile && (
+                    <div className="font-mono text-slate-600 text-[11px] mt-0.5">
+                      📞 2nd: {viewPartyModal.secondaryMobile}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 px-5 py-3 border-t border-slate-200 flex justify-end">
+              <button
+                onClick={() => setViewPartyModal(null)}
+                className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs uppercase shadow transition cursor-pointer"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW TRUCK MASTER DETAILS MODAL (Clean Crisp White Theme) */}
+      {viewTruckModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-fadeIn">
+            {/* Modal Header */}
+            <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <Truck className="w-5 h-5 text-sky-600" /> Truck Master Details
+              </h3>
+              <button
+                onClick={() => setViewTruckModal(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-3.5 text-xs text-slate-800">
+              <div className="bg-sky-50/70 p-4 rounded-xl border border-sky-200">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-sky-800 uppercase tracking-wider block">
+                      Truck Number
+                    </span>
+                    <h4 className="text-lg font-black text-slate-900 font-mono tracking-wide">
+                      {viewTruckModal.truckNo}
+                    </h4>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Owner Name</span>
+                    <span className="font-black text-slate-900 text-sm">{viewTruckModal.ownerName || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">Mobile Number</span>
+                  <span className="font-mono font-bold text-emerald-700 text-xs">
+                    {viewTruckModal.mobileNo ? `📱 ${viewTruckModal.mobileNo}` : "N/A"}
+                  </span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-0.5">City / Address</span>
+                  <span className="font-semibold text-slate-900 text-xs">
+                    {viewTruckModal.address || "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bank Details */}
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2.5">
+                <div className="text-[11px] font-extrabold text-sky-800 uppercase tracking-wider border-b border-slate-200 pb-1.5 flex items-center gap-1.5">
+                  <Landmark size={14} className="text-sky-700" /> Bank Account Details
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Bank Name</span>
+                    <span className="font-bold text-slate-900 text-xs">{viewTruckModal.bankName || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Branch</span>
+                    <span className="font-semibold text-slate-800 text-xs">{viewTruckModal.branch || "N/A"}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Account Holder Name</span>
+                    <span className="font-bold text-slate-900 text-xs">{viewTruckModal.accountName || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">IFSC Code</span>
+                    <span className="font-mono font-black text-amber-700 text-xs">{viewTruckModal.ifscCode || "N/A"}</span>
+                  </div>
+                </div>
+
+                <div className="pt-1.5 border-t border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Account Number</span>
+                  <span className="font-mono font-black text-sm text-emerald-700 tracking-wider">
+                    {viewTruckModal.accountNo || "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 px-5 py-3 border-t border-slate-200 flex justify-end">
+              <button
+                onClick={() => setViewTruckModal(null)}
+                className="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-black rounded-lg text-xs uppercase shadow transition cursor-pointer"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Accounting Statement A4 Print Modal */}
       {showOwnerStatementModal && (
