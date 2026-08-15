@@ -300,7 +300,8 @@ export default function PartyLRRecordsPage() {
                   <th className="p-2.5">CONSIGNOR</th>
                   <th className="p-2.5">CONSIGNEE</th>
                   <th className="p-2.5">FREIGHT</th>
-                  <th className="p-2.5">GST BY</th>
+                  <th className="p-2.5 text-center">LR TYPE</th>
+                  <th className="p-2.5 text-center">GST BY</th>
                   <th className="p-2.5 text-center">ACTIONS</th>
                 </tr>
               </thead>
@@ -348,8 +349,34 @@ export default function PartyLRRecordsPage() {
                       {getFreightDisplay(lr)}
                     </td>
 
+                    {/* LR TYPE */}
+                    <td className="p-2.5 text-center whitespace-nowrap">
+                      {(() => {
+                        const type = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+                        if (type === "PAID") {
+                          return (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase">
+                              PAID
+                            </span>
+                          );
+                        }
+                        if (type === "TO PAY" || type === "TOPAY") {
+                          return (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/40 uppercase">
+                              TO-PAY
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase">
+                            TBB
+                          </span>
+                        );
+                      })()}
+                    </td>
+
                     {/* GST BY */}
-                    <td className="p-2.5 whitespace-nowrap">
+                    <td className="p-2.5 text-center whitespace-nowrap">
                       <span className="px-2 py-0.5 rounded text-[10px] font-black bg-sky-900 text-sky-200 border border-sky-500 uppercase">
                         {lr.gstPayableBy || "CONSIGNEE"}
                       </span>
@@ -385,7 +412,7 @@ export default function PartyLRRecordsPage() {
 
                 {sortedLRs.length === 0 && (
                   <tr>
-                    <td colSpan="9" className="text-center py-12 text-slate-400 font-semibold text-sm">
+                    <td colSpan="10" className="text-center py-12 text-slate-400 font-semibold text-sm">
                       No Lorry Receipts found for this party.
                     </td>
                   </tr>

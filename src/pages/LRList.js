@@ -214,7 +214,8 @@ export default function LRList() {
                   <th className="p-3">Consignor</th>
                   <th className="p-3">Consignee</th>
                   <th className="p-3 text-right">Freight</th>
-                  <th className="p-3">GST By</th>
+                  <th className="p-3 text-center">LR Type</th>
+                  <th className="p-3 text-center">GST By</th>
                   <th className="p-3 text-center">Actions</th>
                 </tr>
               </thead>
@@ -242,7 +243,31 @@ export default function LRList() {
                     <td className="p-3 text-right font-mono font-bold text-emerald-400 text-sm">
                       ₹ {lr.netTotalAmount || lr.freightAmount || 0}
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 text-center whitespace-nowrap">
+                      {(() => {
+                        const type = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+                        if (type === "PAID") {
+                          return (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase">
+                              PAID
+                            </span>
+                          );
+                        }
+                        if (type === "TO PAY" || type === "TOPAY") {
+                          return (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/40 uppercase">
+                              TO-PAY
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase">
+                            TBB
+                          </span>
+                        );
+                      })()}
+                    </td>
+                    <td className="p-3 text-center whitespace-nowrap">
                       <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-sky-900 text-sky-200 border border-sky-600 uppercase">
                         {lr.gstPayableBy || "CONSIGNEE"}
                       </span>
@@ -313,7 +338,7 @@ export default function LRList() {
 
                 {filteredLRs.length === 0 && (
                   <tr>
-                    <td colSpan="9" className="text-center py-10 text-slate-500">
+                    <td colSpan="10" className="text-center py-10 text-slate-500">
                       No Lorry Receipts found.
                     </td>
                   </tr>
