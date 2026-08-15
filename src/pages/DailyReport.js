@@ -456,43 +456,43 @@ export default function DailyReport() {
                     return (
                       <tr key={lr.id || lr.lrNumber} className="border-b border-slate-950 leading-normal">
                         {/* COLUMN 1: LR Date (Top) & LR NO in RED (Bottom) */}
-                        <td className="border border-slate-950 p-3 sm:p-3.5 align-top text-center font-bold w-[20%]">
-                          <div className="text-slate-900 text-sm sm:text-base font-bold">
+                        <td className="border border-slate-950 p-1.5 sm:p-2 align-middle text-center font-bold w-[15%]">
+                          <div className="text-slate-900 text-xs sm:text-sm font-bold whitespace-nowrap">
                             {formatDateDisplay(lr.dateTime)}
                           </div>
-                          <div className="text-red-600 font-black text-base sm:text-lg mt-1.5 tracking-wider">
+                          <div className="text-red-600 font-black text-sm sm:text-base md:text-lg mt-0.5 tracking-wider whitespace-nowrap">
                             {lr.lrNumber}
                           </div>
                         </td>
 
                         {/* COLUMN 2: CONSINEE city - Area - LR.weight / Party Name * consignor Name / P- Party mobile */}
-                        <td className="border border-slate-950 p-2.5 sm:p-3 align-top w-[52%]">
+                        <td className="border border-slate-950 p-1.5 sm:p-2 align-middle w-[61%] break-words">
                           {/* Line 1: CONSINEE city - Area - LR.weight */}
-                          <div className="font-black text-slate-950 uppercase tracking-tight text-sm sm:text-base truncate">
+                          <div className="font-black text-slate-950 uppercase tracking-tight text-xs sm:text-sm leading-tight break-words">
                             {consigneeDetails}
                           </div>
-                          {/* Line 2: Party Name * consignor Name */}
-                          <div className="font-extrabold text-slate-900 uppercase truncate leading-snug my-1 text-sm sm:text-base">
+                          {/* Line 2: Party Name * consignor Name (Compact font & tighter tracking to fit 3-4 consignors in 2 lines) */}
+                          <div className="font-extrabold text-slate-900 uppercase leading-snug my-0.5 text-xs sm:text-[13px] print:text-[11px] print:leading-tight break-words tracking-tight">
                             {partyConsignorLine}
                           </div>
                           {/* Line 3: P- Party mobile */}
-                          <div className="font-bold text-slate-800 text-sm sm:text-base truncate">
+                          <div className="font-bold text-slate-800 text-xs sm:text-sm leading-tight break-words">
                             {partyMobile || "P-"}
                           </div>
                         </td>
 
                         {/* COLUMN 3: D- Driver No. / Truck No. / LR- Rate per ton */}
-                        <td className="border border-slate-950 p-2.5 sm:p-3 align-top w-[28%]">
+                        <td className="border border-slate-950 p-1.5 sm:p-2 align-middle w-[24%] break-words">
                           {/* Line 1: D- Driver No. */}
-                          <div className="font-bold text-slate-900 text-sm sm:text-base truncate">
+                          <div className="font-bold text-slate-900 text-xs sm:text-sm leading-tight break-words">
                             {driverMobile || "D-"}
                           </div>
                           {/* Line 2: Truck No. */}
-                          <div className="font-black text-slate-950 uppercase text-sm sm:text-base my-1 truncate">
+                          <div className="font-black text-slate-950 uppercase text-xs sm:text-sm my-0.5 whitespace-nowrap">
                             {lr.truckNo || "-"}
                           </div>
                           {/* Line 3: LR- Rate per ton + */}
-                          <div className="font-extrabold text-slate-900 text-sm sm:text-base truncate">
+                          <div className="font-extrabold text-slate-900 text-xs sm:text-sm leading-tight break-words">
                             {rateStr}
                           </div>
                         </td>
@@ -535,12 +535,16 @@ export default function DailyReport() {
             width: 100% !important;
             max-width: 100% !important;
             background-color: #ffffff !important;
+            table-layout: fixed !important;
           }
           td {
             border: 1.5px solid #000000 !important;
             color: #000000 !important;
             background-color: #ffffff !important;
-            padding: 10px 12px !important;
+            padding: 4px 6px !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            white-space: normal !important;
           }
           .text-red-600, .text-red-600 * {
             color: #dc2626 !important;
