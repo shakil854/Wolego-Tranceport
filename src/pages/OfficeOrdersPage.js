@@ -375,8 +375,13 @@ export default function OfficeOrdersPage() {
               <FileText size={24} />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide">
-                Office Order List
+              <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide flex items-center gap-2 flex-wrap">
+                <span>Office Order List</span>
+                {orders.filter((ord) => ord.status !== "CONFIRMED").length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-xs font-black animate-pulse shadow">
+                    {orders.filter((ord) => ord.status !== "CONFIRMED").length} Unconfirmed
+                  </span>
+                )}
               </h1>
               <p className="text-xs text-slate-400 font-bold">
                 Manage & Record Office Orders (Total: {orders.length})

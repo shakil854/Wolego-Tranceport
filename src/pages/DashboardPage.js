@@ -32,33 +32,38 @@ export default function DashboardPage() {
 
   const [lrEntries, setLrEntries] = useState([]);
   const [parties, setParties] = useState([]);
+  const [trucks, setTrucks] = useState([]);
   const [officeOrders, setOfficeOrders] = useState([]);
+  const [partyOrders, setPartyOrders] = useState([]);
+  const [truckOrders, setTruckOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch LRs, Parties and Office Orders
+  // Fetch LRs, Parties, Trucks, and all Orders
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [lrRes, partyRes, officeOrdersRes] = await Promise.all([
+      const [lrRes, partyRes, truckRes, officeOrdersRes, partyOrdersRes, truckOrdersRes] = await Promise.all([
         fetch(`${API_BASE_URL}/lr-entries`),
         fetch(`${API_BASE_URL}/parties`),
+        fetch(`${API_BASE_URL}/trucks`),
         fetch(`${API_BASE_URL}/office-orders`),
+        fetch(`${API_BASE_URL}/party-orders`),
+        fetch(`${API_BASE_URL}/truck-orders`),
       ]);
 
-      const lrData = await lrRes.json();
-      const partyData = await partyRes.json();
-      let officeOrdersData = [];
-      try {
-        if (officeOrdersRes && officeOrdersRes.ok) {
-          officeOrdersData = await officeOrdersRes.json();
-        }
-      } catch (e) {
-        console.error("Error parsing office orders:", e);
-      }
+      const lrData = lrRes.ok ? await lrRes.json() : [];
+      const partyData = partyRes.ok ? await partyRes.json() : [];
+      const truckData = truckRes.ok ? await truckRes.json() : [];
+      const officeOrdersData = officeOrdersRes.ok ? await officeOrdersRes.json() : [];
+      const partyOrdersData = partyOrdersRes.ok ? await partyOrdersRes.json() : [];
+      const truckOrdersData = truckOrdersRes.ok ? await truckOrdersRes.json() : [];
 
       if (Array.isArray(lrData)) setLrEntries(lrData);
       if (Array.isArray(partyData)) setParties(partyData);
+      if (Array.isArray(truckData)) setTrucks(truckData);
       if (Array.isArray(officeOrdersData)) setOfficeOrders(officeOrdersData);
+      if (Array.isArray(partyOrdersData)) setPartyOrders(partyOrdersData);
+      if (Array.isArray(truckOrdersData)) setTruckOrders(truckOrdersData);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
     } finally {
@@ -209,11 +214,123 @@ export default function DashboardPage() {
     })
     .reduce((sum, item) => sum + getLRFreightAmount(item), 0);
 
-  // Unconfirmed Office Orders Count
+  // Unconfirmed Orders Counts
   const unconfirmedOfficeOrdersCount = React.useMemo(() => {
     if (!Array.isArray(officeOrders)) return 0;
     return officeOrders.filter((ord) => ord.status !== "CONFIRMED").length;
   }, [officeOrders]);
+
+  const unconfirmedPartyOrdersCount = React.useMemo(() => {
+    if (!Array.isArray(partyOrders)) return 0;
+    return partyOrders.filter((ord) => ord.status !== "CONFIRMED").length;
+  }, [partyOrders]);
+
+  const unconfirmedTruckOrdersCount = React.useMemo(() => {
+    if (!Array.isArray(truckOrders)) return 0;
+    return truckOrders.filter((ord) => ord.status !== "CONFIRMED").length;
+  }, [truckOrders]);
+
+  // Overdue Payment Alerts Count
+  const overduePaymentAlertsCount = React.useMemo(() => {
+    if (!Array.isArray(lrEntries) || lrEntries.length === 0) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const pMap = {};
+    if (Array.isArray(parties)) {
+      parties.forEach((p) => {
+        if (p.partyName) {
+          pMap[p.partyName.toUpperCase().trim()] = p.paymentDays !== undefined ? Number(p.paymentDays) : 30;
+        }
+      });
+    }
+
+    return lrEntries.filter((lr) => {
+      const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+      if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
+      if (lr.partyPaymentStatus === "PAID") return false;
+
+      const pNameKey = (lr.consigneeName || lr.consignorName || lr.debitAmountTo || "").toUpperCase().trim();
+      const timelineDays = pMap[pNameKey] !== undefined ? pMap[pNameKey] : 30;
+
+      let billedDate;
+      const dateStr = lr.dateTime || lr.date;
+      if (dateStr) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          billedDate = new Date(dateStr + "T00:00:00");
+        } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+          const parts = dateStr.split("/");
+          billedDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+        } else {
+          billedDate = new Date(dateStr);
+        }
+      } else if (lr.createdAt) {
+        billedDate = new Date(lr.createdAt);
+      } else {
+        billedDate = new Date();
+      }
+
+      if (isNaN(billedDate.getTime())) return false;
+      billedDate.setHours(0, 0, 0, 0);
+
+      const dueDate = new Date(billedDate);
+      dueDate.setDate(dueDate.getDate() + timelineDays);
+
+      const diffDays = Math.round((today.getTime() - dueDate.getTime()) / (1000 * 3600 * 24));
+      return diffDays > 0;
+    }).length;
+  }, [lrEntries, parties]);
+
+  // Truck Coming Alerts Count
+  const truckComingAlertsCount = React.useMemo(() => {
+    if (!Array.isArray(lrEntries) || lrEntries.length === 0) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lrsByTruck = {};
+    lrEntries.forEach((lr) => {
+      const tNo = (lr.truckNo || "").toUpperCase().trim();
+      if (!tNo) return;
+      if (!lrsByTruck[tNo]) lrsByTruck[tNo] = [];
+      lrsByTruck[tNo].push(lr);
+    });
+
+    let count = 0;
+    Object.keys(lrsByTruck).forEach((tNo) => {
+      const truckLRs = lrsByTruck[tNo];
+      const parseD = (dStr, cStr) => {
+        if (dStr) {
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return new Date(dStr + "T00:00:00");
+          if (/^\d{2}\/\d{2}\/\d{4}$/.test(dStr)) {
+            const parts = dStr.split("/");
+            return new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+          }
+          const d = new Date(dStr);
+          if (!isNaN(d.getTime())) return d;
+        }
+        if (cStr) {
+          const c = new Date(cStr);
+          if (!isNaN(c.getTime())) return c;
+        }
+        return new Date();
+      };
+
+      truckLRs.sort((a, b) => parseD(b.dateTime, b.createdAt).getTime() - parseD(a.dateTime, a.createdAt).getTime());
+      const latestLr = truckLRs[0];
+      if (latestLr.truckComingDismissed) return;
+
+      const lrDate = parseD(latestLr.dateTime, latestLr.createdAt);
+      lrDate.setHours(0, 0, 0, 0);
+
+      const tripDays = latestLr.tripDays !== undefined ? Number(latestLr.tripDays) : 5;
+      const diffDays = Math.floor((today.getTime() - lrDate.getTime()) / (1000 * 3600 * 24));
+      if (diffDays >= tripDays) {
+        count++;
+      }
+    });
+
+    return count;
+  }, [lrEntries]);
 
   // Shortcuts Page Configuration
   const allAppPages = [
@@ -221,19 +338,21 @@ export default function DashboardPage() {
       title: "Party Orders",
       path: "/party-orders",
       icon: PackagePlus,
-      badge: "Orders",
+      badge: unconfirmedPartyOrdersCount > 0 ? `${unconfirmedPartyOrdersCount} Unconfirmed` : "Orders",
+      unconfirmedCount: unconfirmedPartyOrdersCount,
       color: "from-amber-500 to-amber-700",
       textColor: "text-amber-400",
-      borderColor: "border-amber-500/30 hover:border-amber-400",
+      borderColor: unconfirmedPartyOrdersCount > 0 ? "border-rose-500/80 hover:border-rose-400 ring-2 ring-rose-500/40" : "border-amber-500/30 hover:border-amber-400",
     },
     {
       title: "Truck Orders",
       path: "/truck-orders",
       icon: Truck,
-      badge: "Orders",
+      badge: unconfirmedTruckOrdersCount > 0 ? `${unconfirmedTruckOrdersCount} Unconfirmed` : "Orders",
+      unconfirmedCount: unconfirmedTruckOrdersCount,
       color: "from-blue-500 to-blue-700",
       textColor: "text-blue-400",
-      borderColor: "border-blue-500/30 hover:border-blue-400",
+      borderColor: unconfirmedTruckOrdersCount > 0 ? "border-rose-500/80 hover:border-rose-400 ring-2 ring-rose-500/40" : "border-blue-500/30 hover:border-blue-400",
     },
     {
       title: "Office Orders",
@@ -357,19 +476,21 @@ export default function DashboardPage() {
       title: "Payment Alerts",
       path: "/payment-alerts",
       icon: Bell,
-      badge: "Overdue Alerts",
+      badge: overduePaymentAlertsCount > 0 ? `${overduePaymentAlertsCount} Overdue` : "Overdue Alerts",
+      unconfirmedCount: overduePaymentAlertsCount,
       color: "from-rose-600 to-red-700",
       textColor: "text-rose-400",
-      borderColor: "border-rose-500/30 hover:border-rose-400",
+      borderColor: overduePaymentAlertsCount > 0 ? "border-rose-500/80 hover:border-rose-400 ring-2 ring-rose-500/40" : "border-rose-500/30 hover:border-rose-400",
     },
     {
       title: "Truck Coming Alert",
       path: "/truck-coming",
       icon: Truck,
-      badge: "Due Return",
+      badge: truckComingAlertsCount > 0 ? `${truckComingAlertsCount} Due Return` : "Due Return",
+      unconfirmedCount: truckComingAlertsCount,
       color: "from-amber-600 to-orange-700",
       textColor: "text-amber-400",
-      borderColor: "border-amber-500/30 hover:border-amber-400",
+      borderColor: truckComingAlertsCount > 0 ? "border-rose-500/80 hover:border-rose-400 ring-2 ring-rose-500/40" : "border-amber-500/30 hover:border-amber-400",
     },
   ];
 

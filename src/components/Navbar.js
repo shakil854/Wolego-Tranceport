@@ -36,7 +36,13 @@ export default function Navbar() {
   const { user, logout, isOwner, isOffice, isParty, isTruck } = useAuth();
   const { theme, setTheme, THEMES } = useTheme();
 
-  const [unconfirmedOfficeOrdersCount, setUnconfirmedOfficeOrdersCount] = useState(0);
+  const [notificationCounts, setNotificationCounts] = useState({
+    officeOrders: 0,
+    partyOrders: 0,
+    truckOrders: 0,
+    paymentAlerts: 0,
+    truckComing: 0,
+  });
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -48,29 +54,191 @@ export default function Navbar() {
   const userMenuRef = useRef(null);
   const mobileThemeRef = useRef(null);
 
-  // Fetch unconfirmed office orders count
-  const fetchUnconfirmedOfficeOrders = async () => {
+  // Fetch unconfirmed orders & alerts count
+  const fetchAllNotifications = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/office-orders`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          const unconfirmed = data.filter((ord) => ord.status !== "CONFIRMED").length;
-          setUnconfirmedOfficeOrdersCount(unconfirmed);
-        }
+      const promises = [
+        fetch(`${API_BASE_URL}/office-orders`).then((r) => (r.ok ? r.json() : [])).catch(() => []),
+        fetch(`${API_BASE_URL}/party-orders`).then((r) => (r.ok ? r.json() : [])).catch(() => []),
+        fetch(`${API_BASE_URL}/truck-orders`).then((r) => (r.ok ? r.json() : [])).catch(() => []),
+      ];
+
+      if (isOwner) {
+        promises.push(
+          fetch(`${API_BASE_URL}/lr-entries`).then((r) => (r.ok ? r.json() : [])).catch(() => []),
+          fetch(`${API_BASE_URL}/parties`).then((r) => (r.ok ? r.json() : [])).catch(() => [])
+        );
       }
+
+      const results = await Promise.all(promises);
+      const officeData = Array.isArray(results[0]) ? results[0] : [];
+      const partyData = Array.isArray(results[1]) ? results[1] : [];
+      const truckData = Array.isArray(results[2]) ? results[2] : [];
+
+      let officeCount = 0;
+      let partyCount = 0;
+      let truckCount = 0;
+      let paymentCount = 0;
+      let truckComingCount = 0;
+
+      // Office orders unconfirmed count
+      officeCount = officeData.filter((ord) => ord.status !== "CONFIRMED").length;
+
+      // Party orders unconfirmed count
+      if (isParty) {
+        const uName = String(user?.username || "").trim().toLowerCase();
+        const pName = String(user?.partyName || "").trim().toLowerCase();
+        partyCount = partyData.filter((ord) => {
+          if (ord.status === "CONFIRMED") return false;
+          const createdBy = String(ord.createdBy || "").trim().toLowerCase();
+          const ordParty = String(ord.partyName || "").trim().toLowerCase();
+          return (createdBy && createdBy === uName) || (ordParty && ordParty === pName);
+        }).length;
+      } else {
+        partyCount = partyData.filter((ord) => ord.status !== "CONFIRMED").length;
+      }
+
+      // Truck orders unconfirmed count
+      if (isTruck) {
+        const uName = String(user?.username || "").trim().toLowerCase();
+        truckCount = truckData.filter((ord) => {
+          if (ord.status === "CONFIRMED") return false;
+          const createdBy = String(ord.createdBy || "").trim().toLowerCase();
+          return createdBy && createdBy === uName;
+        }).length;
+      } else {
+        truckCount = truckData.filter((ord) => ord.status !== "CONFIRMED").length;
+      }
+
+      // If Owner, compute Payment Alerts and Truck Coming Alerts
+      if (isOwner && results[3] && results[4]) {
+        const lrEntries = Array.isArray(results[3]) ? results[3] : [];
+        const partiesList = Array.isArray(results[4]) ? results[4] : [];
+
+        // 1. Payment alerts overdue count
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const pMap = {};
+        partiesList.forEach((p) => {
+          if (p.partyName) {
+            pMap[p.partyName.toUpperCase().trim()] = p.paymentDays !== undefined ? Number(p.paymentDays) : 30;
+          }
+        });
+
+        paymentCount = lrEntries.filter((lr) => {
+          const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+          if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
+          if (lr.partyPaymentStatus === "PAID") return false;
+
+          const pNameKey = (lr.consigneeName || lr.consignorName || lr.debitAmountTo || "").toUpperCase().trim();
+          const timelineDays = pMap[pNameKey] !== undefined ? pMap[pNameKey] : 30;
+
+          let billedDate;
+          const dateStr = lr.dateTime || lr.date;
+          if (dateStr) {
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+              billedDate = new Date(dateStr + "T00:00:00");
+            } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+              const parts = dateStr.split("/");
+              billedDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+            } else {
+              billedDate = new Date(dateStr);
+            }
+          } else if (lr.createdAt) {
+            billedDate = new Date(lr.createdAt);
+          } else {
+            billedDate = new Date();
+          }
+
+          if (isNaN(billedDate.getTime())) return false;
+          billedDate.setHours(0, 0, 0, 0);
+
+          const dueDate = new Date(billedDate);
+          dueDate.setDate(dueDate.getDate() + timelineDays);
+
+          const diffDays = Math.round((today.getTime() - dueDate.getTime()) / (1000 * 3600 * 24));
+          return diffDays > 0;
+        }).length;
+
+        // 2. Truck Coming alerts count
+        const lrsByTruck = {};
+        lrEntries.forEach((lr) => {
+          const tNo = (lr.truckNo || "").toUpperCase().trim();
+          if (!tNo) return;
+          if (!lrsByTruck[tNo]) lrsByTruck[tNo] = [];
+          lrsByTruck[tNo].push(lr);
+        });
+
+        Object.keys(lrsByTruck).forEach((tNo) => {
+          const truckLRs = lrsByTruck[tNo];
+          const parseD = (dStr, cStr) => {
+            if (dStr) {
+              if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return new Date(dStr + "T00:00:00");
+              if (/^\d{2}\/\d{2}\/\d{4}$/.test(dStr)) {
+                const parts = dStr.split("/");
+                return new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+              }
+              const d = new Date(dStr);
+              if (!isNaN(d.getTime())) return d;
+            }
+            if (cStr) {
+              const c = new Date(cStr);
+              if (!isNaN(c.getTime())) return c;
+            }
+            return new Date();
+          };
+
+          truckLRs.sort((a, b) => parseD(b.dateTime, b.createdAt).getTime() - parseD(a.dateTime, a.createdAt).getTime());
+          const latestLr = truckLRs[0];
+          if (latestLr.truckComingDismissed) return;
+
+          const lrDate = parseD(latestLr.dateTime, latestLr.createdAt);
+          lrDate.setHours(0, 0, 0, 0);
+
+          const tripDays = latestLr.tripDays !== undefined ? Number(latestLr.tripDays) : 5;
+          const diffDays = Math.floor((today.getTime() - lrDate.getTime()) / (1000 * 3600 * 24));
+          if (diffDays >= tripDays) {
+            truckComingCount++;
+          }
+        });
+      }
+
+      setNotificationCounts({
+        officeOrders: officeCount,
+        partyOrders: partyCount,
+        truckOrders: truckCount,
+        paymentAlerts: paymentCount,
+        truckComing: truckComingCount,
+      });
     } catch (e) {
-      console.error("Error fetching office orders count in navbar:", e);
+      console.error("Error fetching notifications count in navbar:", e);
     }
   };
 
   useEffect(() => {
-    if (user && (isOwner || isOffice)) {
-      fetchUnconfirmedOfficeOrders();
-      const interval = setInterval(fetchUnconfirmedOfficeOrders, 15000);
+    if (user) {
+      fetchAllNotifications();
+      const interval = setInterval(fetchAllNotifications, 15000);
       return () => clearInterval(interval);
     }
-  }, [user, isOwner, isOffice, location.pathname]);
+  }, [user, isOwner, isOffice, isParty, isTruck, location.pathname]);
+
+  const getItemBadgeCount = (path) => {
+    if (path === "/office-orders") return notificationCounts.officeOrders;
+    if (path === "/party-orders") return notificationCounts.partyOrders;
+    if (path === "/truck-orders") return notificationCounts.truckOrders;
+    if (path === "/payment-alerts") return notificationCounts.paymentAlerts;
+    if (path === "/truck-coming") return notificationCounts.truckComing;
+    return 0;
+  };
+
+  const totalDropdownNotifications =
+    notificationCounts.officeOrders +
+    notificationCounts.partyOrders +
+    notificationCounts.truckOrders +
+    notificationCounts.paymentAlerts +
+    notificationCounts.truckComing;
 
   // Primary Navigation Items for Owner
   const ownerPrimaryItems = [
@@ -188,7 +356,7 @@ export default function Navbar() {
             {primaryItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
-              const isOfficeOrders = item.path === "/office-orders";
+              const badgeCount = getItemBadgeCount(item.path);
               return (
                 <Link
                   key={item.name}
@@ -200,9 +368,9 @@ export default function Navbar() {
                 >
                   <Icon className="w-4 h-4 shrink-0" />
                   <span className="whitespace-nowrap">{item.name}</span>
-                  {isOfficeOrders && unconfirmedOfficeOrdersCount > 0 && (
+                  {badgeCount > 0 && (
                     <span className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-black leading-tight animate-pulse shadow-sm">
-                      {unconfirmedOfficeOrdersCount}
+                      {badgeCount}
                     </span>
                   )}
                 </Link>
@@ -222,12 +390,12 @@ export default function Navbar() {
                 >
                   <FolderKanban className="w-4 h-4 shrink-0" />
                   <span className="whitespace-nowrap">Reports & Master</span>
-                  {unconfirmedOfficeOrdersCount > 0 && (
+                  {totalDropdownNotifications > 0 && (
                     <span
                       className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-black leading-tight animate-pulse shadow-sm"
-                      title={`${unconfirmedOfficeOrdersCount} Unconfirmed Office Orders`}
+                      title={`${totalDropdownNotifications} Active Alerts & Pending Orders`}
                     >
-                      {unconfirmedOfficeOrdersCount}
+                      {totalDropdownNotifications}
                     </span>
                   )}
                   <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
@@ -242,7 +410,7 @@ export default function Navbar() {
                     {dropdownItems.map((item) => {
                       const Icon = item.icon;
                       const active = isActive(item.path);
-                      const isOfficeOrders = item.path === "/office-orders";
+                      const badgeCount = getItemBadgeCount(item.path);
                       return (
                         <Link
                           key={item.name}
@@ -257,9 +425,9 @@ export default function Navbar() {
                             <Icon className="w-4 h-4 text-amber-600" />
                             <span>{item.name}</span>
                           </div>
-                          {isOfficeOrders && unconfirmedOfficeOrdersCount > 0 && (
+                          {badgeCount > 0 && (
                             <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-xs font-black shadow animate-pulse">
-                              {unconfirmedOfficeOrdersCount}
+                              {badgeCount}
                             </span>
                           )}
                         </Link>
@@ -447,9 +615,9 @@ export default function Navbar() {
               className="p-2 rounded-xl text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 focus:outline-none transition shrink-0 ml-0.5 relative"
             >
               {mobileMenuOpen ? <X className="w-5 h-5 text-rose-600" /> : <Menu className="w-5 h-5 text-slate-800" />}
-              {!mobileMenuOpen && unconfirmedOfficeOrdersCount > 0 && (
+              {!mobileMenuOpen && totalDropdownNotifications > 0 && (
                 <span className="absolute -top-1 -right-1 px-1 min-w-[15px] h-3.5 rounded-full bg-rose-600 text-white text-[9px] font-black flex items-center justify-center animate-pulse shadow">
-                  {unconfirmedOfficeOrdersCount}
+                  {totalDropdownNotifications}
                 </span>
               )}
             </button>
@@ -521,7 +689,7 @@ export default function Navbar() {
           {primaryItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
-            const isOfficeOrders = item.path === "/office-orders";
+            const badgeCount = getItemBadgeCount(item.path);
             return (
               <Link
                 key={item.name}
@@ -536,9 +704,9 @@ export default function Navbar() {
                   <Icon className="w-5 h-5" />
                   <span>{item.name}</span>
                 </div>
-                {isOfficeOrders && unconfirmedOfficeOrdersCount > 0 && (
+                {badgeCount > 0 && (
                   <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-xs font-black shadow animate-pulse">
-                    {unconfirmedOfficeOrdersCount}
+                    {badgeCount}
                   </span>
                 )}
               </Link>
@@ -553,7 +721,7 @@ export default function Navbar() {
               {dropdownItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.path);
-                const isOfficeOrders = item.path === "/office-orders";
+                const badgeCount = getItemBadgeCount(item.path);
                 return (
                   <Link
                     key={item.name}
@@ -568,9 +736,9 @@ export default function Navbar() {
                       <Icon className="w-4 h-4 text-amber-600" />
                       <span>{item.name}</span>
                     </div>
-                    {isOfficeOrders && unconfirmedOfficeOrdersCount > 0 && (
+                    {badgeCount > 0 && (
                       <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-xs font-black shadow animate-pulse">
-                        {unconfirmedOfficeOrdersCount}
+                        {badgeCount}
                       </span>
                     )}
                   </Link>

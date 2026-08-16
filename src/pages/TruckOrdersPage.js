@@ -186,8 +186,14 @@ export default function TruckOrdersPage() {
             <Truck className="w-4 h-4" />
           </div>
           <div>
-            <h1 className="text-base sm:text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
-              Truck Orders <span className="text-xs font-normal text-slate-400">({isOwner ? "Owner View" : "Truck Portal"})</span>
+            <h1 className="text-base sm:text-lg font-extrabold text-white tracking-tight flex items-center gap-2 flex-wrap">
+              <span>Truck Orders</span>
+              <span className="text-xs font-normal text-slate-400">({isOwner ? "Owner View" : "Truck Portal"})</span>
+              {orders.filter((ord) => ord.status !== "CONFIRMED").length > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[11px] font-black animate-pulse shadow">
+                  {orders.filter((ord) => ord.status !== "CONFIRMED").length} Unconfirmed
+                </span>
+              )}
             </h1>
           </div>
         </div>
