@@ -57,14 +57,16 @@ export default function AccountingPage() {
   const [selectedLrForDoc, setSelectedLrForDoc] = useState(null);
   const [lrDocAutoAction, setLrDocAutoAction] = useState(null);
 
-  // Sync tab with URL search parameter (?tab=TRUCK or ?tab=PARTY)
+  // Sync tab with URL search parameter (?tab=TRUCK, ?tab=CONSIGNEE, ?tab=CONSIGNOR, or ?tab=PARTY)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get("tab");
     if (tabParam === "TRUCK") {
       setActiveTab("TRUCK");
-    } else if (tabParam === "PARTY") {
-      setActiveTab("PARTY");
+    } else if (tabParam === "CONSIGNEE" || tabParam === "PARTY") {
+      setActiveTab("CONSIGNEE");
+    } else if (tabParam === "CONSIGNOR") {
+      setActiveTab("CONSIGNOR");
     }
   }, [location.search]);
 
@@ -342,7 +344,7 @@ export default function AccountingPage() {
     try {
       const d = new Date(dateVal);
       if (!isNaN(d.getTime())) return d.toISOString().split("T")[0];
-    } catch (e) {}
+    } catch (e) { }
     return "";
   };
 
@@ -387,33 +389,33 @@ export default function AccountingPage() {
   // Filtered LRs for Party Role
   const partyLrEntries = isParty
     ? lrEntries.filter((lr) => {
-        const lrFY = getLRFYLabel(lr);
-        if (!matchFY(lrFY, selectedFY)) return false;
+      const lrFY = getLRFYLabel(lr);
+      if (!matchFY(lrFY, selectedFY)) return false;
 
-        if (fromDate || toDate) {
-          const lrIso = getIsoDateString(getLRDate(lr));
-          if (fromDate && lrIso && lrIso < fromDate) return false;
-          if (toDate && lrIso && lrIso > toDate) return false;
-        }
+      if (fromDate || toDate) {
+        const lrIso = getIsoDateString(getLRDate(lr));
+        if (fromDate && lrIso && lrIso < fromDate) return false;
+        if (toDate && lrIso && lrIso > toDate) return false;
+      }
 
-        const pName = user?.partyName?.toLowerCase()?.trim();
-        const status = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+      const pName = user?.partyName?.toLowerCase()?.trim();
+      const status = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
 
-        // TO PAY has 0 accounting entries!
-        if (status === "TO PAY" || status === "TOPAY") return false;
+      // TO PAY has 0 accounting entries!
+      if (status === "TO PAY" || status === "TOPAY") return false;
 
-        const consignor = lr.consignorName?.toLowerCase()?.trim();
-        const consignee = lr.consigneeName?.toLowerCase()?.trim();
+      const consignor = lr.consignorName?.toLowerCase()?.trim();
+      const consignee = lr.consigneeName?.toLowerCase()?.trim();
 
-        if (status === "PAID") {
-          return consignor === pName;
-        }
-        if (status === "TBB") {
-          return consignee === pName;
-        }
+      if (status === "PAID") {
+        return consignor === pName;
+      }
+      if (status === "TBB") {
+        return consignee === pName;
+      }
 
-        return consignor === pName || consignee === pName;
-      })
+      return consignor === pName || consignee === pName;
+    })
     : [];
 
   // Metrics for Party Role
@@ -574,7 +576,7 @@ export default function AccountingPage() {
 
     return (
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 font-sans space-y-4">
-        
+
         {/* Compact Welcome Banner */}
         <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 px-4 shadow flex flex-wrap justify-between items-center gap-3">
           <div className="flex items-center gap-3">
@@ -821,412 +823,429 @@ export default function AccountingPage() {
   return (
     <>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 font-sans space-y-4 print:hidden">
-      
-      {/* Main 3 Tabs: CONSIGNOR, CONSIGNEE, TRUCK & Search */}
-      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-        <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700 overflow-x-auto">
-          <button
-            onClick={() => {
-              setActiveTab("CONSIGNOR");
-              setStatusFilter("ALL");
-              setSelectedPartyName("ALL");
-            }}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${
-              activeTab === "CONSIGNOR"
-                ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>1. Consignor (Shipper)</span>
-          </button>
 
-          <button
-            onClick={() => {
-              setActiveTab("CONSIGNEE");
-              setStatusFilter("ALL");
-              setSelectedPartyName("ALL");
-            }}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${
-              activeTab === "CONSIGNEE"
-                ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>2. Consignee (Receiver)</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab("TRUCK");
-              setStatusFilter("ALL");
-              setSelectedTruckNo("ALL");
-            }}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${
-              activeTab === "TRUCK"
-                ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <Truck className="w-3.5 h-3.5" />
-            <span>3. Truck Accounting</span>
-          </button>
-        </div>
-
-        {/* Global Search & Refresh */}
-        <div className="flex items-center gap-2">
-          <div className="relative max-w-xs w-full">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search LR, Truck, Party..."
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
-          </div>
-
-          <button
-            onClick={fetchData}
-            title="Refresh Data"
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg transition cursor-pointer shrink-0"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Overview Metric Cards based on Tab */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {activeTab !== "TRUCK" ? (
-          <>
-            {/* Total Billed to Party */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-3.5 px-4 shadow">
-              <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
-                <span>Party Total Billed</span>
-                <Users className="w-4 h-4 text-blue-400" />
-              </div>
-              <div className="text-xl font-extrabold text-white font-mono">
-                ₹ {ownerTotalBilled.toLocaleString("en-IN")}
-              </div>
-              <p className="text-[11px] text-slate-400 mt-1">
-                Total Freight Billed
-              </p>
-            </div>
-
-            {/* Total Collected from Party */}
-            <div className="bg-slate-800 border border-emerald-500/30 rounded-xl p-3.5 px-4 shadow bg-emerald-950/10">
-              <div className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
-                <span>Party Amount Paid</span>
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div className="text-xl font-extrabold text-emerald-400 font-mono">
-                ₹ {ownerTotalPartyReceived.toLocaleString("en-IN")}
-              </div>
-              <p className="text-[11px] text-emerald-300/70 mt-1">
-                Collected Amount
-              </p>
-            </div>
-
-            {/* Remaining Receivable from Party */}
-            <div className="bg-slate-800 border border-amber-500/30 rounded-xl p-3.5 px-4 shadow bg-amber-950/10">
-              <div className="text-amber-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
-                <span>Party Pending Balance</span>
-                <Clock className="w-4 h-4 text-amber-400" />
-              </div>
-              <div className="text-xl font-extrabold text-amber-400 font-mono">
-                ₹ {ownerPartyPending.toLocaleString("en-IN")}
-              </div>
-              <p className="text-[11px] text-amber-300/70 mt-1">
-                Outstanding Balance
-              </p>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Total Truck Payable */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-3.5 px-4 shadow">
-              <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
-                <span>Truck Total Freight</span>
-                <Truck className="w-4 h-4 text-purple-400" />
-              </div>
-              <div className="text-xl font-extrabold text-white font-mono">
-                ₹ {ownerTotalTruckPayable.toLocaleString("en-IN")}
-              </div>
-              <p className="text-[11px] text-slate-400 mt-1">
-                Total Truck Freight Payable
-              </p>
-            </div>
-
-            {/* Total Paid to Truck */}
-            <div className="bg-slate-800 border border-emerald-500/30 rounded-xl p-3.5 px-4 shadow bg-emerald-950/10">
-              <div className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
-                <span>Truck Paid Amount</span>
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div className="text-xl font-extrabold text-emerald-400 font-mono">
-                ₹ {ownerTotalTruckPaid.toLocaleString("en-IN")}
-              </div>
-              <p className="text-[11px] text-emerald-300/70 mt-1">
-                Paid Freight Amount
-              </p>
-            </div>
-
-            {/* Remaining Payable to Truck */}
-            <div className="bg-slate-800 border border-amber-500/30 rounded-xl p-3.5 px-4 shadow bg-amber-950/10">
-              <div className="text-amber-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
-                <span>Truck Pending Payable</span>
-                <Clock className="w-4 h-4 text-amber-400" />
-              </div>
-              <div className="text-xl font-extrabold text-amber-400 font-mono">
-                ₹ {ownerTruckPending.toLocaleString("en-IN")}
-              </div>
-              <p className="text-[11px] text-amber-300/70 mt-1">
-                Outstanding Freight to Pay
-              </p>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Filter Bar with Date Range Selector */}
-      <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-wrap items-center justify-between gap-3">
-        
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Financial Year (FY) Filter Dropdown */}
-          <div className="flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-xs font-bold text-slate-300 uppercase">Year / FY:</span>
-            <select
-              value={selectedFY}
-              onChange={(e) => setSelectedFY(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-white text-xs font-mono font-bold rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+        {/* Main 3 Tabs: CONSIGNOR, CONSIGNEE, TRUCK & Search */}
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+          <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700 overflow-x-auto">
+            <button
+              onClick={() => {
+                setActiveTab("CONSIGNOR");
+                setStatusFilter("ALL");
+                setSelectedPartyName("ALL");
+              }}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${activeTab === "CONSIGNOR"
+                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                  : "text-slate-400 hover:text-slate-200"
+                }`}
             >
-              <option value="ALL">All Years</option>
-              {availableFYs.map((fy) => (
-                <option key={fy} value={fy}>
-                  FY {fy}
-                </option>
-              ))}
-            </select>
+              <Users className="w-3.5 h-3.5" />
+              <span>1. Consignor (Shipper)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab("CONSIGNEE");
+                setStatusFilter("ALL");
+                setSelectedPartyName("ALL");
+              }}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${activeTab === "CONSIGNEE"
+                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                  : "text-slate-400 hover:text-slate-200"
+                }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>2. Consignee (Receiver)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab("TRUCK");
+                setStatusFilter("ALL");
+                setSelectedTruckNo("ALL");
+              }}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer whitespace-nowrap ${activeTab === "TRUCK"
+                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                  : "text-slate-400 hover:text-slate-200"
+                }`}
+            >
+              <Truck className="w-3.5 h-3.5" />
+              <span>3. Truck Accounting</span>
+            </button>
           </div>
 
-          {/* Date Range Selection (From Date -> To Date) */}
-          <div className="flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700">
-            <span className="text-xs font-bold text-amber-400 uppercase">Date Range:</span>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="bg-slate-800 text-white font-bold px-2 py-0.5 rounded border border-slate-600 text-xs focus:outline-none"
-            />
-            <span className="text-slate-400 text-xs font-bold">to</span>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="bg-slate-800 text-white font-bold px-2 py-0.5 rounded border border-slate-600 text-xs focus:outline-none"
-            />
-            {(fromDate || toDate) && (
+          {/* Global Search & Refresh */}
+          <div className="flex items-center gap-2">
+            <div className="relative max-w-xs w-full">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search LR, Truck, Party..."
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+
+            <button
+              onClick={fetchData}
+              title="Refresh Data"
+              className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg transition cursor-pointer shrink-0"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Overview Metric Cards based on Tab */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {activeTab !== "TRUCK" ? (
+            <>
+              {/* Total Billed to Party */}
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-3.5 px-4 shadow">
+                <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
+                  <span>Party Total Billed</span>
+                  <Users className="w-4 h-4 text-blue-400" />
+                </div>
+                <div className="text-xl font-extrabold text-white font-mono">
+                  ₹ {ownerTotalBilled.toLocaleString("en-IN")}
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Total Freight Billed
+                </p>
+              </div>
+
+              {/* Total Collected from Party */}
+              <div className="bg-slate-800 border border-emerald-500/30 rounded-xl p-3.5 px-4 shadow bg-emerald-950/10">
+                <div className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
+                  <span>Party Amount Paid</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-xl font-extrabold text-emerald-400 font-mono">
+                  ₹ {ownerTotalPartyReceived.toLocaleString("en-IN")}
+                </div>
+                <p className="text-[11px] text-emerald-300/70 mt-1">
+                  Collected Amount
+                </p>
+              </div>
+
+              {/* Remaining Receivable from Party */}
+              <div className="bg-slate-800 border border-amber-500/30 rounded-xl p-3.5 px-4 shadow bg-amber-950/10">
+                <div className="text-amber-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
+                  <span>Party Pending Balance</span>
+                  <Clock className="w-4 h-4 text-amber-400" />
+                </div>
+                <div className="text-xl font-extrabold text-amber-400 font-mono">
+                  ₹ {ownerPartyPending.toLocaleString("en-IN")}
+                </div>
+                <p className="text-[11px] text-amber-300/70 mt-1">
+                  Outstanding Balance
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Total Truck Payable */}
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-3.5 px-4 shadow">
+                <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
+                  <span>Truck Total Freight</span>
+                  <Truck className="w-4 h-4 text-purple-400" />
+                </div>
+                <div className="text-xl font-extrabold text-white font-mono">
+                  ₹ {ownerTotalTruckPayable.toLocaleString("en-IN")}
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Total Truck Freight Payable
+                </p>
+              </div>
+
+              {/* Total Paid to Truck */}
+              <div className="bg-slate-800 border border-emerald-500/30 rounded-xl p-3.5 px-4 shadow bg-emerald-950/10">
+                <div className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
+                  <span>Truck Paid Amount</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-xl font-extrabold text-emerald-400 font-mono">
+                  ₹ {ownerTotalTruckPaid.toLocaleString("en-IN")}
+                </div>
+                <p className="text-[11px] text-emerald-300/70 mt-1">
+                  Paid Freight Amount
+                </p>
+              </div>
+
+              {/* Remaining Payable to Truck */}
+              <div className="bg-slate-800 border border-amber-500/30 rounded-xl p-3.5 px-4 shadow bg-amber-950/10">
+                <div className="text-amber-400 text-xs font-bold uppercase tracking-wider mb-1 flex justify-between">
+                  <span>Truck Pending Payable</span>
+                  <Clock className="w-4 h-4 text-amber-400" />
+                </div>
+                <div className="text-xl font-extrabold text-amber-400 font-mono">
+                  ₹ {ownerTruckPending.toLocaleString("en-IN")}
+                </div>
+                <p className="text-[11px] text-amber-300/70 mt-1">
+                  Outstanding Freight to Pay
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Filter Bar with Date Range Selector */}
+        <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-wrap items-center justify-between gap-3">
+
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Financial Year (FY) Filter Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-bold text-slate-300 uppercase">Year / FY:</span>
+              <select
+                value={selectedFY}
+                onChange={(e) => setSelectedFY(e.target.value)}
+                className="bg-slate-900 border border-slate-700 text-white text-xs font-mono font-bold rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              >
+                <option value="ALL">All Years</option>
+                {availableFYs.map((fy) => (
+                  <option key={fy} value={fy}>
+                    FY {fy}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Date Range Selection (From Date -> To Date) */}
+            <div className="flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700">
+              <span className="text-xs font-bold text-amber-400 uppercase">Date Range:</span>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="bg-slate-800 text-white font-bold px-2 py-0.5 rounded border border-slate-600 text-xs focus:outline-none"
+              />
+              <span className="text-slate-400 text-xs font-bold">to</span>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="bg-slate-800 text-white font-bold px-2 py-0.5 rounded border border-slate-600 text-xs focus:outline-none"
+              />
+              {(fromDate || toDate) && (
+                <button
+                  onClick={() => {
+                    setFromDate("");
+                    setToDate("");
+                  }}
+                  className="text-rose-400 hover:text-rose-300 font-bold ml-1 text-xs underline"
+                  title="Clear Date Filter"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown Filter for Party Name or Truck No */}
+            <div className="flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-bold text-slate-300 uppercase">Filter:</span>
+
+              {activeTab === "CONSIGNOR" && (
+                <select
+                  value={selectedPartyName}
+                  onChange={(e) => setSelectedPartyName(e.target.value)}
+                  className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                >
+                  <option value="ALL">All Consignors</option>
+                  {consignorPartiesList.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {activeTab === "CONSIGNEE" && (
+                <select
+                  value={selectedPartyName}
+                  onChange={(e) => setSelectedPartyName(e.target.value)}
+                  className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                >
+                  <option value="ALL">All Consignees</option>
+                  {consigneePartiesList.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {activeTab === "TRUCK" && (
+                <select
+                  value={selectedTruckNo}
+                  onChange={(e) => setSelectedTruckNo(e.target.value)}
+                  className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono"
+                >
+                  <option value="ALL">All Trucks</option>
+                  {uniqueTrucks.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </div>
+
+          {/* Status Filter & Print Statement Buttons */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex bg-slate-900 p-0.5 rounded-lg border border-slate-700">
               <button
-                onClick={() => {
-                  setFromDate("");
-                  setToDate("");
-                }}
-                className="text-rose-400 hover:text-rose-300 font-bold ml-1 text-xs underline"
-                title="Clear Date Filter"
+                onClick={() => setStatusFilter("ALL")}
+                className={`px-2.5 py-1 rounded text-xs font-bold transition ${statusFilter === "ALL"
+                    ? "bg-amber-500 text-slate-950 font-extrabold"
+                    : "text-slate-400 hover:text-white"
+                  }`}
               >
-                Clear
+                All ({ownerAllCount})
               </button>
-            )}
-          </div>
-
-          {/* Dropdown Filter for Party Name or Truck No */}
-          <div className="flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-xs font-bold text-slate-300 uppercase">Filter:</span>
-
-            {activeTab === "CONSIGNOR" && (
-              <select
-                value={selectedPartyName}
-                onChange={(e) => setSelectedPartyName(e.target.value)}
-                className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              <button
+                onClick={() => setStatusFilter("PAID")}
+                className={`px-2.5 py-1 rounded text-xs font-bold transition ${statusFilter === "PAID"
+                    ? "bg-emerald-500 text-slate-950 font-extrabold"
+                    : "text-slate-400 hover:text-white"
+                  }`}
               >
-                <option value="ALL">All Consignors</option>
-                {consignorPartiesList.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            {activeTab === "CONSIGNEE" && (
-              <select
-                value={selectedPartyName}
-                onChange={(e) => setSelectedPartyName(e.target.value)}
-                className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                Paid Only ({ownerPaidCount})
+              </button>
+              <button
+                onClick={() => setStatusFilter("UNPAID")}
+                className={`px-2.5 py-1 rounded text-xs font-bold transition ${statusFilter === "UNPAID"
+                    ? "bg-amber-500 text-slate-950 font-extrabold"
+                    : "text-slate-400 hover:text-white"
+                  }`}
               >
-                <option value="ALL">All Consignees</option>
-                {consigneePartiesList.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            )}
+                Pending Only ({ownerUnpaidCount})
+              </button>
+            </div>
 
-            {activeTab === "TRUCK" && (
-              <select
-                value={selectedTruckNo}
-                onChange={(e) => setSelectedTruckNo(e.target.value)}
-                className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono"
-              >
-                <option value="ALL">All Trucks</option>
-                {uniqueTrucks.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            )}
+            <button
+              onClick={() => setShowOwnerStatementModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 rounded-lg text-xs font-black shadow transition cursor-pointer"
+              title="Print A4 Statement of current filtered records"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Print Statement (A4)</span>
+            </button>
           </div>
         </div>
 
-        {/* Status Filter & Print Statement Buttons */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex bg-slate-900 p-0.5 rounded-lg border border-slate-700">
-            <button
-              onClick={() => setStatusFilter("ALL")}
-              className={`px-2.5 py-1 rounded text-xs font-bold transition ${
-                statusFilter === "ALL"
-                  ? "bg-amber-500 text-slate-950 font-extrabold"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              All ({ownerAllCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter("PAID")}
-              className={`px-2.5 py-1 rounded text-xs font-bold transition ${
-                statusFilter === "PAID"
-                  ? "bg-emerald-500 text-slate-950 font-extrabold"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Paid Only ({ownerPaidCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter("UNPAID")}
-              className={`px-2.5 py-1 rounded text-xs font-bold transition ${
-                statusFilter === "UNPAID"
-                  ? "bg-amber-500 text-slate-950 font-extrabold"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Pending Only ({ownerUnpaidCount})
-            </button>
-          </div>
-
-          <button
-            onClick={() => setShowOwnerStatementModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 rounded-lg text-xs font-black shadow transition cursor-pointer"
-            title="Print A4 Statement of current filtered records"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            <span>Print Statement (A4)</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Ledger Table */}
-      <div className="bg-slate-800 border border-slate-700 rounded-xl shadow-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-900/90 text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-700">
-              <tr>
-                <th className="py-2.5 px-3 font-bold">LR No.</th>
-                <th className="py-2.5 px-3 font-bold">Date</th>
-                <th className="py-2.5 px-3 font-bold">Party Name</th>
-                <th className="py-2.5 px-3 font-bold">Truck No.</th>
-                <th className="py-2.5 px-3 font-bold text-right">Net Total (₹)</th>
-                {activeTab !== "TRUCK" ? (
-                  <th className="py-2.5 px-3 font-bold text-center">Party Payment Status</th>
-                ) : (
-                  <th className="py-2.5 px-3 font-bold text-center">Truck Payment Status</th>
-                )}
-                <th className="py-2.5 px-3 font-bold text-center">Action</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-700/60 font-medium">
-              {filteredOwnerEntries.length === 0 ? (
+        {/* Ledger Table */}
+        <div className="bg-slate-800 border border-slate-700 rounded-xl shadow-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-900/90 text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-700">
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
-                    No records found.
-                  </td>
+                  <th className="py-2.5 px-3 font-bold">LR No.</th>
+                  <th className="py-2.5 px-3 font-bold">Date</th>
+                  <th className="py-2.5 px-3 font-bold">Party Name</th>
+                  <th className="py-2.5 px-3 font-bold">Truck No.</th>
+                  <th className="py-2.5 px-3 font-bold text-right">Net Total (₹)</th>
+                  {activeTab !== "TRUCK" ? (
+                    <th className="py-2.5 px-3 font-bold text-center">Party Payment Status</th>
+                  ) : (
+                    <th className="py-2.5 px-3 font-bold text-center">Truck Payment Status</th>
+                  )}
+                  <th className="py-2.5 px-3 font-bold text-center">Action</th>
                 </tr>
-              ) : (
-                filteredOwnerEntries.map((lr) => {
-                  const partyName = getPartyName(lr);
-                  const partyPaid = lr.partyPaymentStatus === "PAID";
-                  const truckPaid = lr.truckPaymentStatus === "PAID";
-                  const amount = getLRFreightAmount(lr);
+              </thead>
 
-                  return (
-                    <tr key={lr.id} className="hover:bg-slate-700/40 transition">
-                      <td className="py-2.5 px-3 font-mono font-bold text-amber-400">
-                        {lr.lrNumber || "-"}
-                      </td>
-                      <td className="py-2.5 px-3 whitespace-nowrap text-slate-300">
-                        {lr.dateTime || "-"}
-                      </td>
-                      <td className="py-2.5 px-3 font-semibold text-white max-w-[180px] truncate">
-                        <button
-                          type="button"
-                          onClick={(e) => handleOpenPartyDetails(partyName, e)}
-                          title="Click to view Party Master details"
-                          className="hover:text-amber-400 hover:underline cursor-pointer text-left truncate max-w-full font-bold transition-colors inline-flex items-center gap-1 group"
-                        >
-                          <span className="truncate">{partyName}</span>
-                          <Eye size={12} className="opacity-0 group-hover:opacity-100 text-amber-400 shrink-0 transition-opacity" />
-                        </button>
-                      </td>
-                      <td className="py-2.5 px-3 font-mono font-semibold text-white">
-                        <button
-                          type="button"
-                          onClick={(e) => handleOpenTruckDetails(lr.truckNo, e)}
-                          title="Click to view Truck Master details"
-                          className="hover:text-amber-400 hover:underline cursor-pointer font-mono font-bold transition-colors inline-flex items-center gap-1 group"
-                        >
-                          <span>{lr.truckNo || "-"}</span>
-                          {lr.truckNo && lr.truckNo !== "-" && (
+              <tbody className="divide-y divide-slate-700/60 font-medium">
+                {filteredOwnerEntries.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
+                      No records found.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredOwnerEntries.map((lr) => {
+                    const partyName = getPartyName(lr);
+                    const partyPaid = lr.partyPaymentStatus === "PAID";
+                    const truckPaid = lr.truckPaymentStatus === "PAID";
+                    const amount = getLRFreightAmount(lr);
+
+                    return (
+                      <tr key={lr.id} className="hover:bg-slate-700/40 transition">
+                        <td className="py-2.5 px-3 font-mono font-bold text-amber-400">
+                          {lr.lrNumber || "-"}
+                        </td>
+                        <td className="py-2.5 px-3 whitespace-nowrap text-slate-300">
+                          {lr.dateTime || "-"}
+                        </td>
+                        <td className="py-2.5 px-3 font-semibold text-white max-w-[180px] truncate">
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenPartyDetails(partyName, e)}
+                            title="Click to view Party Master details"
+                            className="hover:text-amber-400 hover:underline cursor-pointer text-left truncate max-w-full font-bold transition-colors inline-flex items-center gap-1 group"
+                          >
+                            <span className="truncate">{partyName}</span>
                             <Eye size={12} className="opacity-0 group-hover:opacity-100 text-amber-400 shrink-0 transition-opacity" />
-                          )}
-                        </button>
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-mono font-bold text-white text-sm">
-                        ₹ {amount.toLocaleString("en-IN")}
-                      </td>
+                          </button>
+                        </td>
+                        <td className="py-2.5 px-3 font-mono font-semibold text-white">
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenTruckDetails(lr.truckNo, e)}
+                            title="Click to view Truck Master details"
+                            className="hover:text-amber-400 hover:underline cursor-pointer font-mono font-bold transition-colors inline-flex items-center gap-1 group"
+                          >
+                            <span>{lr.truckNo || "-"}</span>
+                            {lr.truckNo && lr.truckNo !== "-" && (
+                              <Eye size={12} className="opacity-0 group-hover:opacity-100 text-amber-400 shrink-0 transition-opacity" />
+                            )}
+                          </button>
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono font-bold text-white text-sm">
+                          ₹ {amount.toLocaleString("en-IN")}
+                        </td>
 
-                      {/* Status Column */}
-                      <td className="py-2.5 px-3 text-center">
-                        {activeTab !== "TRUCK" ? (
-                          partyPaid ? (
+                        {/* Status Column */}
+                        <td className="py-2.5 px-3 text-center">
+                          {activeTab !== "TRUCK" ? (
+                            partyPaid ? (
+                              <div className="flex flex-col items-center">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  <span>PAID</span>
+                                </span>
+                                {lr.partyPaidDate && (
+                                  <span className="text-[10px] text-emerald-400/80 font-mono mt-0.5">
+                                    📅 {lr.partyPaidDate}
+                                  </span>
+                                )}
+                                {lr.partyChequeNo && (
+                                  <span className="text-[10px] text-slate-300 font-mono mt-0.5">
+                                    💳 {lr.partyChequeNo}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                                <Clock className="w-3 h-3" />
+                                <span>PENDING</span>
+                              </span>
+                            )
+                          ) : truckPaid ? (
                             <div className="flex flex-col items-center">
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                                 <CheckCircle2 className="w-3 h-3" />
                                 <span>PAID</span>
                               </span>
-                              {lr.partyPaidDate && (
+                              {lr.truckPaidDate && (
                                 <span className="text-[10px] text-emerald-400/80 font-mono mt-0.5">
-                                  📅 {lr.partyPaidDate}
+                                  📅 {lr.truckPaidDate}
                                 </span>
                               )}
-                              {lr.partyChequeNo && (
+                              {lr.truckChequeNo && (
                                 <span className="text-[10px] text-slate-300 font-mono mt-0.5">
-                                  💳 {lr.partyChequeNo}
+                                  💳 {lr.truckChequeNo}
                                 </span>
                               )}
                             </div>
@@ -1235,163 +1254,140 @@ export default function AccountingPage() {
                               <Clock className="w-3 h-3" />
                               <span>PENDING</span>
                             </span>
-                          )
-                        ) : truckPaid ? (
-                          <div className="flex flex-col items-center">
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>PAID</span>
-                            </span>
-                            {lr.truckPaidDate && (
-                              <span className="text-[10px] text-emerald-400/80 font-mono mt-0.5">
-                                📅 {lr.truckPaidDate}
-                              </span>
-                            )}
-                            {lr.truckChequeNo && (
-                              <span className="text-[10px] text-slate-300 font-mono mt-0.5">
-                                💳 {lr.truckChequeNo}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                            <Clock className="w-3 h-3" />
-                            <span>PENDING</span>
-                          </span>
-                        )}
-                      </td>
+                          )}
+                        </td>
 
-                      {/* Action Column */}
-                      <td className="py-2.5 px-3 text-center">
-                        {updatingId === lr.id ? (
-                          <span className="text-[10px] text-amber-400 animate-pulse">Updating...</span>
-                        ) : activeTab !== "TRUCK" ? (
-                          partyPaid ? (
+                        {/* Action Column */}
+                        <td className="py-2.5 px-3 text-center">
+                          {updatingId === lr.id ? (
+                            <span className="text-[10px] text-amber-400 animate-pulse">Updating...</span>
+                          ) : activeTab !== "TRUCK" ? (
+                            partyPaid ? (
+                              <span className="text-[11px] font-bold text-emerald-400 opacity-80">
+                                ✓ Completed
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => openPaymentModal(lr.id, lr.lrNumber, "PARTY", amount, partyName, lr.partyChequeNo)}
+                                className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
+                              >
+                                Mark PAID
+                              </button>
+                            )
+                          ) : truckPaid ? (
                             <span className="text-[11px] font-bold text-emerald-400 opacity-80">
                               ✓ Completed
                             </span>
                           ) : (
                             <button
-                              onClick={() => openPaymentModal(lr.id, lr.lrNumber, "PARTY", amount, partyName, lr.partyChequeNo)}
+                              onClick={() => openPaymentModal(lr.id, lr.lrNumber, "TRUCK", amount, partyName, lr.truckChequeNo)}
                               className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
                             >
                               Mark PAID
                             </button>
-                          )
-                        ) : truckPaid ? (
-                          <span className="text-[11px] font-bold text-emerald-400 opacity-80">
-                            ✓ Completed
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => openPaymentModal(lr.id, lr.lrNumber, "TRUCK", amount, partyName, lr.truckChequeNo)}
-                            className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
-                          >
-                            Mark PAID
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Custom Payment Confirmation & Date Entry Modal */}
-      {paymentModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-800 border border-amber-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 relative">
-            
-            {/* Header */}
-            <div className="flex justify-between items-center border-b border-slate-700 pb-3">
-              <div className="flex items-center gap-2 text-amber-400 font-bold text-base">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                <span>Confirm {paymentModal.type === "PARTY" ? "Party" : "Truck"} Payment</span>
-              </div>
-              <button
-                onClick={() => setPaymentModal((prev) => ({ ...prev, isOpen: false }))}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700 transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Info Summary Box */}
-            <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 space-y-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-medium">LR Number:</span>
-                <span className="font-mono font-bold text-amber-400 text-sm">LR #{paymentModal.lrNumber || "-"}</span>
-              </div>
-              {paymentModal.partyName && (
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-400 font-medium">Party Name:</span>
-                  <span className="font-semibold text-white truncate max-w-[200px]">{paymentModal.partyName}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center text-xs pt-1.5 border-t border-slate-800">
-                <span className="text-slate-400 font-medium">Payment Amount:</span>
-                <span className="font-mono font-extrabold text-emerald-400 text-base">
-                  ₹ {Number(paymentModal.amount || 0).toLocaleString("en-IN")}
-                </span>
-              </div>
-            </div>
-
-            {/* Date Input with Calendar Picker */}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                <span>Payment Paid Date (ચુકવણીની તારીખ)</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={paymentModal.paymentDate}
-                  onChange={(e) => setPaymentModal((prev) => ({ ...prev, paymentDate: e.target.value }))}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 [color-scheme:dark] cursor-pointer"
-                />
-              </div>
-            </div>
-
-            {/* Optional Cheque / Ref No Input */}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <CreditCard className="w-3.5 h-3.5 text-amber-400" />
-                <span>Cheque No. / Ref No. (Optional)</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. CHQ123456 / UTR No. (Optional)"
-                value={paymentModal.chequeNo}
-                onChange={(e) => setPaymentModal((prev) => ({ ...prev, chequeNo: e.target.value }))}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-slate-500"
-              />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-700/60">
-              <button
-                type="button"
-                onClick={() => setPaymentModal((prev) => ({ ...prev, isOpen: false }))}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl text-xs font-bold transition cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmPayment}
-                className="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-emerald-600/20 transition cursor-pointer"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Mark PAID</span>
-              </button>
-            </div>
-
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
-      )}
+
+        {/* Custom Payment Confirmation & Date Entry Modal */}
+        {paymentModal.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+            <div className="bg-slate-800 border border-amber-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 relative">
+
+              {/* Header */}
+              <div className="flex justify-between items-center border-b border-slate-700 pb-3">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-base">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  <span>Confirm {paymentModal.type === "PARTY" ? "Party" : "Truck"} Payment</span>
+                </div>
+                <button
+                  onClick={() => setPaymentModal((prev) => ({ ...prev, isOpen: false }))}
+                  className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700 transition cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Info Summary Box */}
+              <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-400 font-medium">LR Number:</span>
+                  <span className="font-mono font-bold text-amber-400 text-sm">LR #{paymentModal.lrNumber || "-"}</span>
+                </div>
+                {paymentModal.partyName && (
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400 font-medium">Party Name:</span>
+                    <span className="font-semibold text-white truncate max-w-[200px]">{paymentModal.partyName}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-xs pt-1.5 border-t border-slate-800">
+                  <span className="text-slate-400 font-medium">Payment Amount:</span>
+                  <span className="font-mono font-extrabold text-emerald-400 text-base">
+                    ₹ {Number(paymentModal.amount || 0).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Date Input with Calendar Picker */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Payment Paid Date (ચુકવણીની તારીખ)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={paymentModal.paymentDate}
+                    onChange={(e) => setPaymentModal((prev) => ({ ...prev, paymentDate: e.target.value }))}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 [color-scheme:dark] cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {/* Optional Cheque / Ref No Input */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Cheque No. / Ref No. (Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. CHQ123456 / UTR No. (Optional)"
+                  value={paymentModal.chequeNo}
+                  onChange={(e) => setPaymentModal((prev) => ({ ...prev, chequeNo: e.target.value }))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-slate-500"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-700/60">
+                <button
+                  type="button"
+                  onClick={() => setPaymentModal((prev) => ({ ...prev, isOpen: false }))}
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl text-xs font-bold transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmPayment}
+                  className="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-emerald-600/20 transition cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Mark PAID</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
 
       </div>
 

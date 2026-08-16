@@ -149,15 +149,39 @@ export default function DashboardPage() {
     if (payStatus !== "TBB" && debitOverride !== "CONSIGNEE") return false;
     return true;
   });
-  const totalPartyBilled = consigneeLRs.reduce((sum, item) => sum + getLRFreightAmount(item), 0);
-  const totalPartyReceived = consigneeLRs.reduce((sum, item) => {
+  const totalConsigneeBilled = consigneeLRs.reduce((sum, item) => sum + getLRFreightAmount(item), 0);
+  const totalConsigneeReceived = consigneeLRs.reduce((sum, item) => {
     if (item.partyPaymentStatus === "PAID") return sum + getLRFreightAmount(item);
     return sum + (Number(item.partyPaidAmount) || 0);
   }, 0);
-  const partyPendingAmount = totalPartyBilled - totalPartyReceived;
-  const unpaidPartyLrsCount = consigneeLRs.filter((lr) => lr.partyPaymentStatus !== "PAID").length;
+  const consigneePendingAmount = totalConsigneeBilled - totalConsigneeReceived;
+  const unpaidConsigneeLrsCount = consigneeLRs.filter((lr) => lr.partyPaymentStatus !== "PAID").length;
 
-  // 2. TRUCK PAYABLE PENDING (Matching AccountingPage "3. Truck Accounting" tab)
+  // 2. CONSIGNOR PENDING (Matching AccountingPage "1. Consignor (Shipper)" tab)
+  const consignorLRs = lrEntries.filter((lr) => {
+    const lrFY = getLRFYLabel(lr);
+    if (!matchFY(lrFY, latestFY)) return false;
+
+    const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+    const debitOverride = lr.debitAmountTo?.trim()?.toUpperCase();
+
+    // TO PAY has 0 accounting entries!
+    if (payStatus === "TO PAY" || payStatus === "TOPAY") return false;
+
+    // Rule: PAID LRs post to Consignor (or debitAmountTo === CONSIGNOR override)
+    if (payStatus === "TBB" && debitOverride !== "CONSIGNOR") return false;
+    if (payStatus !== "PAID" && debitOverride !== "CONSIGNOR") return false;
+    return true;
+  });
+  const totalConsignorBilled = consignorLRs.reduce((sum, item) => sum + getLRFreightAmount(item), 0);
+  const totalConsignorReceived = consignorLRs.reduce((sum, item) => {
+    if (item.partyPaymentStatus === "PAID") return sum + getLRFreightAmount(item);
+    return sum + (Number(item.partyPaidAmount) || 0);
+  }, 0);
+  const consignorPendingAmount = totalConsignorBilled - totalConsignorReceived;
+  const unpaidConsignorLrsCount = consignorLRs.filter((lr) => lr.partyPaymentStatus !== "PAID").length;
+
+  // 3. TRUCK PAYABLE PENDING (Matching AccountingPage "3. Truck Accounting" tab)
   const truckLRs = lrEntries.filter((lr) => {
     const lrFY = getLRFYLabel(lr);
     if (!matchFY(lrFY, latestFY)) return false;
@@ -174,6 +198,16 @@ export default function DashboardPage() {
   }, 0);
   const truckPendingAmount = totalTruckPayable - totalTruckPaid;
   const unpaidTruckLrsCount = truckLRs.filter((lr) => lr.truckPaymentStatus !== "PAID").length;
+
+  // Total Turnover (All billed LRs in FY)
+  const totalBilledTurnover = lrEntries
+    .filter((lr) => {
+      const lrFY = getLRFYLabel(lr);
+      if (!matchFY(lrFY, latestFY)) return false;
+      const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+      return payStatus !== "TO PAY" && payStatus !== "TOPAY";
+    })
+    .reduce((sum, item) => sum + getLRFreightAmount(item), 0);
 
   // Unconfirmed Office Orders Count
   const unconfirmedOfficeOrdersCount = React.useMemo(() => {
@@ -371,16 +405,16 @@ export default function DashboardPage() {
       {/* 4 Compact Metric Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
 
-        {/* 1. Party Pending */}
+        {/* 1. Consignee Pending */}
         <div
-          onClick={() => navigate("/accounting?tab=PARTY")}
+          onClick={() => navigate("/accounting?tab=CONSIGNEE")}
           className="bg-slate-800/90 hover:bg-slate-800 border border-rose-500/40 hover:border-rose-500 rounded-xl p-3 shadow transition cursor-pointer flex flex-col justify-between"
         >
           <div className="flex items-center justify-between gap-1 mb-1">
             <div className="flex items-center gap-1.5">
               <CreditCard className="w-3.5 h-3.5 text-rose-400" />
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
-                Party Pending
+                Consignee Pending
               </span>
             </div>
             <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
@@ -389,11 +423,11 @@ export default function DashboardPage() {
           </div>
 
           <div className="text-lg sm:text-xl font-extrabold text-rose-400 font-mono tracking-tight my-0.5">
-            {loading ? "₹ ..." : formatCurrency(partyPendingAmount)}
+            {loading ? "₹ ..." : formatCurrency(consigneePendingAmount)}
           </div>
 
           <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium pt-1 border-t border-slate-700/60">
-            <span>{unpaidPartyLrsCount} Invoices</span>
+            <span>{unpaidConsigneeLrsCount} Invoices</span>
             <span className="text-rose-400 font-bold flex items-center gap-0.5">
               View <ArrowRight className="w-3 h-3" />
             </span>
@@ -429,31 +463,31 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* 3. Total LRs */}
+        {/* 3. Consignor Pending */}
         <div
-          onClick={() => navigate("/lr-list")}
+          onClick={() => navigate("/accounting?tab=CONSIGNOR")}
           className="bg-slate-800/90 hover:bg-slate-800 border border-blue-500/40 hover:border-blue-500 rounded-xl p-3 shadow transition cursor-pointer flex flex-col justify-between"
         >
           <div className="flex items-center justify-between gap-1 mb-1">
             <div className="flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-blue-400" />
+              <Users className="w-3.5 h-3.5 text-blue-400" />
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
-                Total LR Created
+                Consignor Pending
               </span>
             </div>
             <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-              Records
+              <AlertCircle className="w-2.5 h-2.5 inline mr-0.5" /> Unpaid
             </span>
           </div>
 
           <div className="text-lg sm:text-xl font-extrabold text-blue-400 font-mono tracking-tight my-0.5">
-            {loading ? "..." : `${totalLrs} LR`}
+            {loading ? "₹ ..." : formatCurrency(consignorPendingAmount)}
           </div>
 
           <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium pt-1 border-t border-slate-700/60">
-            <span>Full History</span>
+            <span>{unpaidConsignorLrsCount} Invoices</span>
             <span className="text-blue-400 font-bold flex items-center gap-0.5">
-              Open <ArrowRight className="w-3 h-3" />
+              View <ArrowRight className="w-3 h-3" />
             </span>
           </div>
         </div>
@@ -476,7 +510,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="text-lg sm:text-xl font-extrabold text-emerald-400 font-mono tracking-tight my-0.5">
-            {loading ? "₹ ..." : formatCurrency(totalPartyBilled)}
+            {loading ? "₹ ..." : formatCurrency(totalBilledTurnover)}
           </div>
 
           <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium pt-1 border-t border-slate-700/60">
