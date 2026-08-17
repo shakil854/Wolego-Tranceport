@@ -30,6 +30,7 @@ const Party = sequelize.define("Party", {
     type: DataTypes.INTEGER,
     defaultValue: 30,
   },
+  unloadingPoint: DataTypes.STRING,
 });
 
 export default Party;

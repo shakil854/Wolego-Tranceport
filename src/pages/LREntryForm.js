@@ -60,6 +60,7 @@ export default function LREntryForm() {
     panNo: "",
     contactName: "",
     mobileNos: "",
+    unloadingPoint: "",
     selectType: "BOTH",
   };
 
@@ -2340,6 +2341,20 @@ export default function LREntryForm() {
                       className="w-full bg-white text-slate-900 font-mono font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                     />
                   </div>
+                </div>
+
+                {/* Unloading Point */}
+                <div>
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                    UNLOADING POINT (अनलोडिंग पॉइंट)
+                  </label>
+                  <input
+                    type="text"
+                    value={newPartyForm.unloadingPoint || ""}
+                    onChange={(e) => setNewPartyForm({ ...newPartyForm, unloadingPoint: e.target.value.toUpperCase() })}
+                    placeholder="e.g. MORBI / AHMEDABAD / WAREHOUSE NO. 4"
+                    className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                  />
                 </div>
 
                 {/* Contact Person & Mobile Nos */}

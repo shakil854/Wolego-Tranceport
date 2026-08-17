@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchPartiesFromDB, saveParty } from "../utils/storage";
-import { Search, Plus, Edit, Save, Building2, Eye, X, CheckCircle2 } from "lucide-react";
+import { Search, Plus, Edit, Save, Building2, Eye, X, CheckCircle2, MapPin } from "lucide-react";
 import SearchableStateSelect, { getStateCode } from "../components/SearchableStateSelect";
 
 export default function PartyMaster() {
@@ -27,6 +27,7 @@ export default function PartyMaster() {
     contactName: "",
     mobileNos: "",
     secondaryMobile: "", // Secondary Mobile No. (Master Record only, no portal login)
+    unloadingPoint: "", // Unloading point / Destination
     selectType: "CONSIGNEE", // CONSIGNEE / CONSIGNOR / BOTH
     paymentDays: 30, // Default 30 days payment timeline
   };
@@ -91,7 +92,7 @@ export default function PartyMaster() {
   // Open Edit Modal
   const handleOpenEditModal = (party) => {
     setEditPartyModal(party);
-    setEditFormData({ ...party });
+    setEditFormData({ ...party, unloadingPoint: party.unloadingPoint || "" });
   };
 
   // Submit Handler: Update Party (Inside Edit Modal)
@@ -187,6 +188,8 @@ export default function PartyMaster() {
       (p) =>
         (p.partyName && p.partyName.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (p.gstNo && p.gstNo.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.city && p.city.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.unloadingPoint && p.unloadingPoint.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (p.mobileNos && p.mobileNos.includes(searchQuery))
     )
     .sort((a, b) => (a.partyName || "").localeCompare(b.partyName || "", undefined, { numeric: true, sensitivity: "base" }));
@@ -229,10 +232,11 @@ export default function PartyMaster() {
                 <input
                   type="text"
                   required
+                  autoFocus
                   value={addFormData.partyName}
                   onChange={(e) => setAddFormData({ ...addFormData, partyName: e.target.value.toUpperCase() })}
                   placeholder="ENTER PARTY NAME"
-                  className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-400 rounded focus:outline-none"
+                  className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-400 rounded focus:outline-none uppercase"
                 />
               </div>
 
@@ -247,23 +251,37 @@ export default function PartyMaster() {
                     value={addFormData.address1}
                     onChange={(e) => setAddFormData({ ...addFormData, address1: e.target.value.toUpperCase() })}
                     placeholder="ADDRESS LINE 1"
-                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                   />
                   <input
                     type="text"
                     value={addFormData.address2}
                     onChange={(e) => setAddFormData({ ...addFormData, address2: e.target.value.toUpperCase() })}
                     placeholder="AREA / LANDMARK"
-                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                   />
                   <input
                     type="text"
                     value={addFormData.address3}
                     onChange={(e) => setAddFormData({ ...addFormData, address3: e.target.value.toUpperCase() })}
                     placeholder="ADDRESS LINE 3"
-                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                   />
                 </div>
+              </div>
+
+              {/* Unloading Point */}
+              <div>
+                <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                  Unloading Point (अनलोडिंग पॉइंट / स्थान)
+                </label>
+                <input
+                  type="text"
+                  value={addFormData.unloadingPoint}
+                  onChange={(e) => setAddFormData({ ...addFormData, unloadingPoint: e.target.value.toUpperCase() })}
+                  placeholder="e.g. MORBI / AHMEDABAD / WAREHOUSE NO. 4"
+                  className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                />
               </div>
 
               {/* City, District, State & Code */}
@@ -277,7 +295,7 @@ export default function PartyMaster() {
                     value={addFormData.city}
                     onChange={(e) => setAddFormData({ ...addFormData, city: e.target.value.toUpperCase() })}
                     placeholder="CITY"
-                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                   />
                 </div>
                 <div className="col-span-6 sm:col-span-3">
@@ -289,7 +307,7 @@ export default function PartyMaster() {
                     value={addFormData.district}
                     onChange={(e) => setAddFormData({ ...addFormData, district: e.target.value.toUpperCase() })}
                     placeholder="DISTRICT"
-                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                    className="w-full bg-white text-slate-900 font-medium px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                   />
                 </div>
                 <div className="col-span-8 sm:col-span-4">
@@ -300,7 +318,7 @@ export default function PartyMaster() {
                     value={addFormData.state}
                     onChange={(stateName, code) => handleAddStateChange(stateName, code)}
                     placeholder="STATE"
-                    className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none"
+                    className="w-full bg-white text-slate-900 font-bold px-2 py-0.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                   />
                 </div>
                 <div className="col-span-4 sm:col-span-2">
@@ -444,7 +462,7 @@ export default function PartyMaster() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search Party / GST..."
+                  placeholder="Search Party / GST / City..."
                   className="w-full pl-8 pr-2 py-1 bg-slate-900 border border-slate-600 rounded text-xs text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
@@ -457,7 +475,7 @@ export default function PartyMaster() {
                   <tr>
                     <th className="p-2.5">Category</th>
                     <th className="p-2.5">Party Name</th>
-                    <th className="p-2.5">City</th>
+                    <th className="p-2.5">City / Unloading Point</th>
                     <th className="p-2.5">GST No</th>
                     <th className="p-2.5 text-center">Actions</th>
                   </tr>
@@ -492,9 +510,12 @@ export default function PartyMaster() {
                         )}
                       </td>
 
-                      {/* City */}
+                      {/* City & Unloading Point */}
                       <td className="p-2.5 text-slate-300">
-                        {p.city || p.district || "N.A."}
+                        <div className="font-semibold text-white">{p.city || p.district || "N.A."}</div>
+                        {p.unloadingPoint && (
+                          <div className="text-[10px] text-sky-300 font-bold">📍 {p.unloadingPoint}</div>
+                        )}
                       </td>
 
                       {/* GST No */}
@@ -606,6 +627,16 @@ export default function PartyMaster() {
                 </p>
               </div>
 
+              {viewPartyModal.unloadingPoint && (
+                <div className="bg-sky-950/80 p-3 rounded-lg border border-sky-800 flex items-start gap-2.5">
+                  <MapPin size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-xs font-bold text-sky-300 uppercase block">Unloading Point</span>
+                    <span className="font-bold text-white text-sm">{viewPartyModal.unloadingPoint}</span>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-xs font-bold text-slate-400 uppercase block">City / State</span>
@@ -673,7 +704,7 @@ export default function PartyMaster() {
                   required
                   value={editFormData.partyName}
                   onChange={(e) => setEditFormData({ ...editFormData, partyName: e.target.value.toUpperCase() })}
-                  className="w-full bg-white text-slate-900 font-bold px-3 py-2 text-sm border-2 border-sky-400 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  className="w-full bg-white text-slate-900 font-bold px-3 py-2 text-sm border-2 border-sky-400 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 uppercase"
                 />
               </div>
 
@@ -684,7 +715,7 @@ export default function PartyMaster() {
                   type="text"
                   value={editFormData.address1}
                   onChange={(e) => setEditFormData({ ...editFormData, address1: e.target.value.toUpperCase() })}
-                  className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded"
+                  className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded uppercase"
                 />
               </div>
 
@@ -695,7 +726,7 @@ export default function PartyMaster() {
                     type="text"
                     value={editFormData.address2}
                     onChange={(e) => setEditFormData({ ...editFormData, address2: e.target.value.toUpperCase() })}
-                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded"
+                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded uppercase"
                   />
                 </div>
                 <div>
@@ -704,9 +735,23 @@ export default function PartyMaster() {
                     type="text"
                     value={editFormData.address3}
                     onChange={(e) => setEditFormData({ ...editFormData, address3: e.target.value.toUpperCase() })}
-                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded"
+                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded uppercase"
                   />
                 </div>
+              </div>
+
+              {/* Unloading Point */}
+              <div>
+                <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                  Unloading Point (अनलोडिंग पॉइंट / स्थान)
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.unloadingPoint || ""}
+                  onChange={(e) => setEditFormData({ ...editFormData, unloadingPoint: e.target.value.toUpperCase() })}
+                  placeholder="e.g. MORBI / AHMEDABAD / WAREHOUSE NO. 4"
+                  className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded uppercase"
+                />
               </div>
 
               {/* City & District */}
@@ -717,7 +762,7 @@ export default function PartyMaster() {
                     type="text"
                     value={editFormData.city}
                     onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value.toUpperCase() })}
-                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded"
+                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded uppercase"
                   />
                 </div>
                 <div>
@@ -726,7 +771,7 @@ export default function PartyMaster() {
                     type="text"
                     value={editFormData.district}
                     onChange={(e) => setEditFormData({ ...editFormData, district: e.target.value.toUpperCase() })}
-                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded"
+                    className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded uppercase"
                   />
                 </div>
               </div>
@@ -739,7 +784,7 @@ export default function PartyMaster() {
                     value={editFormData.state}
                     onChange={(stateName, code) => handleEditStateChange(stateName, code)}
                     placeholder="STATE"
-                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none"
+                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                   />
                 </div>
                 <div>
