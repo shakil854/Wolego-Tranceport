@@ -18,6 +18,7 @@ const Truck = sequelize.define("Truck", {
   accountNo: DataTypes.STRING,
   ifscCode: DataTypes.STRING,
   branch: DataTypes.STRING,
+  loadingDetail: DataTypes.STRING,
 });
 
 export default Truck;

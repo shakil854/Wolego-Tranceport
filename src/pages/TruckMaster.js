@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchTrucksFromDB, saveTruck } from "../utils/storage";
-import { Search, Plus, Edit, Save, Truck, Eye, X, CheckCircle2, Landmark } from "lucide-react";
+import { Search, Plus, Edit, Save, Truck, Eye, X, CheckCircle2, Landmark, Package } from "lucide-react";
 
 export default function TruckMaster() {
   const [trucks, setTrucks] = useState([]);
@@ -17,6 +17,7 @@ export default function TruckMaster() {
     ownerName: "",
     mobileNo: "",
     address: "",
+    loadingDetail: "",
     bankName: "",
     accountName: "",
     accountNo: "",
@@ -83,7 +84,7 @@ export default function TruckMaster() {
   // Open Edit Modal
   const handleOpenEditModal = (truck) => {
     setEditTruckModal(truck);
-    setEditFormData({ ...truck });
+    setEditFormData({ ...truck, loadingDetail: truck.loadingDetail || "" });
   };
 
   // Submit Handler: Update Truck
@@ -107,6 +108,7 @@ export default function TruckMaster() {
       (t.truckNo && t.truckNo.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (t.ownerName && t.ownerName.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (t.mobileNo && t.mobileNo.includes(searchQuery)) ||
+      (t.loadingDetail && t.loadingDetail.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (t.bankName && t.bankName.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
@@ -201,6 +203,19 @@ export default function TruckMaster() {
                       className="w-full bg-white text-slate-900 font-medium px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                    Loading Detail (लोडिंग डिटेल / क्षमता)
+                  </label>
+                  <input
+                    type="text"
+                    value={addFormData.loadingDetail}
+                    onChange={(e) => setAddFormData({ ...addFormData, loadingDetail: e.target.value.toUpperCase() })}
+                    placeholder="e.g. 25 TON / 32 FT CONTAINER / OPEN BODY"
+                    className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                  />
                 </div>
               </div>
 
@@ -308,7 +323,7 @@ export default function TruckMaster() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search Truck No / Owner..."
+                  placeholder="Search Truck / Owner / Loading..."
                   className="w-full pl-8 pr-2 py-1 bg-slate-900 border border-slate-600 rounded text-xs text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
@@ -322,6 +337,7 @@ export default function TruckMaster() {
                     <th className="p-2.5">Truck No.</th>
                     <th className="p-2.5">Owner Name</th>
                     <th className="p-2.5">Mobile</th>
+                    <th className="p-2.5">Loading Detail</th>
                     <th className="p-2.5">Bank Name</th>
                     <th className="p-2.5 text-center">Actions</th>
                   </tr>
@@ -336,7 +352,7 @@ export default function TruckMaster() {
                       </td>
 
                       {/* Owner Name */}
-                      <td className="p-2.5 font-bold text-white max-w-[130px] truncate">
+                      <td className="p-2.5 font-bold text-white max-w-[120px] truncate">
                         {t.ownerName || "-"}
                       </td>
 
@@ -345,8 +361,13 @@ export default function TruckMaster() {
                         {t.mobileNo || "-"}
                       </td>
 
+                      {/* Loading Detail */}
+                      <td className="p-2.5 font-semibold text-sky-300 max-w-[130px] truncate text-[11px]">
+                        {t.loadingDetail || "-"}
+                      </td>
+
                       {/* Bank Name */}
-                      <td className="p-2.5 text-slate-300 max-w-[120px] truncate">
+                      <td className="p-2.5 text-slate-300 max-w-[110px] truncate">
                         {t.bankName ? `${t.bankName}${t.branch ? ` (${t.branch})` : ""}` : "-"}
                       </td>
 
@@ -379,7 +400,7 @@ export default function TruckMaster() {
 
                   {filteredTrucks.length === 0 && (
                     <tr>
-                      <td colSpan="5" className="text-center py-8 text-slate-500 font-bold">
+                      <td colSpan="6" className="text-center py-8 text-slate-500 font-bold">
                         No trucks found matching "{searchQuery}"
                       </td>
                     </tr>
@@ -437,6 +458,15 @@ export default function TruckMaster() {
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block">Address</span>
                   <span className="font-medium text-slate-200 text-xs">{viewTruckModal.address || "N/A"}</span>
+                </div>
+              </div>
+
+              {/* Loading Detail Card */}
+              <div className="bg-slate-800/50 p-3 rounded border border-slate-700/60 flex items-start gap-2.5">
+                <Package size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-[10px] font-bold text-amber-400 uppercase block">Loading Detail</span>
+                  <span className="font-bold text-sky-300 text-xs">{viewTruckModal.loadingDetail || "N/A"}</span>
                 </div>
               </div>
 
@@ -553,6 +583,19 @@ export default function TruckMaster() {
                     className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                  Loading Detail (लोडिंग डिटेल)
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.loadingDetail || ""}
+                  onChange={(e) => setEditFormData({ ...editFormData, loadingDetail: e.target.value.toUpperCase() })}
+                  placeholder="e.g. 25 TON / 32 FT CONTAINER / OPEN BODY"
+                  className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded uppercase"
+                />
               </div>
 
               <div className="pt-2 border-t border-sky-700/60 space-y-2">

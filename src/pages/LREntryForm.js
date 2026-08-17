@@ -78,6 +78,7 @@ export default function LREntryForm() {
     ownerName: "",
     mobileNo: "",
     address: "",
+    loadingDetail: "",
     bankName: "",
     accountName: "",
     accountNo: "",
@@ -101,6 +102,7 @@ export default function LREntryForm() {
       ownerName: "",
       mobileNo: "",
       address: "",
+      loadingDetail: "",
       bankName: "",
       accountName: "",
       accountNo: "",
@@ -2082,6 +2084,19 @@ export default function LREntryForm() {
                         className="w-full bg-white text-slate-900 font-medium px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      Loading Detail (लोडिंग डिटेल / क्षमता)
+                    </label>
+                    <input
+                      type="text"
+                      value={newTruckForm.loadingDetail}
+                      onChange={(e) => setNewTruckForm({ ...newTruckForm, loadingDetail: e.target.value.toUpperCase() })}
+                      placeholder="e.g. 25 TON / 32 FT CONTAINER / OPEN BODY"
+                      className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                    />
                   </div>
                 </div>
 
