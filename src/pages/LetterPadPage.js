@@ -264,11 +264,13 @@ export default function LetterPadPage() {
                 </div>
 
                 {/* Right Contact Details Column */}
-                <div className="col-span-3 text-left text-[9.5px] sm:text-[10px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-3">
-                  <div>MOBILE NO. +91 99 79 111 555</div>
-                  <div>MOBILE NO. +91 81 41 111 555</div>
+                <div className="col-span-3 text-left text-[8.5px] sm:text-[9px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-2">
+                  <div>MOBILE NO. +91 99 13 111 555</div>
+                  <div>OFFICE NO. +91 97 12 111 555</div>
                   <div>PAN NO. : DLTPS8567M</div>
                   <div>GSTIN NO. : 24DLTPS8567M1ZT</div>
+                  <div>TRANSPORT ID : TS000547462</div>
+                  <div className="whitespace-nowrap text-[8px] sm:text-[8.5px] font-black tracking-tight">EMAIL : Wolegotransport13@gmail.com</div>
                 </div>
               </div>
             </div>

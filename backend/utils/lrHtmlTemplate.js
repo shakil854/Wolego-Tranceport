@@ -208,12 +208,14 @@ export const generateLRHtml = (lrData = {}, signatureImg = null, selectedCopies 
 
             </div>
 
-            <!-- Right Side Column: Mobile Numbers, PAN, GSTIN -->
-            <div class="col-span-3 text-left text-[9.5px] sm:text-[10px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-3">
-              <div>MOBILE NO. +91 99 79 111 555</div>
-              <div>MOBILE NO. +91 81 41 111 555</div>
+            <!-- Right Side Column: Mobile Numbers, PAN, GSTIN, Transport ID, Email -->
+            <div class="col-span-3 text-left text-[8.5px] sm:text-[9px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-2">
+              <div>MOBILE NO. +91 99 13 111 555</div>
+              <div>OFFICE NO. +91 97 12 111 555</div>
               <div>PAN NO. : DLTPS8567M</div>
               <div>GSTIN NO. : 24DLTPS8567M1ZT</div>
+              <div>TRANSPORT ID : TS000547462</div>
+              <div style="font-size: 8px; font-weight: 900; white-space: nowrap; letter-spacing: -0.2px;">EMAIL : Wolegotransport13@gmail.com</div>
             </div>
 
           </div>
