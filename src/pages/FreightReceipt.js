@@ -168,8 +168,8 @@ export default function FreightReceipt() {
       pdf.setFillColor(255, 255, 255);
       pdf.rect(0, 0, pdfWidth, pdfHeight, "F");
 
-      // Place centered receipt image at top of A4 page (matches Print)
-      pdf.addImage(imgData, "PNG", margin, 15, printWidth, imgHeight);
+      // Place receipt image filling top half of A4 page (matches Print)
+      pdf.addImage(imgData, "PNG", margin, 10, printWidth, imgHeight);
 
       return pdf;
     } finally {
@@ -247,7 +247,7 @@ export default function FreightReceipt() {
   return (
     <div className="freight-receipt-page min-h-[calc(100vh-68px)] bg-slate-900 p-2 sm:p-4 text-slate-100 flex flex-col overflow-y-auto font-sans relative">
 
-      {/* Print Media CSS Overrides (Fixes black background, L-border, & ensures single half-page A4 print) */}
+      {/* Print Media CSS Overrides (Ensures crisp, large half-page A4 print) */}
       <style>{`
         @media print {
           html, body {
@@ -276,18 +276,19 @@ export default function FreightReceipt() {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            max-width: 185mm !important;
+            max-width: 190mm !important;
             margin: 0 auto !important;
             padding: 0 !important;
             background: #ffffff !important;
             color: #000000 !important;
             box-shadow: none !important;
-            border: 2px solid #000000 !important;
+            border: 2.5px solid #000000 !important;
             box-sizing: border-box !important;
+            page-break-inside: avoid !important;
           }
           @page {
             size: A4 portrait;
-            margin: 8mm;
+            margin: 8mm 10mm;
           }
         }
       `}</style>
@@ -713,51 +714,50 @@ export default function FreightReceipt() {
       <div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none print:static print:opacity-100 print:pointer-events-auto">
         <div
           ref={printRef}
-          className="freight-print-wrapper bg-white text-black max-w-[185mm] w-full mx-auto font-sans border-2 border-black shadow-none rounded-none box-border p-0"
-          style={{ width: "185mm", backgroundColor: "#ffffff", color: "#000000" }}
+          className="freight-print-wrapper bg-white text-black max-w-[190mm] w-full mx-auto font-sans border-2 border-black shadow-none rounded-none box-border p-0"
+          style={{ width: "190mm", backgroundColor: "#ffffff", color: "#000000" }}
         >
 
-
-          {/* 3. Freight Receipt Title Banner (Wall to wall with 2px bottom border) */}
-          <div className="bg-blue-900 text-white font-black text-xs sm:text-sm py-1 text-center uppercase tracking-widest border-b-2 border-black">
+          {/* Freight Receipt Title Banner (Wall to wall with solid bottom border) */}
+          <div className="bg-blue-900 text-white font-black text-base sm:text-lg py-3 text-center uppercase tracking-widest border-b-2 border-black">
             FREIGHT RECEIPT
           </div>
 
-          {/* 4. Main Form Table Matching Half-Page Printable Specifications */}
-          <table className="w-full border-collapse text-xs sm:text-sm">
+          {/* Main Form Table - Sized to fill the full half A4 page */}
+          <table className="w-full border-collapse">
             <tbody>
               <tr>
-                <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TRUCK NO.
                 </td>
-                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                   {truckNo || "-"}
                 </td>
               </tr>
 
               <tr>
-                <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TOTAL WEIGHT IN KGS
                 </td>
-                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                   {weightKgs ? numericWeight.toLocaleString("en-IN") : "-"}
                 </td>
               </tr>
 
               <tr>
-                <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   RATE PER M.T.
                 </td>
-                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                   {ratePerMt ? numericRate.toLocaleString("en-IN") : "-"}
                 </td>
               </tr>
 
               <tr>
-                <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                   TOTAL FREIGHT
                 </td>
-                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                   {calculatedTotalFreight > 0 ? `₹ ${calculatedTotalFreight.toLocaleString("en-IN")}` : "-"}
                 </td>
               </tr>
@@ -765,19 +765,19 @@ export default function FreightReceipt() {
               {receiptType === "CHEQUE" && (
                 <>
                   <tr>
-                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       PAID BY CHEQUE
                     </td>
-                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                       {paidByCheque ? `₹ ${numericPaidCheque.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
 
                   <tr>
-                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       CASH PAID
                     </td>
-                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                       {calculatedTotalFreight > 0 ? `₹ ${calculatedCashPaid.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
@@ -786,10 +786,10 @@ export default function FreightReceipt() {
 
               {receiptType === "CASH" && (
                 <tr>
-                  <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                  <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                     CASH PAID
                   </td>
-                  <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                  <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                     {calculatedTotalFreight > 0 ? `₹ ${calculatedTotalFreight.toLocaleString("en-IN")}` : "-"}
                   </td>
                 </tr>
@@ -798,37 +798,37 @@ export default function FreightReceipt() {
               {receiptType === "ADVANCE_CHEQUE" && (
                 <>
                   <tr>
-                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       LESS ADVANCE PAID
                     </td>
-                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black text-amber-700">
+                    <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-amber-700">
                       {advanceAmount ? `₹ ${numericAdvance.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
 
                   <tr>
-                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       NET FREIGHT
                     </td>
-                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                       {calculatedTotalFreight > 0 ? `₹ ${netFreightAfterAdvance.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
 
                   <tr>
-                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       PAID BY CHEQUE
                     </td>
-                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                       {paidByCheque ? `₹ ${numericPaidCheque.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
 
                   <tr>
-                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       CASH PAID
                     </td>
-                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                       {calculatedTotalFreight > 0 ? `₹ ${calculatedCashPaid.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
@@ -838,19 +838,19 @@ export default function FreightReceipt() {
               {receiptType === "ADVANCE_CASH" && (
                 <>
                   <tr>
-                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       LESS ADVANCE PAID
                     </td>
-                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black text-amber-700">
+                    <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-amber-700">
                       {advanceAmount ? `₹ ${numericAdvance.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
 
                   <tr>
-                    <td className="w-1/2 p-2 font-extrabold uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-b-2 border-black text-black">
                       CASH PAID (NET FREIGHT)
                     </td>
-                    <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center border-b-2 border-black text-black">
+                    <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center border-b-2 border-black text-black">
                       {calculatedTotalFreight > 0 ? `₹ ${netFreightAfterAdvance.toLocaleString("en-IN")}` : "-"}
                     </td>
                   </tr>
@@ -858,10 +858,10 @@ export default function FreightReceipt() {
               )}
 
               <tr>
-                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase bg-gray-100 border-r-2 border-black text-red-600">
+                <td className="w-1/2 py-3.5 px-4 font-extrabold text-sm sm:text-base uppercase bg-gray-100 border-r-2 border-black text-red-600">
                   REMARKS
                 </td>
-                <td className="w-1/2 p-2 font-extrabold text-xs sm:text-sm uppercase text-center text-red-600">
+                <td className="w-1/2 py-3.5 px-4 font-black text-base sm:text-lg uppercase text-center text-red-600">
                   {remarks || "-"}
                 </td>
               </tr>
