@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/api";
+import LRPrintDocument from "../components/LRPrintDocument";
 import {
   Bell,
   AlertTriangle,
@@ -28,6 +29,7 @@ export default function PaymentAlertsPage() {
   const [partiesMap, setPartiesMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [viewPartyModal, setViewPartyModal] = useState(null);
+  const [selectedLR, setSelectedLR] = useState(null); // Direct LR view state
 
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState("");
@@ -183,6 +185,7 @@ export default function PaymentAlertsPage() {
         diffDays, // >0: Overdue, ==0: Due Today, <0: In Timeline
         isOverdue: diffDays > 0,
         isDueToday: diffDays === 0,
+        rawLr: lr,
       };
     })
     .sort((a, b) => b.diffDays - a.diffDays); // Most overdue first
@@ -212,6 +215,16 @@ export default function PaymentAlertsPage() {
   const handleOpenAccounting = (partyName) => {
     navigate(`/accounting?search=${encodeURIComponent(partyName)}`);
   };
+
+  // Direct Fullscreen LR View / Print Document
+  if (selectedLR) {
+    return (
+      <LRPrintDocument
+        lrData={selectedLR}
+        onClose={() => setSelectedLR(null)}
+      />
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-4 font-sans text-slate-100">
@@ -362,16 +375,16 @@ export default function PaymentAlertsPage() {
                 <th className="py-2.5 px-3 text-center">Timeline</th>
                 <th className="py-2.5 px-3 text-center">Due Date</th>
                 <th className="py-2.5 px-3 text-center">Overdue Status</th>
-                <th className="py-2.5 px-3 text-center">Action (Accounting)</th>
+                <th className="py-2.5 px-3 text-center">Actions</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-700/60 bg-slate-800/40">
+            <tbody className="divide-y divide-slate-700/60 font-medium bg-slate-800/40">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="py-8 text-center text-slate-400 font-medium">
+                  <td colSpan="7" className="py-8 text-center text-slate-400">
                     <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-amber-400" />
-                    Calculating payment alerts...
+                    Loading payment alerts data...
                   </td>
                 </tr>
               ) : filteredAlerts.length === 0 ? (
@@ -390,12 +403,18 @@ export default function PaymentAlertsPage() {
                         item.isOverdue ? "bg-rose-950/20" : ""
                       }`}
                     >
-                      {/* LR No & Date */}
+                      {/* LR No & Date (Click to View LR) */}
                       <td className="py-2.5 px-3 font-mono">
-                        <div className="font-extrabold text-amber-400 text-sm">
-                          #{item.lrNumber}
-                        </div>
-                        <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLR(item.rawLr || item)}
+                          title={`Direct View LR #${item.lrNumber}`}
+                          className="font-extrabold text-amber-400 hover:text-amber-300 hover:underline cursor-pointer flex items-center gap-1 group text-sm"
+                        >
+                          <span>#{item.lrNumber}</span>
+                          <Eye size={12} className="text-amber-400/80 group-hover:text-amber-300 shrink-0" />
+                        </button>
+                        <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
                           <Calendar size={11} /> {formatDateStr(item.lrDate)}
                         </div>
                       </td>
@@ -450,17 +469,29 @@ export default function PaymentAlertsPage() {
                         )}
                       </td>
 
-                      {/* Action (Pay in Accounting) */}
+                      {/* Actions: View LR & Pay in Accounting */}
                       <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                        <button
-                          onClick={() => handleOpenAccounting(item.partyName)}
-                          title={`Open Accounting ledger for ${item.partyName}`}
-                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-lg text-xs transition shadow flex items-center gap-1.5 mx-auto cursor-pointer"
-                        >
-                          <Calculator size={14} />
-                          <span>Pay in Accounting</span>
-                          <ExternalLink size={12} />
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedLR(item.rawLr || item)}
+                            title={`Direct View LR #${item.lrNumber}`}
+                            className="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-amber-400 hover:text-amber-300 font-extrabold rounded-lg text-xs transition shadow flex items-center gap-1 cursor-pointer border border-slate-600"
+                          >
+                            <Eye size={13} />
+                            <span>View LR</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAccounting(item.partyName)}
+                            title={`Open Accounting ledger for ${item.partyName}`}
+                            className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-lg text-xs transition shadow flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Calculator size={14} />
+                            <span>Pay in Accounting</span>
+                            <ExternalLink size={12} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

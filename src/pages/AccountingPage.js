@@ -744,7 +744,15 @@ export default function AccountingPage() {
                     return (
                       <tr key={lr.id} className="hover:bg-slate-700/40 transition">
                         <td className="py-2.5 px-3 font-mono font-bold text-amber-400">
-                          {lr.lrNumber || "-"}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedLrForDoc(lr)}
+                            title={`Direct View LR #${lr.lrNumber}`}
+                            className="hover:text-amber-300 hover:underline cursor-pointer flex items-center gap-1 group font-mono font-bold text-amber-400"
+                          >
+                            <span>{lr.lrNumber || "-"}</span>
+                            <Eye size={12} className="text-amber-400/80 group-hover:text-amber-300 shrink-0" />
+                          </button>
                         </td>
                         <td className="py-2.5 px-3 whitespace-nowrap text-slate-300">
                           {lr.dateTime || "-"}
@@ -792,17 +800,29 @@ export default function AccountingPage() {
                           )}
                         </td>
                         <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                          <button
-                            onClick={() => {
-                              setSelectedLrForDoc(lr);
-                              setLrDocAutoAction("pdf");
-                            }}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[11px] font-black transition cursor-pointer shadow"
-                            title="Download LR PDF"
-                          >
-                            <Download className="w-3 h-3" />
-                            <span>Download LR</span>
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedLrForDoc(lr)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-amber-400 hover:text-amber-300 rounded text-[11px] font-bold transition cursor-pointer shadow border border-slate-600"
+                              title="Direct View LR"
+                            >
+                              <Eye className="w-3 h-3" />
+                              <span>View LR</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedLrForDoc(lr);
+                                setLrDocAutoAction("pdf");
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[11px] font-black transition cursor-pointer shadow"
+                              title="Download LR PDF"
+                            >
+                              <Download className="w-3 h-3" />
+                              <span>Download</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1173,7 +1193,15 @@ export default function AccountingPage() {
                     return (
                       <tr key={lr.id} className="hover:bg-slate-700/40 transition">
                         <td className="py-2.5 px-3 font-mono font-bold text-amber-400">
-                          {lr.lrNumber || "-"}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedLrForDoc(lr)}
+                            title={`Direct View LR #${lr.lrNumber}`}
+                            className="hover:text-amber-300 hover:underline cursor-pointer flex items-center gap-1 group font-mono font-bold text-amber-400"
+                          >
+                            <span>{lr.lrNumber || "-"}</span>
+                            <Eye size={12} className="text-amber-400/80 group-hover:text-amber-300 shrink-0" />
+                          </button>
                         </td>
                         <td className="py-2.5 px-3 whitespace-nowrap text-slate-300">
                           {lr.dateTime || "-"}
@@ -1258,34 +1286,47 @@ export default function AccountingPage() {
                         </td>
 
                         {/* Action Column */}
-                        <td className="py-2.5 px-3 text-center">
-                          {updatingId === lr.id ? (
-                            <span className="text-[10px] text-amber-400 animate-pulse">Updating...</span>
-                          ) : activeTab !== "TRUCK" ? (
-                            partyPaid ? (
+                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1.5">
+                            {/* Direct View LR Button (Consignor, Consignee, Truck all 3 tabs) */}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedLrForDoc(lr)}
+                              title={`Direct View LR #${lr.lrNumber}`}
+                              className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-amber-400 hover:text-amber-300 rounded text-[11px] font-bold shadow transition cursor-pointer flex items-center gap-1 border border-slate-600"
+                            >
+                              <Eye size={12} />
+                              <span>View LR</span>
+                            </button>
+
+                            {updatingId === lr.id ? (
+                              <span className="text-[10px] text-amber-400 animate-pulse">Updating...</span>
+                            ) : activeTab !== "TRUCK" ? (
+                              partyPaid ? (
+                                <span className="text-[11px] font-bold text-emerald-400 opacity-80">
+                                  ✓ Completed
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => openPaymentModal(lr.id, lr.lrNumber, "PARTY", amount, partyName, lr.partyChequeNo)}
+                                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
+                                >
+                                  Mark PAID
+                                </button>
+                              )
+                            ) : truckPaid ? (
                               <span className="text-[11px] font-bold text-emerald-400 opacity-80">
                                 ✓ Completed
                               </span>
                             ) : (
                               <button
-                                onClick={() => openPaymentModal(lr.id, lr.lrNumber, "PARTY", amount, partyName, lr.partyChequeNo)}
-                                className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
+                                onClick={() => openPaymentModal(lr.id, lr.lrNumber, "TRUCK", amount, partyName, lr.truckChequeNo)}
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
                               >
                                 Mark PAID
                               </button>
-                            )
-                          ) : truckPaid ? (
-                            <span className="text-[11px] font-bold text-emerald-400 opacity-80">
-                              ✓ Completed
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => openPaymentModal(lr.id, lr.lrNumber, "TRUCK", amount, partyName, lr.truckChequeNo)}
-                              className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow transition cursor-pointer"
-                            >
-                              Mark PAID
-                            </button>
-                          )}
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
