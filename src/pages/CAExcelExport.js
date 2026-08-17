@@ -33,24 +33,13 @@ export default function CAExcelExport() {
     return "";
   };
 
-  // Format date for display in DD/MM/YYYY
+  // Format date for display and Excel in DD/MM/YYYY
   const formatDateToDDMMYYYY = (dateStr) => {
     if (!dateStr) return "";
     const clean = normalizeDateStr(dateStr);
     if (clean && clean.includes("-")) {
       const [y, m, d] = clean.split("-");
       return `${d.padStart(2, "0")}/${m.padStart(2, "0")}/${y}`;
-    }
-    return dateStr;
-  };
-
-  // Format date for Excel cells (M/D/YYYY e.g. 4/1/2026)
-  const formatDateToMDYYYY = (dateStr) => {
-    if (!dateStr) return "";
-    const clean = normalizeDateStr(dateStr);
-    if (clean && clean.includes("-")) {
-      const [y, m, d] = clean.split("-");
-      return `${parseInt(m, 10)}/${parseInt(d, 10)}/${y}`;
     }
     return dateStr;
   };
@@ -142,7 +131,7 @@ export default function CAExcelExport() {
         invoiceNo: index + 1, // Sequential number as shown in screenshot
         lrNumber: lr.lrNumber,
         invoiceDateRaw: lr.dateTime,
-        invoiceDateFormatted: formatDateToMDYYYY(lr.dateTime),
+        invoiceDateFormatted: formatDateToDDMMYYYY(lr.dateTime),
         invoiceValue: invValue,
         placeOfSupply: "/", // Shown as '/' in screenshot
         reverseCharges: "Y", // Transport B2B is Y
@@ -191,8 +180,9 @@ export default function CAExcelExport() {
   .th-blue { background-color: #99CCFF; font-family: Arial; font-size: 10pt; font-weight: bold; text-align: center; vertical-align: middle; border: 1px solid #000000; padding: 6px; }
   .th-purple { background-color: #D1C4E9; font-family: Arial; font-size: 10pt; font-weight: bold; text-align: center; vertical-align: middle; border: 1px solid #000000; padding: 6px; }
   .th-green { background-color: #76FF03; font-family: Arial; font-size: 10pt; font-weight: bold; text-align: center; vertical-align: middle; border: 1px solid #000000; padding: 6px; }
-  .td-left { font-family: Calibri; font-size: 10pt; text-align: left; vertical-align: middle; border-bottom: 1px dotted #888888; border-left: 1px solid #E0E0E0; border-right: 1px solid #E0E0E0; padding: 5px; }
-  .td-center { font-family: Calibri; font-size: 10pt; text-align: center; vertical-align: middle; border-bottom: 1px dotted #888888; border-left: 1px solid #E0E0E0; border-right: 1px solid #E0E0E0; padding: 5px; }
+  .td-left { font-family: Calibri; font-size: 10pt; text-align: left; vertical-align: middle; border-bottom: 1px dotted #888888; border-left: 1px solid #E0E0E0; border-right: 1px solid #E0E0E0; padding: 5px; mso-number-format:"\\@"; }
+  .td-center { font-family: Calibri; font-size: 10pt; text-align: center; vertical-align: middle; border-bottom: 1px dotted #888888; border-left: 1px solid #E0E0E0; border-right: 1px solid #E0E0E0; padding: 5px; mso-number-format:"\\@"; }
+  .td-date { font-family: Calibri; font-size: 10pt; text-align: center; vertical-align: middle; border-bottom: 1px dotted #888888; border-left: 1px solid #E0E0E0; border-right: 1px solid #E0E0E0; padding: 5px; mso-number-format:"\\@"; }
   .td-right { font-family: Calibri; font-size: 10pt; text-align: right; vertical-align: middle; border-bottom: 1px dotted #888888; border-left: 1px solid #E0E0E0; border-right: 1px solid #E0E0E0; padding: 5px; }
 </style>
 </head>
@@ -230,7 +220,7 @@ export default function CAExcelExport() {
     <td class="td-left">${row.gstin}</td>
     <td class="td-left">${row.receiverName}</td>
     <td class="td-center">${row.invoiceNo}</td>
-    <td class="td-center">${row.invoiceDateFormatted}</td>
+    <td class="td-date">${row.invoiceDateFormatted}</td>
     <td class="td-right">${row.invoiceValue}</td>
     <td class="td-center">${row.placeOfSupply}</td>
     <td class="td-center">${row.reverseCharges}</td>
