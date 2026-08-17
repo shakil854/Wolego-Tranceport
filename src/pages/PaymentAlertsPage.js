@@ -141,12 +141,16 @@ export default function PaymentAlertsPage() {
       return lr.partyPaymentStatus !== "PAID";
     }) // Only unpaid/pending (excluding TO-PAY)
     .map((lr) => {
-      const partyName = (
-        lr.consigneeName ||
-        lr.consignorName ||
-        lr.debitAmountTo ||
-        "UNKNOWN"
-      ).toUpperCase().trim();
+      const payStatus = (lr.toPayOrPaid || "TBB").trim().toUpperCase().replace("-", " ");
+      const debitTo = (lr.debitAmountTo || "").trim().toUpperCase();
+
+      // Consignee ka baki ho to Consignee name, Consignor ka baki ho to Consignor name
+      let partyName = "";
+      if (debitTo === "CONSIGNOR" || (!debitTo && payStatus === "PAID")) {
+        partyName = (lr.consignorName || lr.consigneeName || lr.debitAmountTo || "UNKNOWN").trim().toUpperCase();
+      } else {
+        partyName = (lr.consigneeName || lr.consignorName || lr.debitAmountTo || "UNKNOWN").trim().toUpperCase();
+      }
 
       const timelineDays = partiesMap[partyName] !== undefined ? partiesMap[partyName] : 30;
 
