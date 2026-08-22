@@ -12,6 +12,7 @@ const Truck = sequelize.define("Truck", {
   },
   ownerName: DataTypes.STRING,
   mobileNo: DataTypes.STRING,
+  driverMobile: DataTypes.STRING,
   address: DataTypes.STRING,
   bankName: DataTypes.STRING,
   accountName: DataTypes.STRING,

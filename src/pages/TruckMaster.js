@@ -16,6 +16,7 @@ export default function TruckMaster() {
     truckNo: "",
     ownerName: "",
     mobileNo: "",
+    driverMobile: "",
     address: "",
     loadingDetail: "",
     bankName: "",
@@ -84,7 +85,11 @@ export default function TruckMaster() {
   // Open Edit Modal
   const handleOpenEditModal = (truck) => {
     setEditTruckModal(truck);
-    setEditFormData({ ...truck, loadingDetail: truck.loadingDetail || "" });
+    setEditFormData({
+      ...truck,
+      driverMobile: truck.driverMobile || "",
+      loadingDetail: truck.loadingDetail || "",
+    });
   };
 
   // Submit Handler: Update Truck
@@ -108,6 +113,7 @@ export default function TruckMaster() {
       (t.truckNo && t.truckNo.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (t.ownerName && t.ownerName.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (t.mobileNo && t.mobileNo.includes(searchQuery)) ||
+      (t.driverMobile && t.driverMobile.includes(searchQuery)) ||
       (t.loadingDetail && t.loadingDetail.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (t.bankName && t.bankName.toLowerCase().includes(searchQuery.toLowerCase()))
   );
@@ -124,10 +130,10 @@ export default function TruckMaster() {
         )}
 
         {/* 50-50 Split Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-0">
 
           {/* LEFT COLUMN: Add New Truck Form */}
-          <div className="bg-sky-900/90 border-2 border-yellow-400 rounded-lg shadow-xl overflow-visible lg:overflow-hidden backdrop-blur-sm flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-sky-900/90 border-2 border-yellow-400 rounded-lg shadow-xl overflow-visible lg:overflow-hidden backdrop-blur-sm flex flex-col justify-between">
 
             {/* Form Header */}
             <div className="bg-sky-950 px-3 py-1.5 border-b border-yellow-400 flex justify-between items-center shrink-0">
@@ -140,10 +146,10 @@ export default function TruckMaster() {
             </div>
 
             {/* Form Inputs */}
-            <form onSubmit={handleSaveNewTruck} onKeyDown={handleFormKeyDown} className="p-2.5 space-y-2.5 lg:space-y-2 flex-1 flex flex-col lg:justify-between overflow-y-auto">
+            <form onSubmit={handleSaveNewTruck} onKeyDown={handleFormKeyDown} className="p-2.5 space-y-2 lg:space-y-1.5 flex-1 flex flex-col lg:justify-between overflow-y-auto">
 
               {/* Basic Truck & Owner Info */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="text-[11px] font-extrabold text-amber-300 uppercase tracking-wider border-b border-sky-700/60 pb-0.5 flex items-center gap-1">
                   <Truck size={13} /> Basic Information
                 </div>
@@ -180,17 +186,32 @@ export default function TruckMaster() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
-                      Mobile No.
+                      Owner Mobile No.
                     </label>
                     <input
                       type="text"
                       value={addFormData.mobileNo}
                       onChange={(e) => setAddFormData({ ...addFormData, mobileNo: e.target.value })}
-                      placeholder="MOBILE NUMBER"
-                      className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none"
+                      placeholder="OWNER MOBILE"
+                      className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none font-mono"
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      Driver Mobile No. (चालक मोबाइल)
+                    </label>
+                    <input
+                      type="text"
+                      value={addFormData.driverMobile}
+                      onChange={(e) => setAddFormData({ ...addFormData, driverMobile: e.target.value })}
+                      placeholder="DRIVER MOBILE NO."
+                      className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                       Address
@@ -203,24 +224,24 @@ export default function TruckMaster() {
                       className="w-full bg-white text-slate-900 font-medium px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
-                    Loading Detail (लोडिंग डिटेल / क्षमता)
-                  </label>
-                  <input
-                    type="text"
-                    value={addFormData.loadingDetail}
-                    onChange={(e) => setAddFormData({ ...addFormData, loadingDetail: e.target.value.toUpperCase() })}
-                    placeholder="e.g. 25 TON / 32 FT CONTAINER / OPEN BODY"
-                    className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
-                  />
+                  <div>
+                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                      Loading Detail (लोडिंग डिटेल / क्षमता)
+                    </label>
+                    <input
+                      type="text"
+                      value={addFormData.loadingDetail}
+                      onChange={(e) => setAddFormData({ ...addFormData, loadingDetail: e.target.value.toUpperCase() })}
+                      placeholder="e.g. 25 TON / 32 FT CONTAINER"
+                      className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Bank Details Section */}
-              <div className="space-y-2 pt-1 border-t border-sky-700/60">
+              <div className="space-y-1.5 pt-1 border-t border-sky-700/60">
                 <div className="text-[11px] font-extrabold text-amber-300 uppercase tracking-wider border-b border-sky-700/60 pb-0.5 flex items-center gap-1">
                   <Landmark size={13} /> Bank Details
                 </div>
@@ -296,7 +317,7 @@ export default function TruckMaster() {
               </div>
 
               {/* Save / Clear Buttons */}
-              <div className="pt-2 border-t border-sky-700 flex justify-end shrink-0">
+              <div className="pt-1.5 border-t border-sky-700 flex justify-end shrink-0">
                 <button
                   type="submit"
                   className="px-4 py-1 bg-yellow-400 text-slate-950 font-black rounded hover:bg-yellow-300 text-xs uppercase shadow flex items-center gap-1 transition-all focus:outline-none focus:ring-2 focus:ring-yellow-300"
@@ -309,7 +330,7 @@ export default function TruckMaster() {
           </div>
 
           {/* RIGHT COLUMN: Directory List */}
-          <div className="bg-slate-800 rounded-lg p-2.5 border border-slate-700 shadow-xl flex flex-col min-h-[400px] lg:min-h-0 overflow-visible lg:overflow-hidden">
+          <div className="lg:col-span-7 bg-slate-800 rounded-lg p-2.5 border border-slate-700 shadow-xl flex flex-col min-h-[400px] lg:min-h-0 overflow-visible lg:overflow-hidden">
 
             {/* Header & Search Bar */}
             <div className="flex justify-between items-center gap-2 border-b border-slate-700 pb-1.5 shrink-0">
@@ -323,23 +344,23 @@ export default function TruckMaster() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search Truck / Owner / Loading..."
+                  placeholder="Search Truck / Driver / Owner..."
                   className="w-full pl-8 pr-2 py-1 bg-slate-900 border border-slate-600 rounded text-xs text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>
 
             {/* Scrollable Table Container */}
-            <div className="flex-1 min-h-0 overflow-y-auto rounded border border-slate-700 mt-1.5">
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden rounded border border-slate-700 mt-1.5">
               <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-950 uppercase text-amber-400 font-extrabold sticky top-0 z-10">
+                <thead className="bg-slate-950 uppercase text-amber-400 font-extrabold sticky top-0 z-10 text-[11px]">
                   <tr>
-                    <th className="p-2.5">Truck No.</th>
-                    <th className="p-2.5">Owner Name</th>
-                    <th className="p-2.5">Mobile</th>
-                    <th className="p-2.5">Loading Detail</th>
-                    <th className="p-2.5">Bank Name</th>
-                    <th className="p-2.5 text-center">Actions</th>
+                    <th className="py-2 px-2 whitespace-nowrap">Truck No.</th>
+                    <th className="py-2 px-2">Owner Name</th>
+                    <th className="py-2 px-2 whitespace-nowrap">Contact / Driver</th>
+                    <th className="py-2 px-2">Loading Detail</th>
+                    <th className="py-2 px-2">Bank</th>
+                    <th className="py-2 px-2 text-center whitespace-nowrap w-28">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700 font-medium">
@@ -347,39 +368,43 @@ export default function TruckMaster() {
                     <tr key={t.id || idx} className="hover:bg-slate-700/60 transition-colors">
 
                       {/* Truck No */}
-                      <td className="p-2.5 font-black text-amber-400 font-mono text-xs whitespace-nowrap">
+                      <td className="py-2 px-2 font-black text-amber-400 font-mono text-xs whitespace-nowrap">
                         {t.truckNo}
                       </td>
 
                       {/* Owner Name */}
-                      <td className="p-2.5 font-bold text-white max-w-[120px] truncate">
+                      <td className="py-2 px-2 font-bold text-white max-w-[120px] truncate">
                         {t.ownerName || "-"}
                       </td>
 
-                      {/* Mobile */}
-                      <td className="p-2.5 font-mono text-slate-200 whitespace-nowrap">
-                        {t.mobileNo || "-"}
+                      {/* Mobile & Driver Mobile */}
+                      <td className="py-2 px-2 font-mono text-xs whitespace-nowrap">
+                        {t.mobileNo && <div className="text-slate-200">📱 {t.mobileNo}</div>}
+                        {t.driverMobile && (
+                          <div className="text-amber-400 text-[10.5px] font-bold">🚚 Driver: {t.driverMobile}</div>
+                        )}
+                        {!t.mobileNo && !t.driverMobile && <span className="text-slate-500">-</span>}
                       </td>
 
                       {/* Loading Detail */}
-                      <td className="p-2.5 font-semibold text-sky-300 max-w-[130px] truncate text-[11px]">
+                      <td className="py-2 px-2 font-semibold text-sky-300 max-w-[130px] truncate text-[11px]">
                         {t.loadingDetail || "-"}
                       </td>
 
                       {/* Bank Name */}
-                      <td className="p-2.5 text-slate-300 max-w-[110px] truncate">
+                      <td className="py-2 px-2 text-slate-300 max-w-[110px] truncate">
                         {t.bankName ? `${t.bankName}${t.branch ? ` (${t.branch})` : ""}` : "-"}
                       </td>
 
                       {/* Actions: View, Edit */}
-                      <td className="p-2.5 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
+                      <td className="py-2 px-2 text-center whitespace-nowrap shrink-0">
+                        <div className="flex items-center justify-center gap-1">
                           {/* View Button */}
                           <button
                             type="button"
                             onClick={() => setViewTruckModal(t)}
                             title="View Details"
-                            className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold rounded transition-all shadow border border-slate-600 flex items-center gap-1 text-[11px]"
+                            className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold rounded transition-all shadow border border-slate-600 flex items-center gap-1 text-[11px] shrink-0"
                           >
                             <Eye size={13} /> View
                           </button>
@@ -389,7 +414,7 @@ export default function TruckMaster() {
                             type="button"
                             onClick={() => handleOpenEditModal(t)}
                             title="Edit Truck"
-                            className="px-2 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded transition-all shadow flex items-center gap-1 text-[11px]"
+                            className="px-2 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded transition-all shadow flex items-center gap-1 text-[11px] shrink-0"
                           >
                             <Edit size={13} /> Edit
                           </button>
@@ -442,12 +467,20 @@ export default function TruckMaster() {
                   </span>
                   <h4 className="text-lg font-black font-mono text-white">{viewTruckModal.truckNo}</h4>
                 </div>
-                {viewTruckModal.mobileNo && (
-                  <div className="text-right">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase block">Mobile No.</span>
-                    <span className="font-mono font-bold text-amber-300">{viewTruckModal.mobileNo}</span>
-                  </div>
-                )}
+                <div className="text-right space-y-1">
+                  {viewTruckModal.mobileNo && (
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Owner Mobile</span>
+                      <span className="font-mono font-bold text-slate-200">{viewTruckModal.mobileNo}</span>
+                    </div>
+                  )}
+                  {viewTruckModal.driverMobile && (
+                    <div>
+                      <span className="text-[10px] font-bold text-amber-400 uppercase block">Driver Mobile</span>
+                      <span className="font-mono font-bold text-amber-300">{viewTruckModal.driverMobile}</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 bg-slate-800/50 p-3 rounded border border-slate-700/60">
@@ -566,14 +599,27 @@ export default function TruckMaster() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Mobile No.</label>
+                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Owner Mobile No.</label>
                   <input
                     type="text"
                     value={editFormData.mobileNo}
                     onChange={(e) => setEditFormData({ ...editFormData, mobileNo: e.target.value })}
-                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded"
+                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded font-mono"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Driver Mobile No. (चालक मोबाइल)</label>
+                  <input
+                    type="text"
+                    value={editFormData.driverMobile || ""}
+                    onChange={(e) => setEditFormData({ ...editFormData, driverMobile: e.target.value })}
+                    placeholder="DRIVER MOBILE NO."
+                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">Address</label>
                   <input
@@ -583,19 +629,18 @@ export default function TruckMaster() {
                     className="w-full bg-white text-slate-900 font-medium px-3 py-1.5 text-xs border border-sky-300 rounded"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
-                  Loading Detail (लोडिंग डिटेल)
-                </label>
-                <input
-                  type="text"
-                  value={editFormData.loadingDetail || ""}
-                  onChange={(e) => setEditFormData({ ...editFormData, loadingDetail: e.target.value.toUpperCase() })}
-                  placeholder="e.g. 25 TON / 32 FT CONTAINER / OPEN BODY"
-                  className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded uppercase"
-                />
+                <div>
+                  <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
+                    Loading Detail (लोडिंग डिटेल)
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.loadingDetail || ""}
+                    onChange={(e) => setEditFormData({ ...editFormData, loadingDetail: e.target.value.toUpperCase() })}
+                    placeholder="e.g. 25 TON / 32 FT CONTAINER"
+                    className="w-full bg-white text-slate-900 font-bold px-3 py-1.5 text-xs border border-sky-300 rounded uppercase"
+                  />
+                </div>
               </div>
 
               <div className="pt-2 border-t border-sky-700/60 space-y-2">

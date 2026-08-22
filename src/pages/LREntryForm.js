@@ -78,6 +78,7 @@ export default function LREntryForm() {
     truckNo: "",
     ownerName: "",
     mobileNo: "",
+    driverMobile: "",
     address: "",
     loadingDetail: "",
     bankName: "",
@@ -96,12 +97,17 @@ export default function LREntryForm() {
     const addedNo = newTruckForm.truckNo.trim().toUpperCase();
     const updatedTrucks = await saveTruck({ ...newTruckForm, truckNo: addedNo });
     setTrucks(updatedTrucks || []);
-    setFormData((prev) => ({ ...prev, truckNo: addedNo }));
+    setFormData((prev) => ({
+      ...prev,
+      truckNo: addedNo,
+      ...(newTruckForm.driverMobile ? { driverMobile: newTruckForm.driverMobile } : {}),
+    }));
     setShowAddTruckModal(false);
     setNewTruckForm({
       truckNo: "",
       ownerName: "",
       mobileNo: "",
+      driverMobile: "",
       address: "",
       loadingDetail: "",
       bankName: "",
@@ -689,8 +695,13 @@ export default function LREntryForm() {
         if (matches.length > 0) {
           e.preventDefault();
           e.stopPropagation();
-          const matchedNo = matches[0].truckNo.toUpperCase();
-          setFormData((prev) => ({ ...prev, truckNo: matchedNo }));
+          const matchedTruck = matches[0];
+          const matchedNo = (matchedTruck.truckNo || "").toUpperCase();
+          setFormData((prev) => ({
+            ...prev,
+            truckNo: matchedNo,
+            ...(matchedTruck.driverMobile ? { driverMobile: matchedTruck.driverMobile } : {}),
+          }));
           setShowTruckSearchDropdown(false);
           setTimeout(() => {
             const consignorEl = document.getElementById("consignor-name-input");
@@ -1007,7 +1018,17 @@ export default function LREntryForm() {
                           list="truck-master-list"
                           value={formData.truckNo}
                           onChange={(e) => {
-                            setFormData({ ...formData, truckNo: e.target.value.toUpperCase() });
+                            const val = e.target.value.toUpperCase();
+                            const matchedTruck = trucks.find((t) => (t.truckNo || "").toUpperCase() === val.trim());
+                            if (matchedTruck && matchedTruck.driverMobile) {
+                              setFormData((prev) => ({
+                                ...prev,
+                                truckNo: val,
+                                driverMobile: matchedTruck.driverMobile,
+                              }));
+                            } else {
+                              setFormData((prev) => ({ ...prev, truckNo: val }));
+                            }
                             setShowTruckSearchDropdown(true);
                           }}
                           onFocus={() => setShowTruckSearchDropdown(true)}
@@ -1019,8 +1040,13 @@ export default function LREntryForm() {
                               const query = (formData.truckNo || "").trim().toUpperCase();
                               const matches = trucks.filter((t) => (t.truckNo || "").toUpperCase().includes(query));
                               if (matches.length > 0) {
-                                const selectedTruck = matches[0].truckNo.toUpperCase();
-                                setFormData((prev) => ({ ...prev, truckNo: selectedTruck }));
+                                const selectedTruck = matches[0];
+                                const selectedTruckNo = (selectedTruck.truckNo || "").toUpperCase();
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  truckNo: selectedTruckNo,
+                                  ...(selectedTruck.driverMobile ? { driverMobile: selectedTruck.driverMobile } : {}),
+                                }));
                               }
                               setShowTruckSearchDropdown(false);
                               setTimeout(() => {
@@ -1052,7 +1078,11 @@ export default function LREntryForm() {
                                 <div
                                   key={idx}
                                   onMouseDown={() => {
-                                    setFormData({ ...formData, truckNo: (t.truckNo || "").toUpperCase() });
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      truckNo: (t.truckNo || "").toUpperCase(),
+                                      ...(t.driverMobile ? { driverMobile: t.driverMobile } : {}),
+                                    }));
                                     setShowTruckSearchDropdown(false);
                                     setTimeout(() => {
                                       const consignorEl = document.getElementById("consignor-name-input");
@@ -1062,7 +1092,9 @@ export default function LREntryForm() {
                                   className="px-2 py-1.5 hover:bg-sky-700 cursor-pointer text-xs border-b border-slate-800 flex justify-between items-center"
                                 >
                                   <span className="font-mono font-bold text-amber-300">{(t.truckNo || "").toUpperCase()}</span>
-                                  <span className="text-[10px] text-slate-400">{t.ownerName || "No Owner"}</span>
+                                  <span className="text-[10px] text-slate-400">
+                                    {t.ownerName ? t.ownerName : t.driverMobile ? `Driver: ${t.driverMobile}` : "No Owner"}
+                                  </span>
                                 </div>
                               ))}
                             <div
@@ -1071,7 +1103,9 @@ export default function LREntryForm() {
                                   truckNo: (formData.truckNo || "").trim().toUpperCase(),
                                   ownerName: "",
                                   mobileNo: "",
+                                  driverMobile: "",
                                   address: "",
+                                  loadingDetail: "",
                                   bankName: "",
                                   accountName: "",
                                   accountNo: "",
@@ -2062,17 +2096,32 @@ export default function LREntryForm() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
                       <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
-                        Mobile No.
+                        Owner Mobile No.
                       </label>
                       <input
                         type="text"
                         value={newTruckForm.mobileNo}
                         onChange={(e) => setNewTruckForm({ ...newTruckForm, mobileNo: e.target.value })}
-                        placeholder="MOBILE NUMBER"
+                        placeholder="OWNER MOBILE"
                         className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none font-mono"
                       />
                     </div>
 
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        Driver Mobile No. (चालक मोबाइल)
+                      </label>
+                      <input
+                        type="text"
+                        value={newTruckForm.driverMobile || ""}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, driverMobile: e.target.value })}
+                        placeholder="DRIVER MOBILE NO."
+                        className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
                       <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
                         Address
@@ -2085,19 +2134,19 @@ export default function LREntryForm() {
                         className="w-full bg-white text-slate-900 font-medium px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
-                      Loading Detail (लोडिंग डिटेल / क्षमता)
-                    </label>
-                    <input
-                      type="text"
-                      value={newTruckForm.loadingDetail}
-                      onChange={(e) => setNewTruckForm({ ...newTruckForm, loadingDetail: e.target.value.toUpperCase() })}
-                      placeholder="e.g. 25 TON / 32 FT CONTAINER / OPEN BODY"
-                      className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
-                    />
+                    <div>
+                      <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
+                        Loading Detail (लोडिंग डिटेल / क्षमता)
+                      </label>
+                      <input
+                        type="text"
+                        value={newTruckForm.loadingDetail}
+                        onChange={(e) => setNewTruckForm({ ...newTruckForm, loadingDetail: e.target.value.toUpperCase() })}
+                        placeholder="e.g. 25 TON / 32 FT CONTAINER"
+                        className="w-full bg-white text-slate-900 font-bold px-2 py-1 text-xs border border-sky-300 rounded focus:outline-none uppercase"
+                      />
+                    </div>
                   </div>
                 </div>
 
