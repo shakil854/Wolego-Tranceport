@@ -205,12 +205,12 @@ export default function PartyMaster() {
           </div>
         )}
 
-        {/* 50-50 Split Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
-          
+        {/* Split Layout: 5 cols for Form, 7 cols for Directory */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-0">
+
           {/* LEFT COLUMN: Clean Add New Party Form */}
-          <div className="bg-sky-900/90 border-2 border-yellow-400 rounded-lg shadow-xl overflow-visible lg:overflow-hidden backdrop-blur-sm flex flex-col justify-between">
-            
+          <div className="lg:col-span-5 bg-sky-900/90 border-2 border-yellow-400 rounded-lg shadow-xl overflow-visible lg:overflow-hidden backdrop-blur-sm flex flex-col justify-between">
+
             {/* Form Title Header */}
             <div className="bg-sky-950 px-3 py-1.5 border-b border-yellow-400 flex justify-between items-center shrink-0">
               <h2 className="text-xs sm:text-sm font-black text-blue-100 uppercase tracking-wider flex items-center gap-1.5">
@@ -223,7 +223,7 @@ export default function PartyMaster() {
 
             {/* Form Inputs */}
             <form onSubmit={handleSaveNewParty} onKeyDown={handleFormKeyDown} className="p-2.5 space-y-2 lg:space-y-1 flex-1 flex flex-col lg:justify-between overflow-visible lg:overflow-hidden">
-              
+
               {/* Party Name */}
               <div>
                 <label className="block text-[10px] font-bold text-yellow-300 uppercase mb-0.5">
@@ -448,14 +448,14 @@ export default function PartyMaster() {
           </div>
 
           {/* RIGHT COLUMN: Directory List */}
-          <div className="bg-slate-800 rounded-lg p-2.5 border border-slate-700 shadow-xl flex flex-col min-h-[400px] lg:min-h-0 overflow-visible lg:overflow-hidden">
-            
+          <div className="lg:col-span-7 bg-slate-800 rounded-lg p-2.5 border border-slate-700 shadow-xl flex flex-col min-h-[400px] lg:min-h-0 overflow-visible lg:overflow-hidden">
+
             {/* Header & Search Bar */}
             <div className="flex justify-between items-center gap-2 border-b border-slate-700 pb-1.5 shrink-0">
               <h2 className="text-xs sm:text-sm font-bold text-amber-400 flex items-center gap-1.5">
                 <Building2 className="w-4 h-4" /> Saved Parties Directory ({filteredParties.length})
               </h2>
-              
+
               <div className="relative w-48 sm:w-56">
                 <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-slate-400" />
                 <input
@@ -468,42 +468,41 @@ export default function PartyMaster() {
               </div>
             </div>
 
-            {/* Scrollable Table Container */}
-            <div className="flex-1 min-h-0 overflow-y-auto rounded border border-slate-700 mt-1.5">
+            {/* Scrollable Table Container (No Horizontal Scroll) */}
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden rounded border border-slate-700 mt-1.5">
               <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-950 uppercase text-amber-400 font-extrabold sticky top-0 z-10">
+                <thead className="bg-slate-950 uppercase text-amber-400 font-extrabold sticky top-0 z-10 text-[11px]">
                   <tr>
-                    <th className="p-2.5">Category</th>
-                    <th className="p-2.5">Party Name</th>
-                    <th className="p-2.5">City / Unloading Point</th>
-                    <th className="p-2.5">GST No</th>
-                    <th className="p-2.5 text-center">Actions</th>
+                    <th className="py-2 px-2 text-center whitespace-nowrap w-20">Category</th>
+                    <th className="py-2 px-2">Party Name</th>
+                    <th className="py-2 px-2">City / Unloading Point</th>
+                    <th className="py-2 px-2 whitespace-nowrap">GST No</th>
+                    <th className="py-2 px-2 text-center whitespace-nowrap w-32">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700 font-medium">
                   {filteredParties.map((p, idx) => (
                     <tr key={p.id || idx} className="hover:bg-slate-700/60 transition-colors">
-                      
+
                       {/* Category Badge */}
-                      <td className="p-2.5">
+                      <td className="py-2 px-1.5 text-center whitespace-nowrap shrink-0">
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            p.selectType === "CONSIGNEE" || p.selectType === "CONSIGNE"
+                          className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold inline-block leading-tight ${p.selectType === "CONSIGNEE" || p.selectType === "CONSIGNE"
                               ? "bg-purple-900 text-purple-200 border border-purple-700"
                               : p.selectType === "CONSIGNOR"
-                              ? "bg-emerald-900 text-emerald-200 border border-emerald-700"
-                              : "bg-amber-900 text-amber-200 border border-amber-700"
-                          }`}
+                                ? "bg-emerald-900 text-emerald-200 border border-emerald-700"
+                                : "bg-amber-900 text-amber-200 border border-amber-700"
+                            }`}
                         >
                           {p.selectType}
                         </span>
                       </td>
 
                       {/* Party Name & Mobiles */}
-                      <td className="p-2.5 max-w-[160px]">
-                        <div className="font-bold text-white truncate">{p.partyName}</div>
+                      <td className="py-2 px-2 min-w-0">
+                        <div className="font-bold text-white leading-tight break-words">{p.partyName}</div>
                         {p.mobileNos && (
-                          <div className="text-[10px] text-amber-400 font-mono">📱 {p.mobileNos}</div>
+                          <div className="text-[10px] text-amber-400 font-mono mt-0.5">📱 {p.mobileNos}</div>
                         )}
                         {p.secondaryMobile && (
                           <div className="text-[9.5px] text-slate-400 font-mono">📞 2nd: {p.secondaryMobile}</div>
@@ -511,30 +510,30 @@ export default function PartyMaster() {
                       </td>
 
                       {/* City & Unloading Point */}
-                      <td className="p-2.5 text-slate-300">
-                        <div className="font-semibold text-white">{p.city || p.district || "N.A."}</div>
+                      <td className="py-2 px-2 text-slate-300 min-w-0">
+                        <div className="font-semibold text-white leading-tight break-words">{p.city || p.district || "N.A."}</div>
                         {p.unloadingPoint && (
-                          <div className="text-[10px] text-sky-300 font-bold">📍 {p.unloadingPoint}</div>
+                          <div className="text-[10px] text-sky-300 font-bold mt-0.5 break-words">📍 {p.unloadingPoint}</div>
                         )}
                       </td>
 
                       {/* GST No */}
-                      <td className="p-2.5 font-mono text-amber-300 font-semibold">
+                      <td className="py-2 px-2 font-mono text-xs text-amber-300 font-semibold whitespace-nowrap">
                         {p.gstNo || "-"}
                       </td>
 
                       {/* Actions: View (Eye), Edit (Modal) */}
-                      <td className="p-2.5 text-center">
+                      <td className="py-2 px-2 text-center whitespace-nowrap shrink-0">
                         <div className="flex items-center justify-center gap-1.5">
-                          
+
                           {/* View Button (Eye Icon) */}
                           <button
                             type="button"
                             onClick={() => setViewPartyModal(p)}
                             title="View Party Details"
-                            className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold rounded transition-all shadow border border-slate-600 flex items-center gap-1"
+                            className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold rounded text-xs transition-all shadow border border-slate-600 flex items-center gap-1 shrink-0"
                           >
-                            <Eye size={14} /> View
+                            <Eye size={13} /> View
                           </button>
 
                           {/* Edit Button (Opens Edit Modal) */}
@@ -542,9 +541,9 @@ export default function PartyMaster() {
                             type="button"
                             onClick={() => handleOpenEditModal(p)}
                             title="Edit Party Details"
-                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded transition-all shadow flex items-center gap-1"
+                            className="px-2 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded text-xs transition-all shadow flex items-center gap-1 shrink-0"
                           >
-                            <Edit size={14} /> Edit
+                            <Edit size={13} /> Edit
                           </button>
 
                         </div>
@@ -573,7 +572,7 @@ export default function PartyMaster() {
       {viewPartyModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border-2 border-amber-400 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
-            
+
             {/* Modal Header */}
             <div className="bg-slate-800 px-5 py-3 border-b border-slate-700 flex justify-between items-center">
               <h3 className="text-lg font-black text-amber-400 flex items-center gap-2">
@@ -677,7 +676,7 @@ export default function PartyMaster() {
       {editPartyModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-sky-900 border-4 border-yellow-400 rounded-xl shadow-2xl w-full max-w-xl overflow-hidden my-8">
-            
+
             {/* Modal Header */}
             <div className="bg-sky-950 px-5 py-3 border-b-2 border-yellow-400 flex justify-between items-center">
               <h3 className="text-lg font-black text-blue-100 uppercase tracking-wider flex items-center gap-2">
@@ -693,7 +692,7 @@ export default function PartyMaster() {
 
             {/* Modal Form */}
             <form onSubmit={handleUpdateParty} onKeyDown={handleFormKeyDown} className="p-5 space-y-3">
-              
+
               {/* Party Name */}
               <div>
                 <label className="block text-xs font-bold text-yellow-300 uppercase mb-1">
