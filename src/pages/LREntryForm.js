@@ -345,24 +345,21 @@ export default function LREntryForm() {
         consignorGst: c.gstNo || "",
       }));
     } else if (list.length === 2) {
-      // 2 Consignors: Exactly 2 lines per Consignor (Name line + truncated 1-line Address)
+      // 2 Consignors: Exactly 4 lines total:
+      // (1) PARTY NAME 1
+      // [empty line for address - manual entry]
+      // (2) PARTY NAME 2
+      // [empty line for address - manual entry]
       const c1 = list[0];
       const c2 = list[1];
 
-      const rawAddr1 = [c1.address1, c1.address2, c1.address3].filter(Boolean).join(", ");
-      const rawAddr2 = [c2.address1, c2.address2, c2.address3].filter(Boolean).join(", ");
-
-      // Truncate address if longer than 45 chars so it NEVER wraps into 2 lines!
-      const addr1 = rawAddr1.length > 45 ? rawAddr1.slice(0, 42) + "..." : rawAddr1;
-      const addr2 = rawAddr2.length > 45 ? rawAddr2.slice(0, 42) + "..." : rawAddr2;
-
-      const pName1 = c1.partyName.length > 40 ? c1.partyName.slice(0, 37) + "..." : c1.partyName;
-      const pName2 = c2.partyName.length > 40 ? c2.partyName.slice(0, 37) + "..." : c2.partyName;
+      const pName1 = c1.partyName ? c1.partyName.trim() : "";
+      const pName2 = c2.partyName ? c2.partyName.trim() : "";
 
       const line1 = `(1) ${pName1}`;
-      const line2 = `    ${addr1 || ""}`;
+      const line2 = ``;
       const line3 = `(2) ${pName2}`;
-      const line4 = `    ${addr2 || ""}`;
+      const line4 = ``;
 
       const nameVal = `${line1}\n${line2}\n${line3}\n${line4}`;
       const addrVal = "";
@@ -387,6 +384,16 @@ export default function LREntryForm() {
         consignorGst: gstVal,
       }));
     }
+  };
+
+  // Keep typing smooth without cursor jump, uppercase handled by CSS and onBlur/onSave
+  const handleConsignorNameChange = (e) => {
+    const val = e.target.value;
+    setFormData((prev) => ({ ...prev, consignorName: val }));
+  };
+
+  const handleConsignorNameBlur = () => {
+    setFormData((prev) => ({ ...prev, consignorName: (prev.consignorName || "").toUpperCase() }));
   };
 
   // Consignee selection handler (4-line format: Name, Address 1, Address 2, Address 3)
@@ -425,7 +432,15 @@ export default function LREntryForm() {
     const isEditing = Boolean(formData.id);
     const editedLRNo = formData.lrNumber;
 
-    const saved = await saveLREntry(formData);
+    const dataToSave = {
+      ...formData,
+      consignorName: (formData.consignorName || "").toUpperCase(),
+      consignorAddress: (formData.consignorAddress || "").toUpperCase(),
+      consigneeName: (formData.consigneeName || "").toUpperCase(),
+      consigneeAddress: (formData.consigneeAddress || "").toUpperCase(),
+    };
+
+    const saved = await saveLREntry(dataToSave);
     setActiveLR(saved);
 
     // Revert back to fresh new running LR number after saving (both for new and edited LRs)
@@ -1210,21 +1225,34 @@ export default function LREntryForm() {
                   </div>
                 )}
 
-                <input
-                  id="consignor-name-input"
-                  type="text"
-                  value={formData.consignorName}
-                  onChange={(e) => setFormData({ ...formData, consignorName: e.target.value.toUpperCase() })}
-                  onKeyDown={(e) => {
-                    if ((e.key === "s" || e.key === "S") && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                      e.preventDefault();
-                      setPartySearchQuery("");
-                      setSearchConsignorModal(true);
-                    }
-                  }}
-                  placeholder="CONSIGNOR NAME (Press 'S' to Search)"
-                  className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase font-mono"
-                />
+                {formData.consignorName && formData.consignorName.includes("\n") ? (
+                  <textarea
+                    id="consignor-name-input"
+                    rows={4}
+                    value={formData.consignorName}
+                    onChange={handleConsignorNameChange}
+                    onBlur={handleConsignorNameBlur}
+                    placeholder="CONSIGNOR NAME (Press 'S' to Search)"
+                    className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase font-mono leading-tight resize-y min-h-[75px]"
+                  />
+                ) : (
+                  <input
+                    id="consignor-name-input"
+                    type="text"
+                    value={formData.consignorName}
+                    onChange={handleConsignorNameChange}
+                    onBlur={handleConsignorNameBlur}
+                    onKeyDown={(e) => {
+                      if ((e.key === "s" || e.key === "S") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                        e.preventDefault();
+                        setPartySearchQuery("");
+                        setSearchConsignorModal(true);
+                      }
+                    }}
+                    placeholder="CONSIGNOR NAME (Press 'S' to Search)"
+                    className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase font-mono"
+                  />
+                )}
 
                 <div className="grid grid-cols-12 gap-1 items-center">
                   <input
