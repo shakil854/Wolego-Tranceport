@@ -1232,7 +1232,14 @@ export default function LREntryForm() {
                     value={formData.consignorName}
                     onChange={handleConsignorNameChange}
                     onBlur={handleConsignorNameBlur}
-                    placeholder="CONSIGNOR NAME (Press 'S' to Search)"
+                    onKeyDown={(e) => {
+                      if (e.key === "F5" || e.key === "f5") {
+                        e.preventDefault();
+                        setPartySearchQuery("");
+                        setSearchConsignorModal(true);
+                      }
+                    }}
+                    placeholder="CONSIGNOR NAME (Press 'F5' to Search)"
                     className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase font-mono leading-tight resize-y min-h-[75px]"
                   />
                 ) : (
@@ -1243,13 +1250,13 @@ export default function LREntryForm() {
                     onChange={handleConsignorNameChange}
                     onBlur={handleConsignorNameBlur}
                     onKeyDown={(e) => {
-                      if ((e.key === "s" || e.key === "S") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                      if (e.key === "F5" || e.key === "f5") {
                         e.preventDefault();
                         setPartySearchQuery("");
                         setSearchConsignorModal(true);
                       }
                     }}
-                    placeholder="CONSIGNOR NAME (Press 'S' to Search)"
+                    placeholder="CONSIGNOR NAME (Press 'F5' to Search)"
                     className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase font-mono"
                   />
                 )}
@@ -1310,13 +1317,13 @@ export default function LREntryForm() {
                   value={formData.consigneeName}
                   onChange={(e) => setFormData({ ...formData, consigneeName: e.target.value.toUpperCase() })}
                   onKeyDown={(e) => {
-                    if ((e.key === "s" || e.key === "S") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    if (e.key === "F5" || e.key === "f5") {
                       e.preventDefault();
                       setPartySearchQuery("");
                       setSearchConsigneeModal(true);
                     }
                   }}
-                  placeholder="CONSIGNEE NAME (Press 'S' to Search)"
+                  placeholder="CONSIGNEE NAME (Press 'F5' to Search)"
                   className="w-full bg-white text-slate-900 font-bold px-1.5 py-0.5 border border-sky-300 rounded text-xs uppercase"
                 />
 
