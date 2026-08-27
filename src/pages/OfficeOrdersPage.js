@@ -123,15 +123,70 @@ export default function OfficeOrdersPage() {
     (t.mobileNo || "").toLowerCase().includes(truckSearch.toLowerCase())
   );
 
-  // Consignor Select Handler (Master selection)
+  // Consignor Select Handler: Appends / Numbers as (1), (2), (3), (4)...
   const handleSelectConsignor = (partyName) => {
-    const val = (partyName || "").trim().toUpperCase();
-    setFormData((prev) => ({
-      ...prev,
-      consignor: val,
-    }));
-    setConsignorSearch(val);
+    const pName = (partyName || "").trim().toUpperCase();
+    if (!pName) return;
+
+    setFormData((prev) => {
+      const current = (prev.consignor || "").trim();
+      if (!current) {
+        return {
+          ...prev,
+          consignor: `(1) ${pName}`,
+        };
+      }
+
+      const lines = current
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      // Check if already in list
+      const cleanNames = lines.map((l) => l.replace(/^\(\d+\)\s*/, "").toUpperCase());
+      if (cleanNames.includes(pName)) {
+        return prev;
+      }
+
+      const nextNum = lines.length + 1;
+      let newText = "";
+      if (lines.length === 1 && !lines[0].startsWith("(1)")) {
+        newText = `(1) ${lines[0]}\n(2) ${pName}`;
+      } else {
+        newText = `${current}\n(${nextNum}) ${pName}`;
+      }
+
+      return {
+        ...prev,
+        consignor: newText,
+      };
+    });
+
+    setConsignorSearch("");
     setShowConsignorDropdown(false);
+  };
+
+  // Helper to remove an individual numbered consignor line
+  const handleRemoveConsignorLine = (lineIndex) => {
+    setFormData((prev) => {
+      const lines = (prev.consignor || "")
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      const filtered = lines.filter((_, idx) => idx !== lineIndex);
+      if (filtered.length === 0) return { ...prev, consignor: "" };
+
+      // Re-number remaining lines (1), (2), (3)...
+      const renumbered = filtered
+        .map((line, idx) => {
+          const clean = line.replace(/^\(\d+\)\s*/, "");
+          return `(${idx + 1}) ${clean}`;
+        })
+        .join("\n");
+
+      return { ...prev, consignor: renumbered };
+    });
   };
 
   // Consignee Select Handler (Master selection)
@@ -175,7 +230,7 @@ export default function OfficeOrdersPage() {
 
   const handleOpenEditModal = (ord) => {
     setEditingOrder(ord);
-    setConsignorSearch(ord.consignor || "");
+    setConsignorSearch("");
     setConsigneeSearch(ord.consignee || "");
     setTruckSearch(ord.truckNo || "");
 
@@ -234,12 +289,19 @@ export default function OfficeOrdersPage() {
   const handleConfirmSave = async () => {
     setShowSaveConfirmModal(false);
     try {
+      const payload = {
+        ...formData,
+        consignor: (formData.consignor || "").trim().toUpperCase(),
+        consignee: (formData.consignee || "").trim().toUpperCase(),
+        truckNo: (formData.truckNo || "").trim().toUpperCase(),
+      };
+
       if (editingOrder) {
         // Update existing order
         const res = await fetch(`${API_BASE_URL}/office-orders/${editingOrder.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         });
 
         if (res.ok) {
@@ -264,7 +326,7 @@ export default function OfficeOrdersPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...formData,
+            ...payload,
             createdBy: user?.username || "OFFICE",
           }),
         });
@@ -449,7 +511,7 @@ export default function OfficeOrdersPage() {
                       <td className="py-2.5 px-3 text-slate-400 whitespace-nowrap">
                         {ord.createdAt ? new Date(ord.createdAt).toLocaleDateString("en-IN") : "-"}
                       </td>
-                      <td className="py-2.5 px-3 font-bold text-white max-w-[150px] truncate">
+                      <td className="py-2.5 px-3 font-bold text-white max-w-[200px] whitespace-pre-line leading-relaxed">
                         {ord.consignor || "-"}
                       </td>
                       <td className="py-2.5 px-3 font-bold text-white max-w-[150px] truncate">
@@ -550,66 +612,125 @@ export default function OfficeOrdersPage() {
             {/* Form */}
             <form onSubmit={handlePreSave} className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Consignor Name (Select from Master or Type Manually) */}
-                <div className="sm:col-span-2 relative" ref={consignorDropdownRef}>
-                  <label className="block text-[11px] font-bold text-amber-300 uppercase mb-1">
-                    Consignor Name(s) <span className="text-slate-400 font-normal">(Select from Master or Type Manually)</span>
-                  </label>
+                {/* Consignor Name(s) (Select from Master or Type Manually with (1), (2), (3), (4)...) */}
+                <div className="sm:col-span-2 space-y-1.5" ref={consignorDropdownRef}>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-bold text-amber-300 uppercase">
+                      Consignor Name(s) <span className="text-slate-400 font-normal">(Select from Master for (1), (2), (3)... or Type Manually)</span>
+                    </label>
+                    {formData.consignor && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, consignor: "" }))}
+                        className="text-[10px] text-rose-400 hover:text-rose-300 font-bold underline cursor-pointer"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Search to Add from Master Dropdown */}
                   <div className="relative">
                     <input
                       type="text"
-                      name="consignor"
-                      value={formData.consignor}
+                      value={consignorSearch}
                       onFocus={() => setShowConsignorDropdown(true)}
                       onChange={(e) => {
-                        const val = e.target.value.toUpperCase();
-                        setFormData((prev) => ({ ...prev, consignor: val }));
                         setConsignorSearch(e.target.value);
                         setShowConsignorDropdown(true);
                       }}
-                      placeholder="Search Consignor or type manually..."
-                      required
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-3 pr-8 py-2 text-xs text-white uppercase focus:outline-none focus:border-amber-400 font-bold"
+                      placeholder="+ Search & Add Consignor from Master (1, 2, 3...)"
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-3 pr-8 py-2 text-xs text-amber-300 uppercase focus:outline-none focus:border-amber-400 font-bold"
                     />
                     <ChevronDown
                       size={16}
                       onClick={() => setShowConsignorDropdown(!showConsignorDropdown)}
                       className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer"
                     />
+
+                    {/* Consignors Dropdown Menu */}
+                    {showConsignorDropdown && (
+                      <div className="absolute left-0 right-0 top-full mt-1 bg-slate-900 border-2 border-amber-500/80 rounded-xl shadow-2xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-800">
+                        {filteredConsignorsList.map((p) => {
+                          const isSelected = (formData.consignor || "").toUpperCase().includes((p.partyName || "").toUpperCase());
+                          return (
+                            <div
+                              key={p.id}
+                              onClick={() => handleSelectConsignor(p.partyName)}
+                              className={`p-2.5 cursor-pointer text-xs flex justify-between items-center transition-colors ${
+                                isSelected
+                                  ? "bg-amber-500/20 text-amber-300 font-bold border-l-4 border-amber-400"
+                                  : "text-slate-200 hover:bg-slate-800 hover:text-amber-300"
+                              }`}
+                            >
+                              <div>
+                                <div className="font-bold text-xs uppercase">{p.partyName}</div>
+                                <div className="text-[10px] text-slate-400">
+                                  {[p.city, p.district, p.state].filter(Boolean).join(", ") || "-"}
+                                </div>
+                              </div>
+                              {isSelected ? (
+                                <span className="text-[10px] font-black text-amber-400 bg-amber-400/20 px-2 py-0.5 rounded">
+                                  Added ✓
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-bold text-slate-400 hover:text-amber-300">
+                                  + Add
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {filteredConsignorsList.length === 0 && (
+                          <div className="p-3 text-center text-xs text-slate-400 italic">
+                            No matching consignor found in Party Master.
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Consignors Dropdown Menu */}
-                  {showConsignorDropdown && (
-                    <div className="absolute left-0 right-0 top-full mt-1 bg-slate-900 border-2 border-amber-500/80 rounded-xl shadow-2xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-800">
-                      {filteredConsignorsList.map((p) => {
-                        const isSelected = (formData.consignor || "").toUpperCase() === (p.partyName || "").toUpperCase();
-                        return (
-                          <div
-                            key={p.id}
-                            onClick={() => handleSelectConsignor(p.partyName)}
-                            className={`p-2.5 cursor-pointer text-xs flex justify-between items-center transition-colors ${
-                              isSelected
-                                ? "bg-amber-500/20 text-amber-300 font-bold border-l-4 border-amber-400"
-                                : "text-slate-200 hover:bg-slate-800 hover:text-amber-300"
-                            }`}
+                  {/* Active Selected Badges / Chips */}
+                  {formData.consignor && (
+                    <div className="flex flex-wrap gap-1.5 py-0.5">
+                      {formData.consignor
+                        .split("\n")
+                        .map((l) => l.trim())
+                        .filter(Boolean)
+                        .map((line, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-lg text-[11px] font-mono font-bold"
                           >
-                            <div>
-                              <div className="font-bold text-xs uppercase">{p.partyName}</div>
-                              <div className="text-[10px] text-slate-400">
-                                {[p.city, p.district, p.state].filter(Boolean).join(", ") || "-"}
-                              </div>
-                            </div>
-                            {isSelected && <Check size={14} className="text-amber-400" />}
-                          </div>
-                        );
-                      })}
-                      {filteredConsignorsList.length === 0 && (
-                        <div className="p-3 text-center text-xs text-slate-400 italic">
-                          No matching consignor found in Party Master.
-                        </div>
-                      )}
+                            <span>{line.startsWith("(") ? line : `(${idx + 1}) ${line}`}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveConsignorLine(idx)}
+                              className="text-amber-400 hover:text-rose-400 font-black ml-1 text-xs cursor-pointer"
+                              title="Remove this consignor"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
                     </div>
                   )}
+
+                  {/* Consignor Multiline Direct Typing Textarea */}
+                  <div>
+                    <textarea
+                      name="consignor"
+                      rows={3}
+                      value={formData.consignor}
+                      onChange={(e) => {
+                        const val = e.target.value.toUpperCase();
+                        setFormData((prev) => ({ ...prev, consignor: val }));
+                      }}
+                      placeholder={"(1) FIRST CONSIGNOR\n(2) SECOND CONSIGNOR\n(3) THIRD CONSIGNOR (Or type manual party)"}
+                      required
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white uppercase focus:outline-none focus:border-amber-400 font-bold font-mono leading-relaxed resize-y min-h-[70px]"
+                    />
+                  </div>
                 </div>
 
                 {/* Consignee Name (Select from Master or Type Manually) */}
@@ -1029,8 +1150,8 @@ export default function OfficeOrdersPage() {
                   <td className="w-2/3 p-2 border border-black font-mono font-black text-sm">{orderToPrint.orderNo}</td>
                 </tr>
                 <tr>
-                  <td className="w-1/3 p-2 bg-gray-100 border border-black uppercase font-black">CONSIGNOR NAME</td>
-                  <td className="w-2/3 p-2 border border-black uppercase">{orderToPrint.consignor || "-"}</td>
+                  <td className="w-1/3 p-2 bg-gray-100 border border-black uppercase font-black">CONSIGNOR NAME(S)</td>
+                  <td className="w-2/3 p-2 border border-black uppercase whitespace-pre-line leading-relaxed">{orderToPrint.consignor || "-"}</td>
                 </tr>
                 <tr>
                   <td className="w-1/3 p-2 bg-gray-100 border border-black uppercase font-black">CONSIGNEE NAME</td>
@@ -1098,7 +1219,7 @@ export default function OfficeOrdersPage() {
                       <td className="border border-black py-1 px-1.5 text-center font-mono font-bold">{idx + 1}</td>
                       <td className="border border-black py-1 px-1.5 text-center font-mono font-black">{ord.orderNo || "-"}</td>
                       <td className="border border-black py-1 px-1.5 text-center font-mono">{ord.createdAt ? new Date(ord.createdAt).toLocaleDateString("en-IN") : "-"}</td>
-                      <td className="border border-black py-1 px-1.5 uppercase font-bold">{ord.consignor || "-"}</td>
+                      <td className="border border-black py-1 px-1.5 uppercase font-bold whitespace-pre-line leading-tight">{ord.consignor || "-"}</td>
                       <td className="border border-black py-1 px-1.5 uppercase font-bold">{ord.consignee || "-"}</td>
                       <td className="border border-black py-1 px-1.5 text-center font-mono font-black">{ord.truckNo || "-"}</td>
                       <td className="border border-black py-1 px-1.5 text-center font-mono">{ord.driverNo || "-"}</td>
