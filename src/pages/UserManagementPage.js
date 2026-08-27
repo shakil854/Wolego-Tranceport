@@ -247,8 +247,9 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 font-sans space-y-4">
-      {/* Top Banner */}
+    <div className="w-full h-full overflow-y-auto bg-slate-900 text-slate-100 p-3 sm:p-6 font-sans">
+      <div className="max-w-7xl mx-auto space-y-4 pb-20">
+        {/* Top Banner */}
       <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 sm:p-5 shadow-xl backdrop-blur flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-gradient-to-br from-amber-500 to-amber-700 text-slate-950 rounded-2xl shadow-lg font-black">
@@ -892,6 +893,7 @@ export default function UserManagementPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

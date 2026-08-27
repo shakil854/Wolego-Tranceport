@@ -314,7 +314,7 @@ function App() {
         <GlobalEscapeHandler />
         <div className="h-screen w-screen bg-slate-900 text-slate-100 flex flex-col font-sans overflow-hidden">
           <Navbar />
-          <main className="flex-1 w-full flex flex-col min-h-0 overflow-y-auto md:overflow-hidden">
+          <main className="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
             <AppRoutes />
           </main>
         </div>
