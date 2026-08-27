@@ -228,22 +228,17 @@ export default function LREntryForm() {
       }
 
       if (location.state && location.state.editLR) {
-        setFormData(location.state.editLR);
-        flashMsg(`Editing LR #${location.state.editLR.lrNumber}`);
+        const ed = location.state.editLR;
+        const cleanDate = ed.dateTime ? ed.dateTime.split("T")[0] : getTodayDateStr();
+        setFormData({
+          ...ed,
+          dateTime: cleanDate,
+        });
+        flashMsg(`Editing LR #${ed.lrNumber}`);
       } else {
-        let defaultDate = getTodayDateStr();
-        if (loadedLRs && loadedLRs.length > 0) {
-          const sortedDates = loadedLRs
-            .map((l) => (l.dateTime ? l.dateTime.split("T")[0] : null))
-            .filter(Boolean)
-            .sort()
-            .reverse();
-          if (sortedDates.length > 0 && sortedDates[0] > defaultDate) {
-            defaultDate = sortedDates[0];
-          }
-        }
-        const nextNo = getNextLRNumber(defaultDate);
-        setFormData((prev) => ({ ...prev, dateTime: defaultDate, lrNumber: nextNo }));
+        const todayDate = getTodayDateStr();
+        const nextNo = getNextLRNumber(todayDate);
+        setFormData((prev) => ({ ...prev, dateTime: todayDate, lrNumber: nextNo }));
       }
 
       focusLRNumberInput();
@@ -434,6 +429,7 @@ export default function LREntryForm() {
 
     const dataToSave = {
       ...formData,
+      dateTime: formData.dateTime ? formData.dateTime.split("T")[0] : getTodayDateStr(),
       consignorName: (formData.consignorName || "").toUpperCase(),
       consignorAddress: (formData.consignorAddress || "").toUpperCase(),
       consigneeName: (formData.consigneeName || "").toUpperCase(),
@@ -508,7 +504,11 @@ export default function LREntryForm() {
 
   const confirmLoadExistingLR = () => {
     if (pendingLoadLR) {
-      setFormData(pendingLoadLR);
+      const cleanDate = pendingLoadLR.dateTime ? pendingLoadLR.dateTime.split("T")[0] : getTodayDateStr();
+      setFormData({
+        ...pendingLoadLR,
+        dateTime: cleanDate,
+      });
       setActiveLR(pendingLoadLR);
       flashMsg(`LR #${pendingLoadLR.lrNumber} Loaded for Editing!`);
     }
@@ -933,10 +933,11 @@ export default function LREntryForm() {
                 </label>
                 <input
                   type="date"
-                  value={formData.dateTime ? formData.dateTime.slice(0, 10) : getTodayDateStr()}
+                  name="dateTime"
+                  value={formData.dateTime ? formData.dateTime.split("T")[0] : getTodayDateStr()}
                   onChange={(e) => {
                     const newDate = e.target.value;
-                    const isEdit = location.state && location.state.editLR;
+                    const isEdit = Boolean(location.state?.editLR) || Boolean(formData.id);
                     if (!isEdit) {
                       const nextNo = getNextLRNumber(newDate);
                       setFormData((prev) => ({ ...prev, dateTime: newDate, lrNumber: nextNo }));

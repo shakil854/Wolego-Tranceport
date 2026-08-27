@@ -24,7 +24,6 @@ export default function OfficeOrdersPage() {
   const [orderToPrint, setOrderToPrint] = useState(null);
 
   // Dropdown & Search States for Modal
-  const [selectedConsignors, setSelectedConsignors] = useState([]);
   const [consignorSearch, setConsignorSearch] = useState("");
   const [showConsignorDropdown, setShowConsignorDropdown] = useState(false);
 
@@ -124,56 +123,41 @@ export default function OfficeOrdersPage() {
     (t.mobileNo || "").toLowerCase().includes(truckSearch.toLowerCase())
   );
 
-  // Consignor Toggle Handler (Multiple selection)
-  const handleToggleConsignor = (partyName) => {
-    if (!partyName) return;
-    let updated;
-    if (selectedConsignors.includes(partyName)) {
-      updated = selectedConsignors.filter((c) => c !== partyName);
-    } else {
-      updated = [...selectedConsignors, partyName];
-    }
-    setSelectedConsignors(updated);
+  // Consignor Select Handler (Master selection)
+  const handleSelectConsignor = (partyName) => {
+    const val = (partyName || "").trim().toUpperCase();
     setFormData((prev) => ({
       ...prev,
-      consignor: updated.join(" + "),
+      consignor: val,
     }));
-    setConsignorSearch("");
+    setConsignorSearch(val);
+    setShowConsignorDropdown(false);
   };
 
-  const handleRemoveConsignor = (partyName) => {
-    const updated = selectedConsignors.filter((c) => c !== partyName);
-    setSelectedConsignors(updated);
-    setFormData((prev) => ({
-      ...prev,
-      consignor: updated.join(" + "),
-    }));
-  };
-
-  // Consignee Select Handler
+  // Consignee Select Handler (Master selection)
   const handleSelectConsignee = (partyName) => {
+    const val = (partyName || "").trim().toUpperCase();
     setFormData((prev) => ({
       ...prev,
-      consignee: partyName,
+      consignee: val,
     }));
-    setConsigneeSearch(partyName);
+    setConsigneeSearch(val);
     setShowConsigneeDropdown(false);
   };
 
-  // Truck Select Handler
+  // Truck Select Handler (Master selection)
   const handleSelectTruck = (trkW) => {
-    const tNo = trkW.truckNo || "";
+    const tNo = (trkW.truckNo || "").trim().toUpperCase();
     setFormData((prev) => ({
       ...prev,
-      truckNo: tNo.toUpperCase(),
+      truckNo: tNo,
     }));
-    setTruckSearch(tNo.toUpperCase());
+    setTruckSearch(tNo);
     setShowTruckDropdown(false);
   };
 
   const handleOpenAddModal = () => {
     setEditingOrder(null);
-    setSelectedConsignors([]);
     setConsignorSearch("");
     setConsigneeSearch("");
     setTruckSearch("");
@@ -191,16 +175,7 @@ export default function OfficeOrdersPage() {
 
   const handleOpenEditModal = (ord) => {
     setEditingOrder(ord);
-    // Parse consignor(s)
-    let parsedConsignors = [];
-    if (ord.consignor) {
-      parsedConsignors = ord.consignor
-        .split(/\+|\n|,/)
-        .map((s) => s.replace(/^\(\d+\)\s*/, "").trim().toUpperCase())
-        .filter(Boolean);
-    }
-    setSelectedConsignors(parsedConsignors);
-    setConsignorSearch("");
+    setConsignorSearch(ord.consignor || "");
     setConsigneeSearch(ord.consignee || "");
     setTruckSearch(ord.truckNo || "");
 
@@ -220,25 +195,38 @@ export default function OfficeOrdersPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "truckNo" ? value.toUpperCase() : value,
+      [name]: name === "truckNo" || name === "center" || name === "consignor" || name === "consignee" ? value.toUpperCase() : value,
     }));
   };
 
-  // Submit Handler -> Triggers Save Confirmation Popup
+  // Submit Handler -> Validates and Triggers Save Confirmation Popup
   const handlePreSave = (e) => {
     e.preventDefault();
-    if (selectedConsignors.length === 0 && !formData.consignor) {
-      alert("Please select at least one Consignor from Party Master!");
+
+    const finalConsignorStr = (formData.consignor || "").trim().toUpperCase();
+    const finalConsigneeStr = (formData.consignee || "").trim().toUpperCase();
+    const finalTruckNoStr = (formData.truckNo || "").trim().toUpperCase();
+
+    if (!finalConsignorStr) {
+      alert("Please enter or select a Consignor name!");
       return;
     }
-    if (!formData.consignee) {
-      alert("Please select a Consignee from Party Master!");
+    if (!finalConsigneeStr) {
+      alert("Please enter or select a Consignee name!");
       return;
     }
-    if (!formData.truckNo) {
-      alert("Please select a Truck No. from Truck Master!");
+    if (!finalTruckNoStr) {
+      alert("Please enter or select a Truck No.!");
       return;
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      consignor: finalConsignorStr,
+      consignee: finalConsigneeStr,
+      truckNo: finalTruckNoStr,
+    }));
+
     setShowSaveConfirmModal(true);
   };
 
@@ -562,53 +550,26 @@ export default function OfficeOrdersPage() {
             {/* Form */}
             <form onSubmit={handlePreSave} className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Consignor (Multi-Select from Party Master) */}
+                {/* Consignor Name (Select from Master or Type Manually) */}
                 <div className="sm:col-span-2 relative" ref={consignorDropdownRef}>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="block text-[11px] font-bold text-amber-300 uppercase">
-                      Consignor Name(s) <span className="text-slate-400 font-normal">(From Party Master - Can select multiple)</span>
-                    </label>
-                    {selectedConsignors.length > 0 && (
-                      <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/40">
-                        {selectedConsignors.length} Selected
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Selected Consignor Badges / Chips */}
-                  {selectedConsignors.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-2 p-2 bg-slate-900/90 rounded-xl border border-amber-500/30">
-                      {selectedConsignors.map((cName, idx) => (
-                        <span
-                          key={cName + idx}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/20 border border-amber-500/50 text-amber-200 font-bold text-xs rounded-lg"
-                        >
-                          <span className="text-[10px] text-amber-400 font-mono">({idx + 1})</span>
-                          <span>{cName}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveConsignor(cName)}
-                            className="text-slate-400 hover:text-rose-400 p-0.5 rounded transition cursor-pointer"
-                          >
-                            <X size={13} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Search Input for Consignor */}
+                  <label className="block text-[11px] font-bold text-amber-300 uppercase mb-1">
+                    Consignor Name(s) <span className="text-slate-400 font-normal">(Select from Master or Type Manually)</span>
+                  </label>
                   <div className="relative">
                     <input
                       type="text"
-                      value={consignorSearch}
+                      name="consignor"
+                      value={formData.consignor}
                       onFocus={() => setShowConsignorDropdown(true)}
                       onChange={(e) => {
+                        const val = e.target.value.toUpperCase();
+                        setFormData((prev) => ({ ...prev, consignor: val }));
                         setConsignorSearch(e.target.value);
                         setShowConsignorDropdown(true);
                       }}
-                      placeholder="Click or search to select Consignor(s)..."
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-3 pr-8 py-2 text-xs text-white uppercase focus:outline-none focus:border-amber-400"
+                      placeholder="Search Consignor or type manually..."
+                      required
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-3 pr-8 py-2 text-xs text-white uppercase focus:outline-none focus:border-amber-400 font-bold"
                     />
                     <ChevronDown
                       size={16}
@@ -621,11 +582,11 @@ export default function OfficeOrdersPage() {
                   {showConsignorDropdown && (
                     <div className="absolute left-0 right-0 top-full mt-1 bg-slate-900 border-2 border-amber-500/80 rounded-xl shadow-2xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-800">
                       {filteredConsignorsList.map((p) => {
-                        const isSelected = selectedConsignors.includes(p.partyName);
+                        const isSelected = (formData.consignor || "").toUpperCase() === (p.partyName || "").toUpperCase();
                         return (
                           <div
                             key={p.id}
-                            onClick={() => handleToggleConsignor(p.partyName)}
+                            onClick={() => handleSelectConsignor(p.partyName)}
                             className={`p-2.5 cursor-pointer text-xs flex justify-between items-center transition-colors ${
                               isSelected
                                 ? "bg-amber-500/20 text-amber-300 font-bold border-l-4 border-amber-400"
@@ -638,45 +599,39 @@ export default function OfficeOrdersPage() {
                                 {[p.city, p.district, p.state].filter(Boolean).join(", ") || "-"}
                               </div>
                             </div>
-                            {isSelected ? (
-                              <span className="flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded">
-                                <Check size={13} /> Selected
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 border border-slate-700 px-2 py-0.5 rounded hover:border-amber-400">
-                                + Add
-                              </span>
-                            )}
+                            {isSelected && <Check size={14} className="text-amber-400" />}
                           </div>
                         );
                       })}
                       {filteredConsignorsList.length === 0 && (
                         <div className="p-3 text-center text-xs text-slate-400 italic">
-                          No Consignor found in Party Master.
+                          No matching consignor found in Party Master.
                         </div>
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* Consignee (From Party Master) */}
+                {/* Consignee Name (Select from Master or Type Manually) */}
                 <div className="relative" ref={consigneeDropdownRef}>
                   <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                    Consignee Name <span className="text-slate-400 font-normal">(From Party Master)</span>
+                    Consignee Name <span className="text-slate-400 font-normal">(Select from Master or Type Manually)</span>
                   </label>
                   <div className="relative">
                     <input
                       type="text"
-                      value={consigneeSearch || formData.consignee}
+                      name="consignee"
+                      value={formData.consignee}
                       onFocus={() => setShowConsigneeDropdown(true)}
                       onChange={(e) => {
+                        const val = e.target.value.toUpperCase();
+                        setFormData((prev) => ({ ...prev, consignee: val }));
                         setConsigneeSearch(e.target.value);
-                        setFormData((prev) => ({ ...prev, consignee: e.target.value.toUpperCase() }));
                         setShowConsigneeDropdown(true);
                       }}
-                      placeholder="Search Consignee..."
+                      placeholder="Search Consignee or type manually..."
                       required
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-3 pr-8 py-2 text-xs text-white uppercase focus:outline-none focus:border-amber-400"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-3 pr-8 py-2 text-xs text-white uppercase focus:outline-none focus:border-amber-400 font-bold"
                     />
                     <ChevronDown
                       size={16}
@@ -689,7 +644,7 @@ export default function OfficeOrdersPage() {
                   {showConsigneeDropdown && (
                     <div className="absolute left-0 right-0 top-full mt-1 bg-slate-900 border-2 border-amber-500/80 rounded-xl shadow-2xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-800">
                       {filteredConsigneesList.map((p) => {
-                        const isSelected = formData.consignee.toUpperCase() === p.partyName.toUpperCase();
+                        const isSelected = (formData.consignee || "").toUpperCase() === (p.partyName || "").toUpperCase();
                         return (
                           <div
                             key={p.id}
@@ -712,26 +667,28 @@ export default function OfficeOrdersPage() {
                       })}
                       {filteredConsigneesList.length === 0 && (
                         <div className="p-3 text-center text-xs text-slate-400 italic">
-                          No Consignee found in Party Master.
+                          No matching consignee found in Party Master.
                         </div>
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* Truck No (From Truck Master) */}
+                {/* Truck No (Select from Master or Type Manually) */}
                 <div className="relative" ref={truckDropdownRef}>
                   <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                    Truck No. <span className="text-slate-400 font-normal">(From Truck Master)</span>
+                    Truck No. <span className="text-slate-400 font-normal">(Select from Master or Type Manually)</span>
                   </label>
                   <div className="relative">
                     <input
                       type="text"
-                      value={truckSearch || formData.truckNo}
+                      name="truckNo"
+                      value={formData.truckNo}
                       onFocus={() => setShowTruckDropdown(true)}
                       onChange={(e) => {
-                        setTruckSearch(e.target.value.toUpperCase());
-                        setFormData((prev) => ({ ...prev, truckNo: e.target.value.toUpperCase() }));
+                        const val = e.target.value.toUpperCase();
+                        setFormData((prev) => ({ ...prev, truckNo: val }));
+                        setTruckSearch(e.target.value);
                         setShowTruckDropdown(true);
                       }}
                       placeholder="GJ 36 X 1234"
@@ -749,7 +706,7 @@ export default function OfficeOrdersPage() {
                   {showTruckDropdown && (
                     <div className="absolute left-0 right-0 top-full mt-1 bg-slate-900 border-2 border-amber-500/80 rounded-xl shadow-2xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-800">
                       {filteredTrucksList.map((t) => {
-                        const isSelected = formData.truckNo.toUpperCase() === (t.truckNo || "").toUpperCase();
+                        const isSelected = (formData.truckNo || "").toUpperCase() === (t.truckNo || "").toUpperCase();
                         return (
                           <div
                             key={t.id || t.truckNo}
@@ -772,7 +729,7 @@ export default function OfficeOrdersPage() {
                       })}
                       {filteredTrucksList.length === 0 && (
                         <div className="p-3 text-center text-xs text-slate-400 italic">
-                          No Truck found in Truck Master.
+                          No matching truck found in Truck Master.
                         </div>
                       )}
                     </div>
