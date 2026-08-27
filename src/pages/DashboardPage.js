@@ -22,6 +22,7 @@ import {
   Bell,
   PackagePlus,
   Building2,
+  UserCog,
 } from "lucide-react";
 
 import { getFinancialYear } from "../utils/storage";
@@ -491,6 +492,15 @@ export default function DashboardPage() {
       color: "from-amber-600 to-orange-700",
       textColor: "text-amber-400",
       borderColor: truckComingAlertsCount > 0 ? "border-rose-500/80 hover:border-rose-400 ring-2 ring-rose-500/40" : "border-amber-500/30 hover:border-amber-400",
+    },
+    {
+      title: "User Management",
+      path: "/users",
+      icon: UserCog,
+      badge: "Manage Users",
+      color: "from-amber-500 to-rose-700",
+      textColor: "text-amber-400",
+      borderColor: "border-amber-500/30 hover:border-amber-400",
     },
   ];
 

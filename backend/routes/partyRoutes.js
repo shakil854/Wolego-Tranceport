@@ -44,6 +44,12 @@ router.post("/", async (req, res) => {
             partyName: party.partyName || partyData.partyName,
             mobileNo: num,
           });
+        } else {
+          // Keep existing user party details in sync
+          existingUser.partyName = party.partyName || partyData.partyName;
+          existingUser.partyId = party.id || partyData.id;
+          existingUser.mobileNo = num;
+          await existingUser.save();
         }
       }
     }

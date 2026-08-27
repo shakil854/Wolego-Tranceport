@@ -42,6 +42,10 @@ router.post("/", async (req, res) => {
             role: "TRUCK",
             mobileNo: num,
           });
+        } else {
+          existingUser.role = "TRUCK";
+          existingUser.mobileNo = num;
+          await existingUser.save();
         }
       }
     }

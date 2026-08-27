@@ -12,6 +12,7 @@ import truckPaymentRoutes from "./routes/truckPaymentRoutes.js";
 import partyOrderRoutes from "./routes/partyOrderRoutes.js";
 import truckOrderRoutes from "./routes/truckOrderRoutes.js";
 import officeOrderRoutes from "./routes/officeOrderRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 import OfficeOrder from "./models/OfficeOrder.js";
 
 dotenv.config();
@@ -35,6 +36,9 @@ app.use(
 // Register API Routes (support both /api/* and /* to prevent Nginx proxy mismatch 404s)
 app.use("/api/auth", authRoutes);
 app.use("/auth", authRoutes);
+
+app.use("/api/users", userRoutes);
+app.use("/users", userRoutes);
 
 app.use("/api/parties", partyRoutes);
 app.use("/parties", partyRoutes);

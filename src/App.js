@@ -22,6 +22,7 @@ import PartyLRRecordsPage from "./pages/PartyLRRecordsPage";
 import PartyOrdersPage from "./pages/PartyOrdersPage";
 import TruckOrdersPage from "./pages/TruckOrdersPage";
 import OfficeOrdersPage from "./pages/OfficeOrdersPage";
+import UserManagementPage from "./pages/UserManagementPage";
 
 import DashboardPage from "./pages/DashboardPage";
 
@@ -238,6 +239,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["OWNER"]}>
             <TruckComingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute allowedRoles={["OWNER"]}>
+            <UserManagementPage />
           </ProtectedRoute>
         }
       />

@@ -26,6 +26,7 @@ import {
   Bell,
   Lock,
   Palette,
+  UserCog,
 } from "lucide-react";
 import { API_BASE_URL } from "../config/api";
 import logoImg from "../assets/logo.png";
@@ -287,6 +288,7 @@ export default function Navbar() {
     { name: "Truck Debit", path: "/truck-payments", icon: Truck },
     { name: "Payment Alerts", path: "/payment-alerts", icon: Bell },
     { name: "Truck Coming", path: "/truck-coming", icon: Truck },
+    { name: "User Management", path: "/users", icon: UserCog },
   ];
 
   const isActive = (path) => {
