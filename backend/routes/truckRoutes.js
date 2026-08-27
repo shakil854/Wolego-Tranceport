@@ -24,28 +24,36 @@ router.post("/", async (req, res) => {
     }
     const [truck, created] = await Truck.upsert(truckData);
 
-    // Auto register truck user account(s) if mobileNo is provided
+    // Auto register / update truck user account(s) if mobileNo is provided
     if (truckData.mobileNo) {
       const nums = String(truckData.mobileNo)
         .split(/[,/ ]+/)
         .map((n) => n.trim())
         .filter(Boolean);
 
-      for (const num of nums) {
-        const existingUser = await User.findOne({ where: { username: num } });
-        if (!existingUser) {
+      const targetTruckId = truck.id || truckData.id;
+      const targetTruckNo = (truck.truckNo || truckData.truckNo || "").toUpperCase();
+
+      for (let i = 0; i < nums.length; i++) {
+        const num = nums[i];
+        let existingUser = await User.findOne({ where: { username: num } });
+
+        if (existingUser) {
+          existingUser.role = "TRUCK";
+          existingUser.mobileNo = num;
+          if (targetTruckNo) existingUser.partyName = targetTruckNo;
+          await existingUser.save();
+        } else {
+          // Create new user account with hashed default password
           const hashedPassword = await bcrypt.hash("12345", 10);
           await User.create({
-            id: "USER-TRUCK-" + (truck.id || truckData.id) + "-" + num.slice(-4),
+            id: "USER-TRUCK-" + targetTruckId + "-" + num.slice(-4),
             username: num,
             password: hashedPassword,
             role: "TRUCK",
+            partyName: targetTruckNo || null,
             mobileNo: num,
           });
-        } else {
-          existingUser.role = "TRUCK";
-          existingUser.mobileNo = num;
-          await existingUser.save();
         }
       }
     }

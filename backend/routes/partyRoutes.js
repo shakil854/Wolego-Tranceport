@@ -24,32 +24,51 @@ router.post("/", async (req, res) => {
     }
     const [party, created] = await Party.upsert(partyData);
 
-    // Auto register party user account(s) for any party type (CONSIGNOR, CONSIGNEE, BOTH)
+    // Auto register / update party user account(s) for any party type (CONSIGNOR, CONSIGNEE, BOTH)
     if (partyData.mobileNos) {
       const nums = String(partyData.mobileNos)
         .split(/[,/ ]+/)
         .map((n) => n.trim())
         .filter(Boolean);
 
-      for (const num of nums) {
-        const existingUser = await User.findOne({ where: { username: num } });
-        if (!existingUser) {
+      const targetPartyId = party.id || partyData.id;
+      const targetPartyName = party.partyName || partyData.partyName;
+
+      // Check if there are already users linked to this partyId
+      const linkedUsers = await User.findAll({ where: { partyId: targetPartyId } });
+
+      for (let i = 0; i < nums.length; i++) {
+        const num = nums[i];
+        let existingUser = await User.findOne({ where: { username: num } });
+
+        if (existingUser) {
+          // Update details on existing user
+          existingUser.partyName = targetPartyName;
+          existingUser.partyId = targetPartyId;
+          existingUser.mobileNo = num;
+          existingUser.role = "PARTY";
+          await existingUser.save();
+        } else if (linkedUsers[i]) {
+          // If mobile was changed, update the existing linked user's username & mobile (preserves password!)
+          const userToUpdate = linkedUsers[i];
+          userToUpdate.username = num;
+          userToUpdate.mobileNo = num;
+          userToUpdate.partyName = targetPartyName;
+          userToUpdate.partyId = targetPartyId;
+          userToUpdate.role = "PARTY";
+          await userToUpdate.save();
+        } else {
+          // Create new user account with hashed default password
           const hashedPassword = await bcrypt.hash("12345", 10);
           await User.create({
-            id: "USER-PARTY-" + (party.id || partyData.id) + "-" + num.slice(-4),
+            id: "USER-PARTY-" + targetPartyId + "-" + num.slice(-4),
             username: num,
             password: hashedPassword,
             role: "PARTY",
-            partyId: party.id || partyData.id,
-            partyName: party.partyName || partyData.partyName,
+            partyId: targetPartyId,
+            partyName: targetPartyName,
             mobileNo: num,
           });
-        } else {
-          // Keep existing user party details in sync
-          existingUser.partyName = party.partyName || partyData.partyName;
-          existingUser.partyId = party.id || partyData.id;
-          existingUser.mobileNo = num;
-          await existingUser.save();
         }
       }
     }
