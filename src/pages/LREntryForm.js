@@ -514,6 +514,7 @@ export default function LREntryForm() {
     }
     setShowEditLoadPasswordModal(false);
     setPendingLoadLR(null);
+    focusLRNumberInput();
   };
 
   const handleDeleteCurrentLR = () => {
@@ -734,6 +735,29 @@ export default function LREntryForm() {
         const val = target.value;
         if (val && val.trim()) {
           e.preventDefault();
+
+          // In Edit mode, pressing Enter on LR number smoothly moves to next input (Date)
+          if (formData.id) {
+            const focusable = getFocusable();
+            const index = focusable.indexOf(target);
+            const nextInput = focusable
+              .slice(index + 1)
+              .find(
+                (el) =>
+                  el.tagName === "INPUT" ||
+                  el.tagName === "SELECT" ||
+                  el.tagName === "TEXTAREA"
+              );
+            if (nextInput) {
+              nextInput.focus();
+              if (typeof nextInput.select === "function" && nextInput.tagName === "INPUT") {
+                nextInput.select();
+              }
+              nextInput.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+            return;
+          }
+
           handleCheckAndLoadExistingLR(val).then((isFound) => {
             if (!isFound) {
               const focusable = getFocusable();
@@ -751,6 +775,7 @@ export default function LREntryForm() {
                 if (typeof nextInput.select === "function" && nextInput.tagName === "INPUT") {
                   nextInput.select();
                 }
+                nextInput.scrollIntoView({ behavior: "smooth", block: "center" });
               }
             }
           });
