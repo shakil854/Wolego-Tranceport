@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { fetchLREntriesFromDB, fetchPartiesFromDB } from "../utils/storage";
+import { fetchLREntriesFromDB, fetchPartiesFromDB, sortLRsByNumber } from "../utils/storage";
 import { FileSpreadsheet, Download, RefreshCw, Filter, CheckCircle, Info, FileText } from "lucide-react";
 
 export default function CAExcelExport() {
@@ -99,21 +99,22 @@ export default function CAExcelExport() {
     return map;
   }, [parties]);
 
-  // Filter LR records based on date range
+  // Filter LR records based on date range and sort numerically by LR Number in ascending order (1731, 1732, 1733...)
   const filteredLRs = React.useMemo(() => {
-    return lrEntries.filter((lr) => {
+    const list = lrEntries.filter((lr) => {
       if (!lr.dateTime) return true;
       const lrDateNorm = normalizeDateStr(lr.dateTime);
 
       if (fromDate && lrDateNorm && lrDateNorm < fromDate) return false;
       if (toDate && lrDateNorm && lrDateNorm > toDate) return false;
       return true;
-    }).sort((a, b) => new Date(a.dateTime || 0) - new Date(b.dateTime || 0));
+    });
+    return sortLRsByNumber(list, true);
   }, [lrEntries, fromDate, toDate]);
 
   // Prepared data items for table preview and export
   const reportRows = React.useMemo(() => {
-    const sourceList = filteredLRs.length > 0 ? filteredLRs : lrEntries;
+    const sourceList = (fromDate || toDate) ? filteredLRs : sortLRsByNumber(lrEntries, true);
 
     return sourceList.map((lr, index) => {
       const partyName = lr.consigneeName || lr.consignorName || "-";
