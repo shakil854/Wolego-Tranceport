@@ -128,7 +128,7 @@ export default function CAExcelExport() {
         srNo: index + 1,
         gstin: gstNo,
         receiverName: partyName,
-        invoiceNo: index + 1, // Sequential number as shown in screenshot
+        invoiceNo: lr.lrNumber || lr.lr_no || (index + 1), // Exact LR Number from entry
         lrNumber: lr.lrNumber,
         invoiceDateRaw: lr.dateTime,
         invoiceDateFormatted: formatDateToDDMMYYYY(lr.dateTime),
