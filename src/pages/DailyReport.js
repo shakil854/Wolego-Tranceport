@@ -219,26 +219,50 @@ export default function DailyReport() {
     return `${city}-${weight}`;
   };
 
-  // Helper to parse Consignors into clean list of names
+  // Helper to parse Consignors into clean list of names (ONLY consignor names, excluding addresses)
   const parseConsignors = (rawConsignorStr) => {
     if (!rawConsignorStr) return [];
 
-    // Split by newlines or numbered list patterns like (1), (2), (3)
-    const lines = rawConsignorStr
-      .split(/\n|\(\d+\)/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !s.startsWith("Address:") && !s.startsWith("GST:"));
+    const str = rawConsignorStr.trim();
+    if (!str) return [];
 
-    const consignorNames = [];
-    lines.forEach((line) => {
-      // Remove any leading numbers or symbols
-      const clean = line.replace(/^\d+[\.\)\-]?\s*/, "").trim();
-      if (clean && !clean.toLowerCase().includes("gst") && !clean.toLowerCase().includes("address")) {
-        consignorNames.push(clean.toUpperCase());
+    // Check if string contains numbered consignors like (1), (2), 1., 2. etc.
+    const hasNumberedPattern = /\(\s*\d+\s*\)|\[\s*\d+\s*\]|^\s*\d+\s*[\.\)]\s+/m.test(str);
+
+    if (hasNumberedPattern) {
+      const lines = str.split("\n").map((l) => l.trim()).filter(Boolean);
+      const names = [];
+
+      lines.forEach((line) => {
+        // Check if this line starts with a number marker like (1), (2), [1], 1., 1)
+        const match = line.match(/^(\(\s*\d+\s*\)|\[\s*\d+\s*\]|\d+\s*[\.\)]\s+)\s*(.*)$/);
+        if (match) {
+          const nameOnly = match[2].trim();
+          if (
+            nameOnly &&
+            !nameOnly.toLowerCase().startsWith("gst") &&
+            !nameOnly.toLowerCase().startsWith("address")
+          ) {
+            names.push(nameOnly.toUpperCase());
+          }
+        }
+      });
+
+      if (names.length > 0) {
+        return names;
       }
-    });
+    }
 
-    return consignorNames.length > 0 ? consignorNames : [rawConsignorStr.trim().toUpperCase()];
+    // If not numbered, check if it's multi-line (first line is name, following lines are address)
+    const lines = str.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lines.length > 0) {
+      const firstLine = lines[0].replace(/^(\(\s*\d+\s*\)|\[\s*\d+\s*\]|\d+\s*[\.\)]\s+)\s*/, "").trim();
+      if (firstLine) {
+        return [firstLine.toUpperCase()];
+      }
+    }
+
+    return [str.toUpperCase()];
   };
 
   // Format Party Name & Consignor Line: "P- Party Name - CONSIGNOR Name"
