@@ -247,6 +247,425 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
 
   const isAuto = Boolean(autoAction);
 
+  const copyOrder = ["CONSIGNOR", "CONSIGNEE", "TRUCK", "OFFICE"];
+  const copiesToPrint = copyOrder.filter((c) => selectedCopies.includes(c));
+  const finalPrintCopies =
+    copiesToPrint.length > 0
+      ? copiesToPrint
+      : selectedCopies.length > 0
+        ? selectedCopies
+        : ["CONSIGNOR"];
+
+  const renderLRDocumentContent = (activeCopyType = null) => {
+    const isConsignorChecked = activeCopyType
+      ? activeCopyType === "CONSIGNOR"
+      : selectedCopies.includes("CONSIGNOR");
+    const isConsigneeChecked = activeCopyType
+      ? activeCopyType === "CONSIGNEE"
+      : selectedCopies.includes("CONSIGNEE");
+    const isTruckChecked = activeCopyType
+      ? activeCopyType === "TRUCK"
+      : selectedCopies.includes("TRUCK");
+    const isOfficeChecked = activeCopyType
+      ? activeCopyType === "OFFICE"
+      : selectedCopies.includes("OFFICE");
+
+    return (
+      <>
+        {/* Background Watermark Logo (Shown during both PDF Export & LR Print) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+          <img
+            src={logoImg}
+            alt="Watermark Logo"
+            className="w-[620px] max-w-[88%] max-h-[85%] opacity-[0.08] object-contain mix-blend-multiply"
+          />
+        </div>
+
+        <div className="relative z-10 flex-1 flex flex-col justify-between">
+          {/* Header Bar */}
+          {/* Company Header Block (Line by Line Exact Copy of Image 2) */}
+          <div className="border-b-2 border-slate-900 p-2.5 pb-2">
+
+            {/* Copy Checkboxes Header */}
+            <div className="flex flex-wrap justify-between items-center text-[10px] font-bold border-b border-slate-300 pb-1 mb-1">
+              <div className="flex space-x-4 uppercase">
+                <label className={`flex items-center gap-1 ${activeCopyType ? "cursor-default" : "cursor-pointer select-none"}`}>
+                  <input
+                    type="checkbox"
+                    checked={isConsignorChecked}
+                    onChange={activeCopyType ? undefined : () => toggleCopy("CONSIGNOR")}
+                    readOnly={Boolean(activeCopyType)}
+                    className={`w-3.5 h-3.5 accent-slate-900 ${activeCopyType ? "cursor-default" : "cursor-pointer"}`}
+                  /> CONSIGNOR COPY
+                </label>
+                <label className={`flex items-center gap-1 ${activeCopyType ? "cursor-default" : "cursor-pointer select-none"}`}>
+                  <input
+                    type="checkbox"
+                    checked={isConsigneeChecked}
+                    onChange={activeCopyType ? undefined : () => toggleCopy("CONSIGNEE")}
+                    readOnly={Boolean(activeCopyType)}
+                    className={`w-3.5 h-3.5 accent-slate-900 ${activeCopyType ? "cursor-default" : "cursor-pointer"}`}
+                  /> CONSIGNEE COPY
+                </label>
+                <label className={`flex items-center gap-1 ${activeCopyType ? "cursor-default" : "cursor-pointer select-none"}`}>
+                  <input
+                    type="checkbox"
+                    checked={isTruckChecked}
+                    onChange={activeCopyType ? undefined : () => toggleCopy("TRUCK")}
+                    readOnly={Boolean(activeCopyType)}
+                    className={`w-3.5 h-3.5 accent-slate-900 ${activeCopyType ? "cursor-default" : "cursor-pointer"}`}
+                  /> TRUCK COPY
+                </label>
+                <label className={`flex items-center gap-1 ${activeCopyType ? "cursor-default" : "cursor-pointer select-none"}`}>
+                  <input
+                    type="checkbox"
+                    checked={isOfficeChecked}
+                    onChange={activeCopyType ? undefined : () => toggleCopy("OFFICE")}
+                    readOnly={Boolean(activeCopyType)}
+                    className={`w-3.5 h-3.5 accent-slate-900 ${activeCopyType ? "cursor-default" : "cursor-pointer"}`}
+                  /> OFFICE COPY
+                </label>
+              </div>
+            </div>
+
+            {/* Company Banner & Logo */}
+            <div className="grid grid-cols-12 gap-1 items-center my-1">
+              {/* Left Logo Column */}
+              <div className="col-span-2 flex justify-center items-center">
+                <img src={logoImg} alt="Wolego Transport Logo" className="h-28 w-auto object-contain max-w-full" />
+              </div>
+
+              {/* Middle Column: Exact 8-Line Sequence Requested by User */}
+              <div className="col-span-7 text-center flex flex-col items-center justify-center space-y-1">
+
+                {/* Line 1: SUBJECT TO WANKANER JURISDICTION */}
+                <div className="text-[10px] font-black text-slate-950 uppercase underline tracking-wider whitespace-nowrap">
+                  SUBJECT TO WANKANER JURISDICTION
+                </div>
+
+                {/* Line 2: WOLEGO TRANSPORT (Single Unbroken Line - Exact Logo Green Color) */}
+                <h1 className="text-3xl font-black text-[#009a44] tracking-wider font-serif uppercase leading-none whitespace-nowrap">
+                  WOLEGO TRANSPORT
+                </h1>
+
+                {/* Line 3: EVERYTHING IS FAST (Single Unbroken Line) */}
+                <div className="text-sm font-black text-amber-900 italic font-serif whitespace-nowrap">
+                  EVERYTHING IS FAST
+                </div>
+
+                {/* Line 4: TRANSPORT CONTRACTOR AND COMMISSION AGENT (Single Unbroken Line) */}
+                <div className="whitespace-nowrap">
+                  <span className="text-xs font-black uppercase tracking-wider bg-blue-900 text-white px-3 py-0.5 inline-block">
+                    TRANSPORT CONTRACTOR AND COMMISSION AGENT
+                  </span>
+                </div>
+
+                {/* Line 5 & 6: Address (Line by Line) */}
+                <div className="text-[10.5px] text-red-900 font-black tracking-tight uppercase leading-tight space-y-0.5 whitespace-nowrap text-center">
+                  <div>SURVEY NUMBER NA 178P8, 27 NATIONAL HIGHWAY,</div>
+                  <div>CHANDRAPUR, WANKANER-363621 DISTRICT-MORBI ( GUJRAT )</div>
+                </div>
+
+              </div>
+
+              {/* Right Side Column: Mobile Numbers, PAN, GSTIN, Transport ID, Email */}
+              <div className="col-span-3 text-left text-[8.5px] sm:text-[9px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-2">
+                <div>MOBILE NO. +91 99 13 111 555</div>
+                <div>OFFICE NO. +91 97 12 111 555</div>
+                <div>PAN NO. : DLTPS8567M</div>
+                <div>GSTIN NO. : 24DLTPS8567M1ZT</div>
+                <div>TRANSPORT ID : TS000547462</div>
+                <div className="whitespace-nowrap text-[8px] sm:text-[8.5px] font-black tracking-tight">EMAIL : Wolegotransport13@gmail.com</div>
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Title Strip (Slightly Smaller Height) */}
+          <div className="bg-blue-900 text-white font-extrabold text-center py-0.5 tracking-wider uppercase flex flex-col items-center justify-center border-b-2 border-blue-900">
+            <div className="text-[11px] font-black tracking-widest text-white leading-tight">GOODS CONSIGNMENT NOTE</div>
+            <div className="text-[8.5px] font-bold tracking-wider text-amber-300 leading-tight">AT OWNER'S RISK</div>
+          </div>
+
+          {/* LR Header Grid (LR NO, DATE, FROM, TO) */}
+          <div className="grid grid-cols-12 border-b-2 border-slate-900 font-black text-[11px] divide-x-2 divide-slate-900 text-slate-950">
+            <div className="col-span-3 p-1.5 bg-slate-100 flex items-center justify-center gap-2">
+              <span>L.R. NO. :</span>
+              <span className="text-base font-black text-rose-700 font-mono">{lrData.lrNumber}</span>
+            </div>
+            <div className="col-span-3 p-1.5 flex items-center gap-2">
+              <span>DATE :</span>
+              <span className="font-black text-[11px]">{formatDateDisplay(lrData.dateTime)}</span>
+            </div>
+            <div className="col-span-3 p-1.5 flex items-center gap-2">
+              <span>FROM :</span>
+              <span className="uppercase font-black text-[11px] text-slate-950">{lrData.fromPlace || ""}</span>
+            </div>
+            <div className="col-span-3 p-1.5 flex items-center gap-2">
+              <span>TO :</span>
+              <span className="uppercase font-black text-[11px] text-slate-950">{lrData.toPlace || ""}</span>
+            </div>
+          </div>
+
+          {/* Truck No & Delivery At */}
+          <div className="grid grid-cols-12 border-b-2 border-slate-900 font-black text-[11px] divide-x-2 divide-slate-900 text-slate-950">
+            <div className="col-span-6 p-1.5 flex items-center gap-2">
+              <span>DELIVERY AT :</span>
+              <span className="font-black text-[11px] uppercase text-slate-950">
+                {lrData.deliveryAt || ""}
+              </span>
+            </div>
+            <div className="col-span-6 p-1.5 flex items-center gap-2">
+              <span>TRUCK NO. :</span>
+              <span className="font-sans text-[11px] font-black uppercase text-slate-950">
+                {lrData.truckNo}
+              </span>
+            </div>
+          </div>
+
+          {/* Consignor & Consignee Box */}
+          <div className="grid grid-cols-2 border-b-2 border-slate-900 divide-x-2 divide-slate-900 min-h-[95px]">
+
+            {/* Consignor Column */}
+            <div className="p-2 flex flex-col justify-between">
+              <div className="space-y-0.5">
+                <div className="font-black text-[11px] underline uppercase text-slate-950">
+                  CONSIGNOR'S NAME & ADDRESS
+                </div>
+                <div className="font-black text-[11px] text-slate-950 uppercase whitespace-pre-line leading-tight">{lrData.consignorName}</div>
+                <div className="text-[11px] font-black text-slate-950 leading-tight uppercase whitespace-pre-line">
+                  {lrData.consignorAddress}
+                </div>
+              </div>
+              <div className="font-sans font-black text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
+                CONSIGNOR GSTIN NO. : <span className="font-black text-[11px] text-slate-950">
+                  {(lrData.consignorName && (lrData.consignorName.includes("(1)") || lrData.consignorName.includes("\n")))
+                    ? "AS PER BILL"
+                    : (lrData.consignorGst || "")}
+                </span>
+              </div>
+            </div>
+
+            {/* Consignee Column */}
+            <div className="p-2 flex flex-col justify-between">
+              <div className="space-y-0.5">
+                <div className="font-black text-[11px] underline uppercase text-slate-950">
+                  CONSIGNEE'S NAME & ADDRESS
+                </div>
+                <div className="font-black text-[11px] text-slate-950 uppercase">{lrData.consigneeName}</div>
+                <div className="text-[11px] font-black text-slate-950 leading-tight uppercase whitespace-pre-line">
+                  {lrData.consigneeAddress}
+                </div>
+              </div>
+              <div className="font-sans font-black text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
+                CONSIGNEE GSTIN NO. : <span className="font-black text-[11px] text-slate-950">{lrData.consigneeGst || ""}</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Goods Table */}
+          <div className="border-b-2 border-slate-900 min-h-[110px]">
+            <table className="w-full text-left border-collapse text-[11px]">
+              <thead>
+                <tr className="bg-slate-200 border-b-2 border-slate-900 font-black uppercase text-center divide-x-2 divide-slate-900 text-slate-950">
+                  <th className="p-1.5 w-24">NO. OF ARTICLE</th>
+                  <th className="p-1.5">DESCRIPTION OF GOODS</th>
+                  <th className="p-1.5 w-32">WEIGHT</th>
+                  <th className="p-1.5 w-28">RATE</th>
+                  <th className="p-1.5 w-36">FREIGHT ({lrData.toPayOrPaid || "TBB"})</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y border-b-2 border-slate-900 font-black text-slate-950">
+                <tr className="divide-x-2 divide-slate-900 text-center min-h-[80px]">
+                  <td className="p-2 font-black align-top text-slate-950">
+                    <div className="min-h-[34px] flex flex-col justify-start">
+                      <div className="font-black text-[11px]">{lrData.noOfArticles}</div>
+                      <span className="text-[11px] font-black text-slate-950 uppercase">{lrData.bundles || ""}</span>
+                    </div>
+                    {lrData.noOfArticles2 && (
+                      <div className="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
+                        <div className="font-black text-[11px]">{lrData.noOfArticles2}</div>
+                        <span className="text-[11px] font-black text-slate-950 uppercase">{lrData.bundles2 || "BUNDLE"}</span>
+                      </div>
+                    )}
+                  </td>
+                  <td className="p-2 align-top text-center">
+                    <div className="min-h-[34px] flex flex-col justify-start">
+                      <div className="font-black uppercase text-[11px] text-slate-950">{lrData.descriptionOfGoods}</div>
+                    </div>
+                    {lrData.noOfArticles2 && (
+                      <div className="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
+                        <div className="font-black uppercase text-[11px] text-slate-950">{lrData.descriptionOfGoods2 || "SANITARYWARE"}</div>
+                      </div>
+                    )}
+                  </td>
+                  <td className="p-2 font-sans font-black align-top text-[11px] text-slate-950">
+                    {lrData.weightKgs ? `${lrData.weightKgs} K.G.` : ""}
+                  </td>
+                  <td className="p-2 font-sans font-black align-top text-[11px] text-slate-950">
+                    {lrData.ratePerTon ? `${lrData.ratePerTon} ${lrData.rateType || ""}` : ""}
+                  </td>
+                  <td className="p-2 font-sans font-black text-center align-top text-[11px] text-slate-950">
+                    {lrData.freightAmount || ""}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Bottom Grid: Charges, GST, Invoice, Insurance, Bank details - Stretched to bottom border */}
+          <div className="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[400px]">
+
+            {/* Left Column (7 cols): Full-width rows stretching edge-to-edge to main grid lines */}
+            <div className="col-span-7 text-[11px] flex flex-col justify-between h-full text-slate-950 font-black">
+              {/* 1. GST Payable By */}
+              <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1 flex items-center gap-2">
+                <span>GST PAYABLE BY :</span>
+                <span className="font-black uppercase text-slate-950">{lrData.gstPayableBy || "CONSIGNEE"}</span>
+              </div>
+
+              {/* 2. Invoice No */}
+              <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+                INVOICE NO. : <span className="font-black text-[11px] text-slate-950">{lrData.billNumbers || ""}</span>
+              </div>
+
+              {/* 3. Value Rs */}
+              <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+                VALUE RS. : <span className="font-black text-[11px] text-slate-950">{lrData.invoiceValue || ""}</span>
+              </div>
+
+              {/* 4. Consignor E-Way Bill */}
+              <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+                CONSIGNOR E-WAY BILL : <span className="font-black text-[11px] text-slate-950">{lrData.consignorEwayBill || ""}</span>
+              </div>
+
+              {/* 5. Consignee E-Way Bill */}
+              <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+                CONSIGNEE E-WAY BILL : <span className="font-black text-[11px] text-slate-950">{lrData.consigneeEwayBill || ""}</span>
+              </div>
+
+              {/* 6. Driver Mobile No */}
+              <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
+                DRIVER NO. : <span className="font-black text-[11px] text-slate-950">{lrData.driverMobile || ""}</span>
+              </div>
+
+              {/* 6. Remarks / Disclaimer */}
+              <div className="px-2 py-1 space-y-1">
+                <div className="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[11px]">
+                  WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE.
+                </div>
+                <div className="font-black uppercase text-slate-950 bg-slate-200 p-1 border-2 border-slate-900 text-[11px]">
+                  FULL TRUCK LOAD ACCEPTED ALL OVER INDIA.
+                </div>
+                {lrData.remarks &&
+                  lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE." &&
+                  lrData.remarks !== "FULL TRUCK LOAD ACCEPTED ALL OVER INDIA." &&
+                  lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA." && (
+                    <div className="font-black text-slate-950 text-[11px] uppercase p-1 border border-slate-900 bg-slate-100">
+                      REMARKS: <span className="font-black">{lrData.remarks}</span>
+                    </div>
+                  )}
+              </div>
+
+              {/* 7. Insurance Declaration Box */}
+              <div className="px-2 py-1">
+                <div className="border-2 border-slate-900 p-1.5 rounded text-[11px] bg-transparent space-y-0.5 text-slate-950 font-black">
+                  <div className="font-black uppercase underline text-slate-950">INSURANCE :</div>
+                  <div className="font-black text-slate-950">THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
+                  <div className="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-sans font-black text-slate-950">
+                    <span>COMPANY: ________</span>
+                    <span>POLICY: ________</span>
+                    <span>RISK: ________</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 8. ICICI Bank Payment Details */}
+              <div className="p-2">
+                <div className="border-2 border-blue-900 p-1.5 rounded bg-transparent text-[11px] text-slate-950">
+                  <div className="font-black text-blue-950 uppercase border-b border-blue-300 pb-0.5 mb-0.5">
+                    ICICI BANK LTD (RTGS / NEFT PAYMENT)
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 font-black text-slate-950">
+                    <div>NAME : <span className="font-black text-slate-950">WOLEGO TRANSPORT</span></div>
+                    <div>ACCOUNT NO. : <span className="font-sans font-black text-slate-950">118405500444</span></div>
+                    <div>IFSC CODE : <span className="font-sans font-black text-slate-950">ICIC0001184</span></div>
+                    <div>BRANCH : <span className="font-black text-slate-950">WANKANER</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column (5 cols): Freight Breakdown, Net Total & Signatory */}
+            <div className="col-span-5 bg-transparent flex flex-col justify-between font-sans text-[11px] font-black h-full text-slate-950">
+              <div>
+                <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-[11px] bg-slate-200 text-slate-950">
+                  <span>FREIGHT</span>
+                  <span>{lrData.freightAmount || 0}</span>
+                </div>
+
+                <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
+                  <span>Add : S-G.S.T. @ 2.5%</span>
+                  <span className="font-black text-slate-950">{lrData.sgstAmount || "0.00"}</span>
+                </div>
+
+                <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
+                  <span>Add : C-G.S.T. @ 2.5%</span>
+                  <span className="font-black text-slate-950">{lrData.cgstAmount || "0.00"}</span>
+                </div>
+
+                <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b-2 border-slate-900">
+                  <span>Add : I-G.S.T. @ 5%</span>
+                  <span className="font-black text-slate-950">{lrData.igstAmount || "0.00"}</span>
+                </div>
+
+                <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-[11px] bg-slate-200 text-slate-950">
+                  <span>TOTAL WITH GST</span>
+                  <span>{lrData.totalWithGst || lrData.freightAmount}</span>
+                </div>
+
+                <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
+                  <span>Other Charges</span>
+                  <span className="font-black text-slate-950">{lrData.otherCharges || "0.00"}</span>
+                </div>
+
+                <div className="flex justify-between font-black text-slate-950 border-b-2 border-slate-900 px-2.5 py-2">
+                  <span>Less : Advance Paid</span>
+                  <span className="font-black text-slate-950">{lrData.lessAdvancePaid || "0.00"}</span>
+                </div>
+
+                <div className="flex justify-between font-black text-[11px] border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-slate-200">
+                  <span>NET TOTAL:</span>
+                  <span>₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
+                </div>
+              </div>
+
+              {/* Logo Centered Between NET TOTAL and Signatory Block (Bottom tagline clipped out) */}
+              <div className="my-auto pt-1 pb-0.5 flex items-center justify-center flex-1 w-full px-2 overflow-hidden">
+                <img
+                  src={logoImg}
+                  alt="Wolego Transport Logo"
+                  className="w-full max-w-[240px] h-auto max-h-[180px] object-contain mix-blend-multiply opacity-95"
+                  style={{ clipPath: "inset(0 0 18% 0)", transform: "scale(1.05)" }}
+                />
+              </div>
+
+              {/* Signatory Block Inside Grid */}
+              <div className="text-center font-sans px-2 py-1 mt-auto flex flex-col items-center justify-end min-h-[55px]">
+                <div className="font-black uppercase text-[10.5px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
+                <AdobeDigitalSignature />
+                <div className="text-[9px] text-slate-950 uppercase tracking-wider font-extrabold pb-0.5">(AUTHORISED SIGNATORY)</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <>
       {/* 1-Click Share Prompt Overlay (Guarantees Native Share Sheet popup on direct click for Backend PDF) */}
@@ -303,7 +722,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         </div>
       )}
 
-      <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "fixed inset-0 z-[9999] overflow-y-auto bg-slate-900 py-4 px-2 sm:px-4 text-slate-900 print:p-0 print:m-0 print:bg-white print:static print:overflow-visible"}>
+      <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static print:p-0 print:m-0 print:overflow-visible opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "fixed inset-0 z-[9999] overflow-y-auto bg-slate-900 py-4 px-2 sm:px-4 text-slate-900 print:p-0 print:m-0 print:bg-white print:static print:overflow-visible"}>
 
         {/* Top Action Toolbar (Hidden during Print) */}
         <div className="max-w-4xl mx-auto mb-4 bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 flex flex-wrap justify-between items-center gap-2 print:hidden sticky top-0 z-20">
@@ -367,398 +786,22 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
           </div>
         </div>
 
-        {/* Standard Printable Full A4 Page Document with Equal 3.5mm Margins */}
-        <div className="w-full max-w-[210mm] mx-auto bg-white p-[3.5mm] shadow-2xl rounded-sm print-container print:p-0 print:m-0 print:w-[203mm] print:h-[290mm] print:max-w-none print:shadow-none font-sans text-xs box-border">
+        {/* Standard Preview A4 Page Document (Shown on screen, Hidden during paper print) */}
+        <div className="w-full max-w-[210mm] mx-auto bg-white p-[3.5mm] shadow-2xl rounded-sm print-container print:hidden font-sans text-xs box-border">
           <div ref={printRef} className="border-2 border-slate-900 bg-white text-slate-900 h-[290mm] min-h-[290mm] w-full flex flex-col justify-between print-document relative overflow-hidden box-border">
-
-            {/* Background Watermark Logo (Shown during both PDF Export & LR Print) */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
-              <img
-                src={logoImg}
-                alt="Watermark Logo"
-                className="w-[620px] max-w-[88%] max-h-[85%] opacity-[0.08] object-contain mix-blend-multiply"
-              />
-            </div>
-
-            <div className="relative z-10 flex-1 flex flex-col justify-between">
-              {/* Header Bar */}
-              {/* Company Header Block (Line by Line Exact Copy of Image 2) */}
-              <div className="border-b-2 border-slate-900 p-2.5 pb-2">
-
-                {/* Copy Checkboxes Header */}
-                <div className="flex flex-wrap justify-between items-center text-[10px] font-bold border-b border-slate-300 pb-1 mb-1">
-                  <div className="flex space-x-4 uppercase">
-                    <label className="flex items-center gap-1 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={selectedCopies.includes("CONSIGNOR")}
-                        onChange={() => toggleCopy("CONSIGNOR")}
-                        className="w-3.5 h-3.5 accent-slate-900 cursor-pointer"
-                      /> CONSIGNOR COPY
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={selectedCopies.includes("CONSIGNEE")}
-                        onChange={() => toggleCopy("CONSIGNEE")}
-                        className="w-3.5 h-3.5 accent-slate-900 cursor-pointer"
-                      /> CONSIGNEE COPY
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={selectedCopies.includes("TRUCK")}
-                        onChange={() => toggleCopy("TRUCK")}
-                        className="w-3.5 h-3.5 accent-slate-900 cursor-pointer"
-                      /> TRUCK COPY
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={selectedCopies.includes("OFFICE")}
-                        onChange={() => toggleCopy("OFFICE")}
-                        className="w-3.5 h-3.5 accent-slate-900 cursor-pointer"
-                      /> OFFICE COPY
-                    </label>
-                  </div>
-                </div>
-
-                {/* Company Banner & Logo */}
-                <div className="grid grid-cols-12 gap-1 items-center my-1">
-                  {/* Left Logo Column */}
-                  <div className="col-span-2 flex justify-center items-center">
-                    <img src={logoImg} alt="Wolego Transport Logo" className="h-28 w-auto object-contain max-w-full" />
-                  </div>
-
-                  {/* Middle Column: Exact 8-Line Sequence Requested by User */}
-                  <div className="col-span-7 text-center flex flex-col items-center justify-center space-y-1">
-
-                    {/* Line 1: SUBJECT TO WANKANER JURISDICTION */}
-                    <div className="text-[10px] font-black text-slate-950 uppercase underline tracking-wider whitespace-nowrap">
-                      SUBJECT TO WANKANER JURISDICTION
-                    </div>
-
-                    {/* Line 2: WOLEGO TRANSPORT (Single Unbroken Line - Exact Logo Green Color) */}
-                    <h1 className="text-3xl font-black text-[#009a44] tracking-wider font-serif uppercase leading-none whitespace-nowrap">
-                      WOLEGO TRANSPORT
-                    </h1>
-
-                    {/* Line 3: EVERYTHING IS FAST (Single Unbroken Line) */}
-                    <div className="text-sm font-black text-amber-900 italic font-serif whitespace-nowrap">
-                      EVERYTHING IS FAST
-                    </div>
-
-                    {/* Line 4: TRANSPORT CONTRACTOR AND COMMISSION AGENT (Single Unbroken Line) */}
-                    <div className="whitespace-nowrap">
-                      <span className="text-xs font-black uppercase tracking-wider bg-blue-900 text-white px-3 py-0.5 inline-block">
-                        TRANSPORT CONTRACTOR AND COMMISSION AGENT
-                      </span>
-                    </div>
-
-                    {/* Line 5 & 6: Address (Line by Line) */}
-                    <div className="text-[10.5px] text-red-900 font-black tracking-tight uppercase leading-tight space-y-0.5 whitespace-nowrap text-center">
-                      <div>SURVEY NUMBER NA 178P8, 27 NATIONAL HIGHWAY,</div>
-                      <div>CHANDRAPUR, WANKANER-363621 DISTRICT-MORBI ( GUJRAT )</div>
-                    </div>
-
-                  </div>
-
-                  {/* Right Side Column: Mobile Numbers, PAN, GSTIN, Transport ID, Email */}
-                  <div className="col-span-3 text-left text-[8.5px] sm:text-[9px] font-black text-slate-950 space-y-0.5 border-l border-slate-300 pl-2">
-                    <div>MOBILE NO. +91 99 13 111 555</div>
-                    <div>OFFICE NO. +91 97 12 111 555</div>
-                    <div>PAN NO. : DLTPS8567M</div>
-                    <div>GSTIN NO. : 24DLTPS8567M1ZT</div>
-                    <div>TRANSPORT ID : TS000547462</div>
-                    <div className="whitespace-nowrap text-[8px] sm:text-[8.5px] font-black tracking-tight">EMAIL : Wolegotransport13@gmail.com</div>
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* Title Strip (Slightly Smaller Height) */}
-              <div className="bg-blue-900 text-white font-extrabold text-center py-0.5 tracking-wider uppercase flex flex-col items-center justify-center border-b-2 border-blue-900">
-                <div className="text-[11px] font-black tracking-widest text-white leading-tight">GOODS CONSIGNMENT NOTE</div>
-                <div className="text-[8.5px] font-bold tracking-wider text-amber-300 leading-tight">AT OWNER'S RISK</div>
-              </div>
-
-              {/* LR Header Grid (LR NO, DATE, FROM, TO) */}
-              <div className="grid grid-cols-12 border-b-2 border-slate-900 font-black text-[11px] divide-x-2 divide-slate-900 text-slate-950">
-                <div className="col-span-3 p-1.5 bg-slate-100 flex items-center justify-center gap-2">
-                  <span>L.R. NO. :</span>
-                  <span className="text-base font-black text-rose-700 font-mono">{lrData.lrNumber}</span>
-                </div>
-                <div className="col-span-3 p-1.5 flex items-center gap-2">
-                  <span>DATE :</span>
-                  <span className="font-black text-[11px]">{formatDateDisplay(lrData.dateTime)}</span>
-                </div>
-                <div className="col-span-3 p-1.5 flex items-center gap-2">
-                  <span>FROM :</span>
-                  <span className="uppercase font-black text-[11px] text-slate-950">{lrData.fromPlace || ""}</span>
-                </div>
-                <div className="col-span-3 p-1.5 flex items-center gap-2">
-                  <span>TO :</span>
-                  <span className="uppercase font-black text-[11px] text-slate-950">{lrData.toPlace || ""}</span>
-                </div>
-              </div>
-
-              {/* Truck No & Delivery At */}
-              <div className="grid grid-cols-12 border-b-2 border-slate-900 font-black text-[11px] divide-x-2 divide-slate-900 text-slate-950">
-                <div className="col-span-6 p-1.5 flex items-center gap-2">
-                  <span>DELIVERY AT :</span>
-                  <span className="font-black text-[11px] uppercase text-slate-950">
-                    {lrData.deliveryAt || ""}
-                  </span>
-                </div>
-                <div className="col-span-6 p-1.5 flex items-center gap-2">
-                  <span>TRUCK NO. :</span>
-                  <span className="font-sans text-[11px] font-black uppercase text-slate-950">
-                    {lrData.truckNo}
-                  </span>
-                </div>
-              </div>
-
-              {/* Consignor & Consignee Box */}
-              <div className="grid grid-cols-2 border-b-2 border-slate-900 divide-x-2 divide-slate-900 min-h-[95px]">
-
-                {/* Consignor Column */}
-                <div className="p-2 flex flex-col justify-between">
-                  <div className="space-y-0.5">
-                    <div className="font-black text-[11px] underline uppercase text-slate-950">
-                      CONSIGNOR'S NAME & ADDRESS
-                    </div>
-                    <div className="font-black text-[11px] text-slate-950 uppercase whitespace-pre-line leading-tight">{lrData.consignorName}</div>
-                    <div className="text-[11px] font-black text-slate-950 leading-tight uppercase whitespace-pre-line">
-                      {lrData.consignorAddress}
-                    </div>
-                  </div>
-                  <div className="font-sans font-black text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
-                    CONSIGNOR GSTIN NO. : <span className="font-black text-[11px] text-slate-950">
-                      {(lrData.consignorName && (lrData.consignorName.includes("(1)") || lrData.consignorName.includes("\n")))
-                        ? "AS PER BILL"
-                        : (lrData.consignorGst || "")}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Consignee Column */}
-                <div className="p-2 flex flex-col justify-between">
-                  <div className="space-y-0.5">
-                    <div className="font-black text-[11px] underline uppercase text-slate-950">
-                      CONSIGNEE'S NAME & ADDRESS
-                    </div>
-                    <div className="font-black text-[11px] text-slate-950 uppercase">{lrData.consigneeName}</div>
-                    <div className="text-[11px] font-black text-slate-950 leading-tight uppercase whitespace-pre-line">
-                      {lrData.consigneeAddress}
-                    </div>
-                  </div>
-                  <div className="font-sans font-black text-[11px] pt-1 border-t border-slate-400 mt-1 text-slate-950">
-                    CONSIGNEE GSTIN NO. : <span className="font-black text-[11px] text-slate-950">{lrData.consigneeGst || ""}</span>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Goods Table */}
-              <div className="border-b-2 border-slate-900 min-h-[110px]">
-                <table className="w-full text-left border-collapse text-[11px]">
-                  <thead>
-                    <tr className="bg-slate-200 border-b-2 border-slate-900 font-black uppercase text-center divide-x-2 divide-slate-900 text-slate-950">
-                      <th className="p-1.5 w-24">NO. OF ARTICLE</th>
-                      <th className="p-1.5">DESCRIPTION OF GOODS</th>
-                      <th className="p-1.5 w-32">WEIGHT</th>
-                      <th className="p-1.5 w-28">RATE</th>
-                      <th className="p-1.5 w-36">FREIGHT ({lrData.toPayOrPaid || "TBB"})</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y border-b-2 border-slate-900 font-black text-slate-950">
-                    <tr className="divide-x-2 divide-slate-900 text-center min-h-[80px]">
-                      <td className="p-2 font-black align-top text-slate-950">
-                        <div className="min-h-[34px] flex flex-col justify-start">
-                          <div className="font-black text-[11px]">{lrData.noOfArticles}</div>
-                          <span className="text-[11px] font-black text-slate-950 uppercase">{lrData.bundles || ""}</span>
-                        </div>
-                        {lrData.noOfArticles2 && (
-                          <div className="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
-                            <div className="font-black text-[11px]">{lrData.noOfArticles2}</div>
-                            <span className="text-[11px] font-black text-slate-950 uppercase">{lrData.bundles2 || "BUNDLE"}</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="p-2 align-top text-center">
-                        <div className="min-h-[34px] flex flex-col justify-start">
-                          <div className="font-black uppercase text-[11px] text-slate-950">{lrData.descriptionOfGoods}</div>
-                        </div>
-                        {lrData.noOfArticles2 && (
-                          <div className="mt-1 pt-1 border-t border-slate-900 min-h-[34px] flex flex-col justify-start">
-                            <div className="font-black uppercase text-[11px] text-slate-950">{lrData.descriptionOfGoods2 || "SANITARYWARE"}</div>
-                          </div>
-                        )}
-                      </td>
-                      <td className="p-2 font-sans font-black align-top text-[11px] text-slate-950">
-                        {lrData.weightKgs ? `${lrData.weightKgs} K.G.` : ""}
-                      </td>
-                      <td className="p-2 font-sans font-black align-top text-[11px] text-slate-950">
-                        {lrData.ratePerTon ? `${lrData.ratePerTon} ${lrData.rateType || ""}` : ""}
-                      </td>
-                      <td className="p-2 font-sans font-black text-center align-top text-[11px] text-slate-950">
-                        {lrData.freightAmount || ""}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Bottom Grid: Charges, GST, Invoice, Insurance, Bank details - Stretched to bottom border */}
-              <div className="grid grid-cols-12 divide-x-2 divide-slate-900 flex-1 min-h-[400px]">
-
-                {/* Left Column (7 cols): Full-width rows stretching edge-to-edge to main grid lines */}
-                <div className="col-span-7 text-[11px] flex flex-col justify-between h-full text-slate-950 font-black">
-                  {/* 1. GST Payable By */}
-                  <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1 flex items-center gap-2">
-                    <span>GST PAYABLE BY :</span>
-                    <span className="font-black uppercase text-slate-950">{lrData.gstPayableBy || "CONSIGNEE"}</span>
-                  </div>
-
-                  {/* 2. Invoice No */}
-                  <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-                    INVOICE NO. : <span className="font-black text-[11px] text-slate-950">{lrData.billNumbers || ""}</span>
-                  </div>
-
-                  {/* 3. Value Rs */}
-                  <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-                    VALUE RS. : <span className="font-black text-[11px] text-slate-950">{lrData.invoiceValue || ""}</span>
-                  </div>
-
-                  {/* 4. Consignor E-Way Bill */}
-                  <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-                    CONSIGNOR E-WAY BILL : <span className="font-black text-[11px] text-slate-950">{lrData.consignorEwayBill || ""}</span>
-                  </div>
-
-                  {/* 5. Consignee E-Way Bill */}
-                  <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-                    CONSIGNEE E-WAY BILL : <span className="font-black text-[11px] text-slate-950">{lrData.consigneeEwayBill || ""}</span>
-                  </div>
-
-                  {/* 6. Driver Mobile No */}
-                  <div className="font-black text-[11px] text-slate-950 border-b-2 border-slate-900 px-2 py-1">
-                    DRIVER NO. : <span className="font-black text-[11px] text-slate-950">{lrData.driverMobile || ""}</span>
-                  </div>
-
-                  {/* 6. Remarks / Disclaimer */}
-                  <div className="px-2 py-1 space-y-1">
-                    <div className="font-black uppercase text-red-700 bg-red-50 p-1 border-2 border-slate-900 text-[11px]">
-                      WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE.
-                    </div>
-                    <div className="font-black uppercase text-slate-950 bg-slate-200 p-1 border-2 border-slate-900 text-[11px]">
-                      FULL TRUCK LOAD ACCEPTED ALL OVER INDIA.
-                    </div>
-                    {lrData.remarks &&
-                      lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE." &&
-                      lrData.remarks !== "FULL TRUCK LOAD ACCEPTED ALL OVER INDIA." &&
-                      lrData.remarks !== "WE ARE NOT RESPONSIBLE FOR LEAKAGE & BREAKAGE. FULL TRUCK LOAD ACCEPTED ALL OVER INDIA." && (
-                        <div className="font-black text-slate-950 text-[11px] uppercase p-1 border border-slate-900 bg-slate-100">
-                          REMARKS: <span className="font-black">{lrData.remarks}</span>
-                        </div>
-                      )}
-                  </div>
-
-                  {/* 7. Insurance Declaration Box */}
-                  <div className="px-2 py-1">
-                    <div className="border-2 border-slate-900 p-1.5 rounded text-[11px] bg-transparent space-y-0.5 text-slate-950 font-black">
-                      <div className="font-black uppercase underline text-slate-950">INSURANCE :</div>
-                      <div className="font-black text-slate-950">THE CUSTOMER HAS STATED THAT HE HAS NOT INSURED THE CONSIGNMENT OR HAS INSURED CONSIGNMENT.</div>
-                      <div className="grid grid-cols-3 gap-1 pt-0.5 border-t-2 border-slate-900 font-sans font-black text-slate-950">
-                        <span>COMPANY: ________</span>
-                        <span>POLICY: ________</span>
-                        <span>RISK: ________</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 8. ICICI Bank Payment Details */}
-                  <div className="p-2">
-                    <div className="border-2 border-blue-900 p-1.5 rounded bg-transparent text-[11px] text-slate-950">
-                      <div className="font-black text-blue-950 uppercase border-b border-blue-300 pb-0.5 mb-0.5">
-                        ICICI BANK LTD (RTGS / NEFT PAYMENT)
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 font-black text-slate-950">
-                        <div>NAME : <span className="font-black text-slate-950">WOLEGO TRANSPORT</span></div>
-                        <div>ACCOUNT NO. : <span className="font-sans font-black text-slate-950">118405500444</span></div>
-                        <div>IFSC CODE : <span className="font-sans font-black text-slate-950">ICIC0001184</span></div>
-                        <div>BRANCH : <span className="font-black text-slate-950">WANKANER</span></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column (5 cols): Freight Breakdown, Net Total & Signatory */}
-                <div className="col-span-5 bg-transparent flex flex-col justify-between font-sans text-[11px] font-black h-full text-slate-950">
-                  <div>
-                    <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-[11px] bg-slate-200 text-slate-950">
-                      <span>FREIGHT</span>
-                      <span>{lrData.freightAmount || 0}</span>
-                    </div>
-
-                    <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
-                      <span>Add : S-G.S.T. @ 2.5%</span>
-                      <span className="font-black text-slate-950">{lrData.sgstAmount || "0.00"}</span>
-                    </div>
-
-                    <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
-                      <span>Add : C-G.S.T. @ 2.5%</span>
-                      <span className="font-black text-slate-950">{lrData.cgstAmount || "0.00"}</span>
-                    </div>
-
-                    <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b-2 border-slate-900">
-                      <span>Add : I-G.S.T. @ 5%</span>
-                      <span className="font-black text-slate-950">{lrData.igstAmount || "0.00"}</span>
-                    </div>
-
-                    <div className="flex justify-between font-black border-b-2 border-slate-900 px-2.5 py-2 text-[11px] bg-slate-200 text-slate-950">
-                      <span>TOTAL WITH GST</span>
-                      <span>{lrData.totalWithGst || lrData.freightAmount}</span>
-                    </div>
-
-                    <div className="flex justify-between font-black text-slate-950 px-2.5 py-2 border-b border-slate-300">
-                      <span>Other Charges</span>
-                      <span className="font-black text-slate-950">{lrData.otherCharges || "0.00"}</span>
-                    </div>
-
-                    <div className="flex justify-between font-black text-slate-950 border-b-2 border-slate-900 px-2.5 py-2">
-                      <span>Less : Advance Paid</span>
-                      <span className="font-black text-slate-950">{lrData.lessAdvancePaid || "0.00"}</span>
-                    </div>
-
-                    <div className="flex justify-between font-black text-[11px] border-b-2 border-slate-900 px-2.5 py-2.5 text-slate-950 bg-slate-200">
-                      <span>NET TOTAL:</span>
-                      <span>₹ {lrData.netTotalAmount || lrData.freightAmount}</span>
-                    </div>
-                  </div>
-
-                  {/* Logo Centered Between NET TOTAL and Signatory Block (Bottom tagline clipped out) */}
-                  <div className="my-auto pt-1 pb-0.5 flex items-center justify-center flex-1 w-full px-2 overflow-hidden">
-                    <img
-                      src={logoImg}
-                      alt="Wolego Transport Logo"
-                      className="w-full max-w-[240px] h-auto max-h-[180px] object-contain mix-blend-multiply opacity-95"
-                      style={{ clipPath: "inset(0 0 18% 0)", transform: "scale(1.05)" }}
-                    />
-                  </div>
-
-                  {/* Signatory Block Inside Grid */}
-                  <div className="text-center font-sans px-2 py-1 mt-auto flex flex-col items-center justify-end min-h-[55px]">
-                    <div className="font-black uppercase text-[10.5px] text-slate-950">FOR, WOLEGO TRANSPORT</div>
-                    <AdobeDigitalSignature />
-                    <div className="text-[9px] text-slate-950 uppercase tracking-wider font-extrabold pb-0.5">(AUTHORISED SIGNATORY)</div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
+            {renderLRDocumentContent(null)}
           </div>
+        </div>
+
+        {/* Paper Print Container: Separate A4 Print Sheets for Each Selected Copy (Only rendered during paper print) */}
+        <div className="print-document print-container hidden print:block bg-white text-black font-sans m-0 p-0 w-full h-auto max-h-none overflow-visible">
+          {finalPrintCopies.map((copyType) => (
+            <div key={copyType} className="range-print-sheet">
+              <div className="border-2 border-slate-900 bg-white text-slate-900 h-[290mm] min-h-[290mm] w-full flex flex-col justify-between print-document relative overflow-hidden box-border">
+                {renderLRDocumentContent(copyType)}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Page 2: Terms and Conditions Document (Included in PDF Export & WhatsApp Share, Hidden during paper print) */}

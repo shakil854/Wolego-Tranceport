@@ -10,7 +10,8 @@ export default function DailyReport() {
 
   // Filters
   const [selectedFY, setSelectedFY] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -47,11 +48,14 @@ export default function DailyReport() {
     if (fylrs.length > 0) {
       // Find latest date in FY
       const sorted = [...fylrs].sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-      setSelectedDate(sorted[0].dateTime ? sorted[0].dateTime.split("T")[0] : "");
+      const latestDate = sorted[0].dateTime ? sorted[0].dateTime.split("T")[0] : "";
+      setFromDate(latestDate);
+      setToDate(latestDate);
     } else {
       // Fallback to today's date in YYYY-MM-DD format
       const todayStr = new Date().toISOString().split("T")[0];
-      setSelectedDate(todayStr);
+      setFromDate(todayStr);
+      setToDate(todayStr);
     }
     setLoading(false);
   };
@@ -89,15 +93,19 @@ export default function DailyReport() {
   const handleFYChange = (fy) => {
     setSelectedFY(fy);
     if (fy === "ALL") {
-      setSelectedDate("");
+      setFromDate("");
+      setToDate("");
       return;
     }
     const fylrs = lrEntries.filter((lr) => lr.dateTime && getFinancialYear(lr.dateTime).label === fy);
     if (fylrs.length > 0) {
       const sorted = [...fylrs].sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-      setSelectedDate(sorted[0].dateTime ? sorted[0].dateTime.split("T")[0] : "");
+      const latestDate = sorted[0].dateTime ? sorted[0].dateTime.split("T")[0] : "";
+      setFromDate(latestDate);
+      setToDate(latestDate);
     } else {
-      setSelectedDate("");
+      setFromDate("");
+      setToDate("");
     }
   };
 
@@ -288,10 +296,20 @@ export default function DailyReport() {
       }
     }
 
-    // Date Filter
-    if (selectedDate) {
-      if (!lr.dateTime || !lr.dateTime.startsWith(selectedDate)) {
-        return false;
+    // Date Range Filter (From Date to To Date)
+    if (fromDate || toDate) {
+      const lrDate = lr.dateTime ? lr.dateTime.split("T")[0] : "";
+      if (!lrDate) return false;
+      if (fromDate && toDate) {
+        const start = fromDate <= toDate ? fromDate : toDate;
+        const end = fromDate <= toDate ? toDate : fromDate;
+        if (lrDate < start || lrDate > end) {
+          return false;
+        }
+      } else if (fromDate) {
+        if (lrDate < fromDate) return false;
+      } else if (toDate) {
+        if (lrDate > toDate) return false;
       }
     }
 
@@ -312,12 +330,45 @@ export default function DailyReport() {
     return true;
   });
 
-  // Sort LRs by LR Number numerically
+  // Sort LRs by Date (ascending) and then by LR Number numerically
   const sortedFilteredLRs = [...filteredLRs].sort((a, b) => {
+    const dateA = a.dateTime ? a.dateTime.split("T")[0] : "";
+    const dateB = b.dateTime ? b.dateTime.split("T")[0] : "";
+    if (dateA !== dateB) {
+      return dateA.localeCompare(dateB);
+    }
     const numA = parseInt(a.lrNumber, 10) || 0;
     const numB = parseInt(b.lrNumber, 10) || 0;
     return numA - numB;
   });
+
+  const getDateRangeSummaryLabel = () => {
+    if (fromDate && toDate) {
+      if (fromDate === toDate) {
+        return `for date ${formatDateDisplay(fromDate)}`;
+      }
+      const start = fromDate <= toDate ? fromDate : toDate;
+      const end = fromDate <= toDate ? toDate : fromDate;
+      return `for period ${formatDateDisplay(start)} to ${formatDateDisplay(end)}`;
+    }
+    if (fromDate) return `from ${formatDateDisplay(fromDate)}`;
+    if (toDate) return `up to ${formatDateDisplay(toDate)}`;
+    return "for all dates";
+  };
+
+  const getPrintDateHeader = () => {
+    if (fromDate && toDate) {
+      if (fromDate === toDate) {
+        return formatDateDisplay(fromDate);
+      }
+      const start = fromDate <= toDate ? fromDate : toDate;
+      const end = fromDate <= toDate ? toDate : fromDate;
+      return `${formatDateDisplay(start)} TO ${formatDateDisplay(end)}`;
+    }
+    if (fromDate) return `FROM ${formatDateDisplay(fromDate)}`;
+    if (toDate) return `UP TO ${formatDateDisplay(toDate)}`;
+    return "ALL DATES";
+  };
 
   const availableFYs = getAvailableFYs();
   const availableDates = getAvailableDatesInFY();
@@ -364,7 +415,7 @@ export default function DailyReport() {
         </div>
 
         {/* Filter Card */}
-        <div className="bg-slate-800/90 border border-slate-700 p-4 rounded-xl shadow-md grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+        <div className="bg-slate-800/90 border border-slate-700 p-4 rounded-xl shadow-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
           {/* Financial Year Selector */}
           <div>
             <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">
@@ -384,22 +435,54 @@ export default function DailyReport() {
             </select>
           </div>
 
-          {/* Date Picker */}
+          {/* From Date Picker */}
           <div>
             <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">
-              Select Date
+              From Date
             </label>
-            <div className="flex gap-2">
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          {/* To Date Picker */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider">
+                To Date
+              </label>
+              {(fromDate || toDate) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFromDate("");
+                    setToDate("");
+                  }}
+                  className="text-[10px] text-amber-400 hover:text-amber-300 font-bold underline"
+                  title="Clear Date Filters"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="flex gap-1.5">
               <input
                 type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
                 className="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:border-amber-500"
               />
-              {selectedDate && (
+              {(fromDate || toDate) && (
                 <button
-                  onClick={() => setSelectedDate("")}
-                  className="px-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-xs font-bold"
+                  type="button"
+                  onClick={() => {
+                    setFromDate("");
+                    setToDate("");
+                  }}
+                  className="px-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-xs font-bold shrink-0"
                   title="Show All Dates"
                 >
                   All
@@ -429,8 +512,8 @@ export default function DailyReport() {
         {/* Stats Summary Bar */}
         <div className="flex items-center justify-between text-xs text-slate-400 px-1 font-mono">
           <div>
-            Total Entries: <span className="font-bold text-amber-400">{sortedFilteredLRs.length}</span> LRs
-            {selectedDate && <span> for date <span className="text-white font-bold">{formatDateDisplay(selectedDate)}</span></span>}
+            Total Entries: <span className="font-bold text-amber-400">{sortedFilteredLRs.length}</span> LRs{" "}
+            <span className="text-white font-bold">{getDateRangeSummaryLabel()}</span>
           </div>
           <div>
             FY: <span className="text-white font-bold">{selectedFY || "ALL"}</span>
@@ -458,7 +541,7 @@ export default function DailyReport() {
                 WOLEGO TRANSPORT - DAILY LR REPORT
               </h2>
               <div className="flex justify-between items-center text-xs font-bold text-black mt-1 px-1">
-                <span>DATE: {selectedDate ? formatDateDisplay(selectedDate) : "ALL DATES"}</span>
+                <span>DATE: {getPrintDateHeader()}</span>
                 <span>FINANCIAL YEAR: {selectedFY}</span>
                 <span>TOTAL LRs: {sortedFilteredLRs.length}</span>
               </div>
