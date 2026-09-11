@@ -722,7 +722,7 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         </div>
       )}
 
-      <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static print:p-0 print:m-0 print:overflow-visible opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "fixed inset-0 z-[9999] overflow-y-auto bg-slate-900 py-4 px-2 sm:px-4 text-slate-900 print:p-0 print:m-0 print:bg-white print:static print:overflow-visible"}>
+      <div className={isAuto ? "fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm print:bg-white print:static opacity-0 pointer-events-none print:opacity-100 print:pointer-events-auto" : "fixed inset-0 z-[9999] overflow-y-auto bg-slate-900 py-4 px-2 sm:px-4 text-slate-900 print:p-0 print:m-0 print:bg-white print:static print:overflow-visible"}>
 
         {/* Top Action Toolbar (Hidden during Print) */}
         <div className="max-w-4xl mx-auto mb-4 bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 flex flex-wrap justify-between items-center gap-2 print:hidden sticky top-0 z-20">
@@ -794,9 +794,18 @@ export default function LRPrintDocument({ lrData, onClose, onShareWhatsApp, auto
         </div>
 
         {/* Paper Print Container: Separate A4 Print Sheets for Each Selected Copy (Only rendered during paper print) */}
-        <div className="print-document print-container hidden print:block bg-white text-black font-sans m-0 p-0 w-full h-auto max-h-none overflow-visible">
-          {finalPrintCopies.map((copyType) => (
-            <div key={copyType} className="range-print-sheet">
+        <div className="hidden print:block bg-white text-black font-sans m-0 p-0 w-full h-auto max-h-none overflow-visible">
+          {finalPrintCopies.map((copyType, idx) => (
+            <div
+              key={copyType}
+              className="w-full max-w-[210mm] mx-auto bg-white p-[3.5mm] shadow-2xl rounded-sm print-container print:p-0 print:m-0 print:w-[203mm] print:h-[290mm] print:max-w-none print:shadow-none font-sans text-xs box-border"
+              style={{
+                pageBreakAfter: idx === finalPrintCopies.length - 1 ? "auto" : "always",
+                breakAfter: idx === finalPrintCopies.length - 1 ? "auto" : "page",
+                pageBreakInside: "avoid",
+                breakInside: "avoid",
+              }}
+            >
               <div className="border-2 border-slate-900 bg-white text-slate-900 h-[290mm] min-h-[290mm] w-full flex flex-col justify-between print-document relative overflow-hidden box-border">
                 {renderLRDocumentContent(copyType)}
               </div>
