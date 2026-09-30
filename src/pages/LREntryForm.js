@@ -297,13 +297,25 @@ export default function LREntryForm() {
   };
 
   // Multi-Consignor selection & formatting handler
-  const handleAddConsignor = (partyName) => {
-    if (!partyName) return;
-    const existing = parties.find((p) => p.partyName.trim().toUpperCase() === partyName.trim().toUpperCase());
-    const partyObj = existing || { partyName: partyName.toUpperCase(), address1: "", address2: "", address3: "", city: "", state: "", gstNo: "" };
+  const handleAddConsignor = (partyOrName) => {
+    if (!partyOrName) return;
+    let partyObj = null;
+    if (typeof partyOrName === "object") {
+      partyObj = partyOrName;
+    } else {
+      const existing = parties.find((p) => (p.partyName || "").trim().toUpperCase() === partyOrName.trim().toUpperCase());
+      partyObj = existing || { partyName: partyOrName.toUpperCase(), address1: "", address2: "", address3: "", city: "", state: "", gstNo: "" };
+    }
 
     // Prevent duplicate addition of exact same party
-    if (selectedConsignors.some((c) => c.partyName.trim().toUpperCase() === partyObj.partyName.trim().toUpperCase())) {
+    if (
+      selectedConsignors.some((c) =>
+        c.id && partyObj.id
+          ? c.id === partyObj.id
+          : c.partyName?.trim().toUpperCase() === partyObj.partyName?.trim().toUpperCase() &&
+            formatPartyAddress(c) === formatPartyAddress(partyObj)
+      )
+    ) {
       return;
     }
 
@@ -392,18 +404,24 @@ export default function LREntryForm() {
   };
 
   // Consignee selection handler (4-line format: Name, Address 1, Address 2, Address 3)
-  const handleSelectConsignee = (partyName) => {
-    const party = parties.find((p) => p.partyName === partyName);
+  const handleSelectConsignee = (partyOrName) => {
+    let party = null;
+    if (partyOrName && typeof partyOrName === "object") {
+      party = partyOrName;
+    } else if (typeof partyOrName === "string" && partyOrName.trim()) {
+      party = parties.find((p) => (p.partyName || "").trim().toUpperCase() === partyOrName.trim().toUpperCase());
+    }
+
     if (party) {
       const fullAddr = formatPartyAddress(party);
       setFormData((prev) => ({
         ...prev,
-        consigneeName: party.partyName,
+        consigneeName: party.partyName || "",
         consigneeAddress: fullAddr,
         consigneeGst: party.gstNo || "",
       }));
     } else {
-      setFormData((prev) => ({ ...prev, consigneeName: partyName }));
+      setFormData((prev) => ({ ...prev, consigneeName: typeof partyOrName === "string" ? partyOrName : "" }));
     }
   };
 
@@ -563,13 +581,23 @@ export default function LREntryForm() {
     setParties(updatedParties || []);
 
     const createdName = payload.partyName;
+    let createdParty = null;
+    if (Array.isArray(updatedParties) && updatedParties.length > 0) {
+      createdParty = [...updatedParties].reverse().find(
+        (p) =>
+          p.partyName?.trim().toUpperCase() === payload.partyName?.trim().toUpperCase() &&
+          (payload.gstNo ? p.gstNo === payload.gstNo : true) &&
+          (payload.address1 ? p.address1 === payload.address1 : true)
+      ) || updatedParties[updatedParties.length - 1];
+    }
+    const targetParty = createdParty || payload;
 
     if (addPartyTarget === "CONSIGNOR") {
-      handleAddConsignor(createdName);
+      handleAddConsignor(targetParty);
     } else if (addPartyTarget === "CONSIGNEE") {
-      handleSelectConsignee(createdName);
+      handleSelectConsignee(targetParty);
     } else {
-      handleSelectConsignee(createdName);
+      handleSelectConsignee(targetParty);
     }
 
     setShowAddPartyModal(false);
@@ -1888,7 +1916,7 @@ export default function LREntryForm() {
                           (p.gstNo && p.gstNo.toLowerCase().includes(partySearchQuery.toLowerCase()))
                       );
                       if (filtered.length > 0) {
-                        handleAddConsignor(filtered[0].partyName);
+                        handleAddConsignor(filtered[0]);
                         setSearchConsignorModal(false);
                         setTimeout(() => {
                           setPartySearchQuery("");
@@ -1918,7 +1946,11 @@ export default function LREntryForm() {
                   )
                   .map((p) => {
                     const isSelected = selectedConsignors.some(
-                      (c) => c.partyName.trim().toUpperCase() === p.partyName.trim().toUpperCase()
+                      (c) =>
+                        c.id && p.id
+                          ? c.id === p.id
+                          : c.partyName?.trim().toUpperCase() === p.partyName?.trim().toUpperCase() &&
+                            formatPartyAddress(c) === formatPartyAddress(p)
                     );
                     return (
                       <div
@@ -1926,11 +1958,15 @@ export default function LREntryForm() {
                         onClick={() => {
                           if (isSelected) {
                             const idx = selectedConsignors.findIndex(
-                              (c) => c.partyName.trim().toUpperCase() === p.partyName.trim().toUpperCase()
+                              (c) =>
+                                c.id && p.id
+                                  ? c.id === p.id
+                                  : c.partyName?.trim().toUpperCase() === p.partyName?.trim().toUpperCase() &&
+                                    formatPartyAddress(c) === formatPartyAddress(p)
                             );
                             if (idx !== -1) handleRemoveConsignor(idx);
                           } else {
-                            handleAddConsignor(p.partyName);
+                            handleAddConsignor(p);
                           }
                         }}
                         className={`p-3 cursor-pointer flex justify-between items-center transition-colors ${isSelected ? "bg-sky-950/90 border-l-4 border-yellow-400" : "hover:bg-slate-700/50"
@@ -2027,7 +2063,7 @@ export default function LREntryForm() {
                           (p.gstNo && p.gstNo.toLowerCase().includes(partySearchQuery.toLowerCase()))
                       );
                       if (filtered.length > 0) {
-                        handleSelectConsignee(filtered[0].partyName);
+                        handleSelectConsignee(filtered[0]);
                         setSearchConsigneeModal(false);
                         setTimeout(() => {
                           const el = document.getElementById("no-of-articles-input");
@@ -2058,7 +2094,7 @@ export default function LREntryForm() {
                     <div
                       key={p.id}
                       onClick={() => {
-                        handleSelectConsignee(p.partyName);
+                        handleSelectConsignee(p);
                         setSearchConsigneeModal(false);
                         setTimeout(() => {
                           const el = document.getElementById("no-of-articles-input");
